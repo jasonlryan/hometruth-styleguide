@@ -1,12 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Gill+Sans:wght@300;400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
 
 @layer base {
   :root {
@@ -44,6 +40,7 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -84,7 +81,92 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Global font utilities */
+  .font-gill-sans {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  }
+
+  .font-gill-sans-light {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 300;
+  }
+
+  .font-gill-sans-regular {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Override bold styles to use regular weight */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: 400;
+  }
+
+  .font-bold {
+    font-weight: 400 !important;
+  }
+
+  .font-semibold {
+    font-weight: 400 !important;
+  }
+
+  /* Ensure all text uses Gill Sans by default */
+  p, span, div, a, button, input, textarea, label {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Typography scale using Gill Sans - Properly balanced hierarchy */
+  .type-hero {
+    @apply font-gill-sans-regular tracking-tight leading-tight text-3xl lg:text-5xl;
+  }
+  
+  .type-h1 {
+    @apply font-gill-sans-regular tracking-tight leading-tight text-2xl lg:text-3xl;
+  }
+
+  .type-h2 {
+    @apply font-gill-sans-regular tracking-tight leading-tight text-xl lg:text-2xl;
+  }
+
+  .type-h3 {
+    @apply font-gill-sans-regular leading-snug text-lg lg:text-xl;
+  }
+
+  .type-h4 {
+    @apply font-gill-sans-regular leading-snug text-base lg:text-lg;
+  }
+
+  .type-body-lg {
+    @apply font-gill-sans-light leading-relaxed text-lg lg:text-xl;
+  }
+
+  .type-body {
+    @apply font-gill-sans-light leading-relaxed text-sm;
+  }
+
+  .type-caption {
+    @apply font-gill-sans-light leading-relaxed text-xs text-gray-600;
+  }
+
+  /* Section vertical spacing helpers */
+  .section-y {
+    @apply py-16 lg:py-24;
+  }
+
+  .section-y-sm {
+    @apply py-12 lg:py-16;
   }
 }
