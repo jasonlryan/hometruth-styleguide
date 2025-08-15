@@ -157,13 +157,13 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header variant="landing" />
 
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex flex-1">
         <SidebarNav />
 
-        <main className="flex-1">
+        <main className="flex-1 flex flex-col">
           {/* Top bar */}
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
             <h1 className="type-h3 text-gray-900 font-gill-sans-regular">Documents</h1>
@@ -195,7 +195,7 @@ export default function DocumentsPage() {
           </div>
 
           {/* Documents table */}
-          <div className="p-6">
+          <div className="flex-1 p-6 overflow-y-auto">
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               {/* Table header */}
               <div className="border-b border-gray-200 bg-gray-50/50">

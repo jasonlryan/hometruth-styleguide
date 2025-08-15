@@ -242,10 +242,10 @@ interface FeatureCardProps {
 
 ## 8. IMMEDIATE ACTION ITEMS
 
-### Week 1: Foundation
-1. Implement design token system in `globals.css`
-2. Update `tailwind.config.ts` with brand colors
-3. Replace hardcoded colors in top 5 most-used components
+### Week 1: Critical Fixes
+1. **URGENT**: Fix broken page layouts (documents, notes, etc.) - content overflowing footer
+2. Implement design token system in `globals.css`
+3. Update `tailwind.config.ts` with brand colors
 
 ### Week 2: Component Consolidation
 1. Merge FeatureCard and ProFeatureCard components
@@ -265,6 +265,7 @@ interface FeatureCardProps {
 ## 9. CRITICAL FINDINGS SUMMARY
 
 ### 🔴 Critical Issues
+- **BROKEN PAGE LAYOUTS** - Content overflowing into footer on app pages (documents, notes, etc.)
 - **No design token system** - Makes brand consistency impossible to maintain
 - **Duplicate components** - FeatureCard/ProFeatureCard causing code bloat
 - **Hardcoded colors everywhere** - 17+ instances of `#00BFFF` alone
