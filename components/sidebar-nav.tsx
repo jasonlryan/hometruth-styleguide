@@ -30,13 +30,6 @@ const navItems: NavItem[] = [
     bgColor: "bg-blue-50",
   },
   {
-    href: "/quiz",
-    label: "Quiz",
-    icon: ClipboardList,
-    color: "text-[#FF6B35]",
-    bgColor: "bg-orange-50",
-  },
-  {
     href: "/chat",
     label: "Ask HomeTruth",
     icon: Search,

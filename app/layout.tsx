@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { UserProvider } from '@/contexts/user-context'
 
 export const metadata: Metadata = {
   title: 'HomeTruth - Your Personal Property Assistant',
@@ -13,7 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-gill-sans">{children}</body>
+      <body className="font-gill-sans">
+        <UserProvider>
+          {children}
+        </UserProvider>
+      </body>
     </html>
   )
 }
