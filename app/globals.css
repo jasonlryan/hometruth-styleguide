@@ -6,6 +6,10 @@
 
 @layer base {
   :root {
+    /* HomeTruth design tokens */
+    --ht-primary: #00BFFF; /* DeepSkyBlue */
+    --ht-secondary: #B19CD9; /* Light Purple */
+
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -42,6 +46,9 @@
   }
 
   .dark {
+    /* Keep tokens same in dark until themed */
+    --ht-primary: #00BFFF;
+    --ht-secondary: #B19CD9;
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;

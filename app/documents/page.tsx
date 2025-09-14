@@ -6,155 +6,85 @@ import Footer from "@/components/footer";
 import SidebarNav from "@/components/sidebar-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
+import Dropzone from "@/components/ui/dropzone";
+import DocumentCard from "@/components/ui/document-card";
 import Link from "next/link";
-import {
-  Search,
-  Filter,
-  Star,
-  FileText,
-  File,
-  Shield,
-  Home,
-  CreditCard,
-  User,
-  MapPin,
-  DollarSign,
-  Scale,
-} from "lucide-react";
+import { Search, Filter, File, ChevronDown, X } from "lucide-react";
+import { track } from "@/lib/telemetry";
+import { useDebounce } from "@/lib/use-debounce";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Document {
   id: string;
   name: string;
   type: string;
-  dateAdded: string;
-  starred: boolean;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  bgColor: string;
+  dateAdded: string; // display label
+  addedAt: number; // sortable timestamp
+  category?: string;
+  tags?: string[];
+  status?: "Processing" | "Urgent" | "Expiring" | "Ready" | "Error";
 }
 
 const documents: Document[] = [
-  {
-    id: "1",
-    name: "Tenancy_Agreement.pdf",
-    type: "Lease Agreement",
-    dateAdded: "Sep 16th 2024",
-    starred: true,
-    icon: Home,
-    color: "text-[#00BFFF]",
-    bgColor: "bg-blue-50",
-  },
-  {
-    id: "2",
-    name: "Property_Deed.pdf",
-    type: "Title Deed",
-    dateAdded: "Sep 17th 2024",
-    starred: false,
-    icon: File,
-    color: "text-[#10B981]",
-    bgColor: "bg-green-50",
-  },
-  {
-    id: "3",
-    name: "Energy_Performance_Cert.pdf",
-    type: "EPC Certificate",
-    dateAdded: "Sep 16th 2024",
-    starred: false,
-    icon: Shield,
-    color: "text-[#F59E0B]",
-    bgColor: "bg-yellow-50",
-  },
-  {
-    id: "4",
-    name: "Survey_Report.pdf",
-    type: "Property Survey Report",
-    dateAdded: "Sep 18th 2024",
-    starred: true,
-    icon: FileText,
-    color: "text-[#8B5CF6]",
-    bgColor: "bg-purple-50",
-  },
-  {
-    id: "5",
-    name: "Mortgage_Approval.pdf",
-    type: "Mortgage in Principle Letter",
-    dateAdded: "Sep 16th 2024",
-    starred: true,
-    icon: CreditCard,
-    color: "text-[#EF4444]",
-    bgColor: "bg-red-50",
-  },
-  {
-    id: "6",
-    name: "ID_Document_Trent.jpg",
-    type: "Proof of Identity",
-    dateAdded: "Sep 19th 2024",
-    starred: false,
-    icon: User,
-    color: "text-[#06B6D4]",
-    bgColor: "bg-cyan-50",
-  },
-  {
-    id: "7",
-    name: "Utility_Bill_March.pdf",
-    type: "Proof of Address",
-    dateAdded: "Sep 19th 2024",
-    starred: false,
-    icon: MapPin,
-    color: "text-[#84CC16]",
-    bgColor: "bg-lime-50",
-  },
-  {
-    id: "8",
-    name: "Bank_Statement_Aug.pdf",
-    type: "Financial Statement",
-    dateAdded: "Sep 20th 2024",
-    starred: false,
-    icon: DollarSign,
-    color: "text-[#10B981]",
-    bgColor: "bg-emerald-50",
-  },
-  {
-    id: "9",
-    name: "Solicitor_Letter.pdf",
-    type: "Legal Correspondence",
-    dateAdded: "Sep 16th 2024",
-    starred: true,
-    icon: Scale,
-    color: "text-[#6366F1]",
-    bgColor: "bg-indigo-50",
-  },
+  { id: "1", name: "Tenancy_Agreement.pdf", type: "Lease Agreement", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Legal", tags: ["Lease","Tenant"], status: "Ready" },
+  { id: "2", name: "Property_Deed.pdf", type: "Title Deed", dateAdded: "Sep 17th 2024", addedAt: 1726531200000, category: "Legal", tags: ["Ownership"], status: "Processing" },
+  { id: "3", name: "Energy_Performance_Cert.pdf", type: "EPC Certificate", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Compliance", tags: ["EPC","Energy"], status: "Expiring" },
+  { id: "4", name: "Survey_Report.pdf", type: "Property Survey Report", dateAdded: "Sep 18th 2024", addedAt: 1726617600000, category: "Surveys & Reports", tags: ["Survey"], status: "Ready" },
+  { id: "5", name: "Mortgage_Approval.pdf", type: "Mortgage in Principle Letter", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Financial", tags: ["Mortgage"], status: "Urgent" },
+  { id: "6", name: "ID_Document_Trent.jpg", type: "Proof of Identity", dateAdded: "Sep 19th 2024", addedAt: 1726704000000, category: "Property Details", tags: ["Identity"], status: "Ready" },
+  { id: "7", name: "Utility_Bill_March.pdf", type: "Proof of Address", dateAdded: "Sep 19th 2024", addedAt: 1726704000000, category: "Compliance", tags: ["Utilities"], status: "Ready" },
+  { id: "8", name: "Bank_Statement_Aug.pdf", type: "Financial Statement", dateAdded: "Sep 20th 2024", addedAt: 1726790400000, category: "Financial", tags: ["Bank"], status: "Ready" },
+  { id: "9", name: "Solicitor_Letter.pdf", type: "Legal Correspondence", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Legal", tags: ["Letter"], status: "Ready" },
 ];
 
 export default function DocumentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [documentsState, setDocumentsState] = useState(documents);
+  const [view, setView] = useState<"grid" | "list">("list");
+  const [plan] = useState<"free" | "pro">("free");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<"Newest" | "Name" | "Category" | "AI relevance">("Newest");
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
-  const filteredDocuments = documentsState.filter(doc =>
-    doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.type.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const debouncedTerm = useDebounce(searchTerm, 250);
 
-  const toggleStar = (id: string) => {
-    setDocumentsState(prev => prev.map(doc => 
-      doc.id === id ? { ...doc, starred: !doc.starred } : doc
-    ));
-  };
+  const filteredDocuments = documentsState
+    .filter((doc) => {
+      const term = debouncedTerm.toLowerCase();
+      const matchesTerm = !term
+        || doc.name.toLowerCase().includes(term)
+        || doc.type.toLowerCase().includes(term)
+        || (doc.category?.toLowerCase().includes(term) ?? false)
+        || (doc.tags?.some((t) => t.toLowerCase().includes(term)) ?? false);
 
-  const toggleSelect = (id: string) => {
-    setSelectedDocs(prev => 
-      prev.includes(id) 
-        ? prev.filter(docId => docId !== id)
-        : [...prev, id]
-    );
-  };
+      const matchCategory = selectedCategories.length === 0 || (doc.category && selectedCategories.includes(doc.category));
+      const matchStatus = selectedStatuses.length === 0 || (doc.status && selectedStatuses.includes(doc.status));
+      const matchType = selectedTypes.length === 0 || selectedTypes.includes(doc.type);
+      const matchTags = selectedTags.length === 0 || (doc.tags && doc.tags.some((t) => selectedTags.includes(t)));
 
-  const selectAll = () => {
-    const allIds = filteredDocuments.map(doc => doc.id);
-    setSelectedDocs(selectedDocs.length === allIds.length ? [] : allIds);
-  };
+      return matchesTerm && matchCategory && matchStatus && matchType && matchTags;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "Name":
+          return a.name.localeCompare(b.name);
+        case "Category":
+          return (a.category || "").localeCompare(b.category || "");
+        case "AI relevance":
+          return 0; // placeholder
+        case "Newest":
+        default:
+          return b.addedAt - a.addedAt;
+      }
+    });
+
+  // Selection and starring can be added with bulk actions in Pro
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -167,109 +97,253 @@ export default function DocumentsPage() {
           {/* Top bar */}
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
             <h1 className="type-h3 text-gray-900 font-gill-sans-regular">Documents</h1>
-            <Button className="bg-[#B19CD9] hover:bg-purple-600 text-white font-gill-sans-light">
+            <Button className="bg-ht-secondary hover:bg-[#9C84CF] text-white font-gill-sans-light">
               Ask HomeTruth
             </Button>
           </div>
 
-          {/* Search and filters */}
+          {/* Toolbar: search, filters, view toggle */}
           <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search document..."
-                  className="pl-10 bg-gray-50/50 border-gray-200 focus:border-[#00BFFF] focus:ring-1 focus:ring-[#00BFFF]/20 font-gill-sans-light"
+                  className="pl-10 bg-gray-50/50 border-gray-200 focus:border-ht-primary focus:ring-1 focus:ring-ht-primary/20 font-gill-sans-light"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-200 text-gray-600 hover:bg-[#00BFFF]/5 hover:border-[#00BFFF]/20 hover:text-[#00BFFF] transition-colors font-gill-sans-light"
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFiltersOpen((s) => !s)}
+                  className="border-gray-200 text-gray-600 hover:bg-ht-primary/5 hover:border-ht-primary/20 hover:text-ht-primary transition-colors font-gill-sans-light"
+                  aria-expanded={filtersOpen}
+                >
+                  <Filter className="h-4 w-4" />
+                  <span className="ml-2">Filters</span>
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+                {filtersOpen && (
+                  <div className="absolute left-0 z-10 mt-2 w-[560px] rounded-md border bg-white p-4 shadow-md">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Filters</span>
+                      <button className="text-xs text-gray-500 hover:text-gray-700" onClick={() => {
+                        setSelectedCategories([]); setSelectedStatuses([]); setSelectedTypes([]); setSelectedTags([]);
+                        track({ name: "documents_filters_clear" });
+                      }}>Clear all</button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="mb-2 text-xs font-medium text-gray-500">Category</div>
+                        {[
+                          "Financial","Legal","Maintenance","Compliance","Surveys & Reports","Property Details",
+                        ].map((c) => (
+                          <label key={c} className="mb-1 flex items-center gap-2">
+                            <Checkbox checked={selectedCategories.includes(c)} onCheckedChange={() => setSelectedCategories((prev) => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])} />
+                            <span>{c}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="mb-2 text-xs font-medium text-gray-500">Status</div>
+                        {["Processing","Urgent","Expiring","Ready","Error"].map((s) => (
+                          <label key={s} className="mb-1 flex items-center gap-2">
+                            <Checkbox checked={selectedStatuses.includes(s)} onCheckedChange={() => setSelectedStatuses((prev) => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])} />
+                            <span>{s}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="mb-2 text-xs font-medium text-gray-500">Type</div>
+                        {[...new Set(documentsState.map(d => d.type))].slice(0,8).map((t) => (
+                          <label key={t} className="mb-1 flex items-center gap-2">
+                            <Checkbox checked={selectedTypes.includes(t)} onCheckedChange={() => setSelectedTypes((prev) => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} />
+                            <span>{t}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="mb-2 text-xs font-medium text-gray-500">Tags</div>
+                        {[...new Set(documentsState.flatMap(d => d.tags ?? []))].slice(0,10).map((t) => (
+                          <label key={t} className="mb-1 flex items-center gap-2">
+                            <Checkbox checked={selectedTags.includes(t)} onCheckedChange={() => setSelectedTags((prev) => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} />
+                            <span>{t}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <Button size="sm" onClick={() => { setFiltersOpen(false); track({ name: "documents_filters_apply" }); }}>Apply</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSortOpen((s) => !s)}
+                  aria-expanded={sortOpen}
+                >
+                  Sort: {sortBy}
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+                {sortOpen && (
+                  <div className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-md border bg-white shadow-md">
+                    {["Newest","Name","Category","AI relevance"].map((opt) => (
+                      <button key={opt} className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${sortBy === opt ? "text-ht-primary" : ""}`} onClick={() => { setSortBy(opt as any); setSortOpen(false); track({ name: "documents_sort", props: { sortBy: opt } }); }}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  variant={view === "list" ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("list")}
+                  aria-pressed={view === "list"}
+                >
+                  List
+                </Button>
+                <Button
+                  variant={view === "grid" ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => setView("grid")}
+                  aria-pressed={view === "grid"}
+                >
+                  Grid
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Documents table */}
+          {/* Dropzone + Documents */}
           <div className="flex-1 p-6 overflow-y-auto">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              {/* Table header */}
-              <div className="border-b border-gray-200 bg-gray-50/50">
-                <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center">
-                  <div className="col-span-1 flex items-center">
-                    <Checkbox
-                      checked={selectedDocs.length === filteredDocuments.length && filteredDocuments.length > 0}
-                      onCheckedChange={selectAll}
-                    />
+            <Dropzone
+              className="mb-6"
+              plan={plan}
+              onFilesAccepted={(files) => {
+                track({ name: "documents_upload_drop", props: { count: files.length } });
+                // Mock insert new docs to top of list
+                const newDocs = files.map((f, idx) => ({
+                  id: `${Date.now()}-${idx}`,
+                  name: f.name,
+                  type: f.type || "Document",
+                  dateAdded: new Date().toLocaleDateString(),
+                  addedAt: Date.now(),
+                  category: undefined,
+                  tags: [],
+                  status: "Processing",
+                }));
+                setDocumentsState((prev) => [...newDocs, ...prev]);
+              }}
+            />
+
+            <div className={`grid gap-6 ${previewId ? "lg:grid-cols-[1fr_360px]" : "lg:grid-cols-1"}`}>
+              <div>
+                {view === "list" ? (
+                  <div className="space-y-2">
+                    {filteredDocuments.map((doc) => (
+                      <DocumentCard
+                        key={doc.id}
+                        id={doc.id}
+                        title={doc.name}
+                        category={doc.type}
+                        tags={doc.tags}
+                        status={doc.status as any}
+                        updatedAt={doc.dateAdded}
+                        variant="list"
+                        onOpen={() => { setPreviewId(doc.id); track({ name: "documents_open", props: { id: doc.id } }); }}
+                        onPreview={() => { setPreviewId(doc.id); track({ name: "documents_preview", props: { id: doc.id } }); }}
+                        onEdit={() => track({ name: "documents_edit", props: { id: doc.id } })}
+                        onDelete={() => track({ name: "documents_delete", props: { id: doc.id } })}
+                      />
+                    ))}
                   </div>
-                  <div className="col-span-1"></div>
-                  <div className="col-span-5">
-                    <span className="type-caption font-medium text-gray-600">Document Name</span>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredDocuments.map((doc) => (
+                      <DocumentCard
+                        key={doc.id}
+                        id={doc.id}
+                        title={doc.name}
+                        category={doc.type}
+                        tags={doc.tags}
+                        status={doc.status as any}
+                        updatedAt={doc.dateAdded}
+                        variant="grid"
+                        onOpen={() => { setPreviewId(doc.id); track({ name: "documents_open", props: { id: doc.id } }); }}
+                        onPreview={() => { setPreviewId(doc.id); track({ name: "documents_preview", props: { id: doc.id } }); }}
+                        onEdit={() => track({ name: "documents_edit", props: { id: doc.id } })}
+                        onDelete={() => track({ name: "documents_delete", props: { id: doc.id } })}
+                      />
+                    ))}
                   </div>
-                  <div className="col-span-3">
-                    <span className="type-caption font-medium text-gray-600">Document Type</span>
-                  </div>
-                  <div className="col-span-2 text-right">
-                    <span className="type-caption font-medium text-gray-600">Date Added</span>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Table body */}
-              <div className="divide-y divide-gray-100">
-                {filteredDocuments.map((doc) => {
-                  const Icon = doc.icon;
-                  return (
-                    <div
-                      key={doc.id}
-                      className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors group"
-                    >
-                      <div className="col-span-1 flex items-center">
-                        <Checkbox
-                          checked={selectedDocs.includes(doc.id)}
-                          onCheckedChange={() => toggleSelect(doc.id)}
-                        />
-                      </div>
-                      <div className="col-span-1 flex items-center">
-                        <button
-                          onClick={() => toggleStar(doc.id)}
-                          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                        >
-                          <Star
-                            className={`h-4 w-4 transition-colors ${
-                              doc.starred
-                                ? "text-yellow-500 fill-yellow-500"
-                                : "text-gray-300 hover:text-gray-400"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <div className="col-span-5 flex items-center space-x-3">
-                        <div className={`w-8 h-8 ${doc.bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <Icon className={`h-4 w-4 ${doc.color}`} />
+              {previewId && (
+                <aside className="hidden lg:block">
+                  <div className="sticky top-6 rounded-lg border bg-white p-4">
+                    {(() => {
+                      const doc = documentsState.find(d => d.id === previewId);
+                      if (!doc) return null;
+                      return (
+                        <div>
+                          <div className="mb-3 flex items-start justify-between">
+                            <div>
+                              <div className="truncate text-sm text-gray-900">{doc.name}</div>
+                              <div className="text-xs text-gray-500">{doc.type}</div>
+                            </div>
+                            <button className="text-gray-400 hover:text-gray-600" aria-label="Close preview" onClick={() => setPreviewId(null)}>
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <div className="mb-3 aspect-[3/4] w-full overflow-hidden rounded-md bg-gray-50">
+                            <div className="flex h-full items-center justify-center text-gray-400">
+                              First page preview
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Category</span>
+                              <span className="text-gray-800">{doc.category || "—"}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Status</span>
+                              <span className="text-gray-800">{doc.status || "—"}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Added</span>
+                              <span className="text-gray-800">{doc.dateAdded}</span>
+                            </div>
+                            {!!(doc.tags?.length) && (
+                              <div>
+                                <div className="text-gray-500">Tags</div>
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {doc.tags!.map(t => (
+                                    <span key={t} className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{t}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-4 grid grid-cols-3 gap-2">
+                            <Button size="sm" className="bg-ht-primary text-white" onClick={() => track({ name: "ai_explain", props: { id: doc.id } })}>Explain</Button>
+                            <Button size="sm" variant="secondary" onClick={() => track({ name: "ai_summarize", props: { id: doc.id } })}>Summarize</Button>
+                            <Button size="sm" variant="outline" onClick={() => track({ name: "ai_extract", props: { id: doc.id } })}>Extract</Button>
+                          </div>
                         </div>
-                        <span className="font-gill-sans-regular text-gray-900 truncate">
-                          {doc.name}
-                        </span>
-                      </div>
-                      <div className="col-span-3">
-                        <span className="font-gill-sans-light text-gray-600">
-                          {doc.type}
-                        </span>
-                      </div>
-                      <div className="col-span-2 text-right">
-                        <span className="font-gill-sans-light text-gray-500 text-sm">
-                          {doc.dateAdded}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })()}
+                  </div>
+                </aside>
+              )}
             </div>
 
             {/* Upgrade CTA */}
@@ -279,7 +353,7 @@ export default function DocumentsPage() {
                   Need more document storage?
                 </p>
                 <Link href="/pro">
-                  <Button className="bg-[#00BFFF] hover:bg-blue-600 text-white px-6 py-2 font-gill-sans-light">
+                  <Button className="bg-ht-primary hover:bg-[#00A5E0] text-white px-6 py-2 font-gill-sans-light">
                     Upgrade to Pro
                   </Button>
                 </Link>
