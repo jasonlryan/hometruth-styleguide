@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+      "pinecone": {
+        "command": "npx",
+        "args": ["-y", "@pinecone-database/mcp"],
+        "env": {
+          "PINECONE_API_KEY": "pcsk_6NjPV9_GPpKSCD8yG4wyuu8QthgHaLjBNXFYzV68EchekwnjE9GcnsnppHwbtD7bFmwcbG"
+        }
+      }
+    }
+  }

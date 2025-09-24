@@ -14,6 +14,9 @@ import { Search, Filter, File, ChevronDown, X } from "lucide-react";
 import { track } from "@/lib/telemetry";
 import { useDebounce } from "@/lib/use-debounce";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DocumentUploader } from "@/components/document-uploader";
+import { DocumentSearch } from "@/components/document-search";
+import { KnowledgeManager } from "@/components/knowledge-manager";
 
 interface Document {
   id: string;
@@ -27,15 +30,96 @@ interface Document {
 }
 
 const documents: Document[] = [
-  { id: "1", name: "Tenancy_Agreement.pdf", type: "Lease Agreement", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Legal", tags: ["Lease","Tenant"], status: "Ready" },
-  { id: "2", name: "Property_Deed.pdf", type: "Title Deed", dateAdded: "Sep 17th 2024", addedAt: 1726531200000, category: "Legal", tags: ["Ownership"], status: "Processing" },
-  { id: "3", name: "Energy_Performance_Cert.pdf", type: "EPC Certificate", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Compliance", tags: ["EPC","Energy"], status: "Expiring" },
-  { id: "4", name: "Survey_Report.pdf", type: "Property Survey Report", dateAdded: "Sep 18th 2024", addedAt: 1726617600000, category: "Surveys & Reports", tags: ["Survey"], status: "Ready" },
-  { id: "5", name: "Mortgage_Approval.pdf", type: "Mortgage in Principle Letter", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Financial", tags: ["Mortgage"], status: "Urgent" },
-  { id: "6", name: "ID_Document_Trent.jpg", type: "Proof of Identity", dateAdded: "Sep 19th 2024", addedAt: 1726704000000, category: "Property Details", tags: ["Identity"], status: "Ready" },
-  { id: "7", name: "Utility_Bill_March.pdf", type: "Proof of Address", dateAdded: "Sep 19th 2024", addedAt: 1726704000000, category: "Compliance", tags: ["Utilities"], status: "Ready" },
-  { id: "8", name: "Bank_Statement_Aug.pdf", type: "Financial Statement", dateAdded: "Sep 20th 2024", addedAt: 1726790400000, category: "Financial", tags: ["Bank"], status: "Ready" },
-  { id: "9", name: "Solicitor_Letter.pdf", type: "Legal Correspondence", dateAdded: "Sep 16th 2024", addedAt: 1726444800000, category: "Legal", tags: ["Letter"], status: "Ready" },
+  {
+    id: "1",
+    name: "Tenancy_Agreement.pdf",
+    type: "Lease Agreement",
+    dateAdded: "Sep 16th 2024",
+    addedAt: 1726444800000,
+    category: "Legal",
+    tags: ["Lease", "Tenant"],
+    status: "Ready",
+  },
+  {
+    id: "2",
+    name: "Property_Deed.pdf",
+    type: "Title Deed",
+    dateAdded: "Sep 17th 2024",
+    addedAt: 1726531200000,
+    category: "Legal",
+    tags: ["Ownership"],
+    status: "Processing",
+  },
+  {
+    id: "3",
+    name: "Energy_Performance_Cert.pdf",
+    type: "EPC Certificate",
+    dateAdded: "Sep 16th 2024",
+    addedAt: 1726444800000,
+    category: "Compliance",
+    tags: ["EPC", "Energy"],
+    status: "Expiring",
+  },
+  {
+    id: "4",
+    name: "Survey_Report.pdf",
+    type: "Property Survey Report",
+    dateAdded: "Sep 18th 2024",
+    addedAt: 1726617600000,
+    category: "Surveys & Reports",
+    tags: ["Survey"],
+    status: "Ready",
+  },
+  {
+    id: "5",
+    name: "Mortgage_Approval.pdf",
+    type: "Mortgage in Principle Letter",
+    dateAdded: "Sep 16th 2024",
+    addedAt: 1726444800000,
+    category: "Financial",
+    tags: ["Mortgage"],
+    status: "Urgent",
+  },
+  {
+    id: "6",
+    name: "ID_Document_Trent.jpg",
+    type: "Proof of Identity",
+    dateAdded: "Sep 19th 2024",
+    addedAt: 1726704000000,
+    category: "Property Details",
+    tags: ["Identity"],
+    status: "Ready",
+  },
+  {
+    id: "7",
+    name: "Utility_Bill_March.pdf",
+    type: "Proof of Address",
+    dateAdded: "Sep 19th 2024",
+    addedAt: 1726704000000,
+    category: "Compliance",
+    tags: ["Utilities"],
+    status: "Ready",
+  },
+  {
+    id: "8",
+    name: "Bank_Statement_Aug.pdf",
+    type: "Financial Statement",
+    dateAdded: "Sep 20th 2024",
+    addedAt: 1726790400000,
+    category: "Financial",
+    tags: ["Bank"],
+    status: "Ready",
+  },
+  {
+    id: "9",
+    name: "Solicitor_Letter.pdf",
+    type: "Legal Correspondence",
+    dateAdded: "Sep 16th 2024",
+    addedAt: 1726444800000,
+    category: "Legal",
+    tags: ["Letter"],
+    status: "Ready",
+  },
 ];
 
 export default function DocumentsPage() {
@@ -49,26 +133,41 @@ export default function DocumentsPage() {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"Newest" | "Name" | "Category" | "AI relevance">("Newest");
+  const [sortBy, setSortBy] = useState<
+    "Newest" | "Name" | "Category" | "AI relevance"
+  >("Newest");
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [showUploader, setShowUploader] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showKnowledge, setShowKnowledge] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 250);
 
   const filteredDocuments = documentsState
     .filter((doc) => {
       const term = debouncedTerm.toLowerCase();
-      const matchesTerm = !term
-        || doc.name.toLowerCase().includes(term)
-        || doc.type.toLowerCase().includes(term)
-        || (doc.category?.toLowerCase().includes(term) ?? false)
-        || (doc.tags?.some((t) => t.toLowerCase().includes(term)) ?? false);
+      const matchesTerm =
+        !term ||
+        doc.name.toLowerCase().includes(term) ||
+        doc.type.toLowerCase().includes(term) ||
+        (doc.category?.toLowerCase().includes(term) ?? false) ||
+        (doc.tags?.some((t) => t.toLowerCase().includes(term)) ?? false);
 
-      const matchCategory = selectedCategories.length === 0 || (doc.category && selectedCategories.includes(doc.category));
-      const matchStatus = selectedStatuses.length === 0 || (doc.status && selectedStatuses.includes(doc.status));
-      const matchType = selectedTypes.length === 0 || selectedTypes.includes(doc.type);
-      const matchTags = selectedTags.length === 0 || (doc.tags && doc.tags.some((t) => selectedTags.includes(t)));
+      const matchCategory =
+        selectedCategories.length === 0 ||
+        (doc.category && selectedCategories.includes(doc.category));
+      const matchStatus =
+        selectedStatuses.length === 0 ||
+        (doc.status && selectedStatuses.includes(doc.status));
+      const matchType =
+        selectedTypes.length === 0 || selectedTypes.includes(doc.type);
+      const matchTags =
+        selectedTags.length === 0 ||
+        (doc.tags && doc.tags.some((t) => selectedTags.includes(t)));
 
-      return matchesTerm && matchCategory && matchStatus && matchType && matchTags;
+      return (
+        matchesTerm && matchCategory && matchStatus && matchType && matchTags
+      );
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -96,10 +195,35 @@ export default function DocumentsPage() {
         <main className="flex-1 flex flex-col">
           {/* Top bar */}
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-            <h1 className="type-h3 text-gray-900 font-gill-sans-regular">Documents</h1>
-            <Button className="bg-ht-secondary hover:bg-[#9C84CF] text-white font-gill-sans-light">
-              Ask HomeTruth
-            </Button>
+            <h1 className="type-h3 text-gray-900 font-gill-sans-regular">
+              Documents
+            </h1>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowUploader(!showUploader)}
+                className="font-gill-sans-light"
+              >
+                Upload Document
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowSearch(!showSearch)}
+                className="font-gill-sans-light"
+              >
+                Search My Docs
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowKnowledge(!showKnowledge)}
+                className="font-gill-sans-light"
+              >
+                Knowledge Base
+              </Button>
+              <Button className="bg-ht-secondary hover:bg-[#9C84CF] text-white font-gill-sans-light">
+                Ask HomeTruth
+              </Button>
+            </div>
           </div>
 
           {/* Toolbar: search, filters, view toggle */}
@@ -129,54 +253,147 @@ export default function DocumentsPage() {
                 {filtersOpen && (
                   <div className="absolute left-0 z-10 mt-2 w-[560px] rounded-md border bg-white p-4 shadow-md">
                     <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Filters</span>
-                      <button className="text-xs text-gray-500 hover:text-gray-700" onClick={() => {
-                        setSelectedCategories([]); setSelectedStatuses([]); setSelectedTypes([]); setSelectedTags([]);
-                        track({ name: "documents_filters_clear" });
-                      }}>Clear all</button>
+                      <span className="text-sm font-medium text-gray-700">
+                        Filters
+                      </span>
+                      <button
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                        onClick={() => {
+                          setSelectedCategories([]);
+                          setSelectedStatuses([]);
+                          setSelectedTypes([]);
+                          setSelectedTags([]);
+                          track({ name: "documents_filters_clear" });
+                        }}
+                      >
+                        Clear all
+                      </button>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <div className="mb-2 text-xs font-medium text-gray-500">Category</div>
+                        <div className="mb-2 text-xs font-medium text-gray-500">
+                          Category
+                        </div>
                         {[
-                          "Financial","Legal","Maintenance","Compliance","Surveys & Reports","Property Details",
+                          "Financial",
+                          "Legal",
+                          "Maintenance",
+                          "Compliance",
+                          "Surveys & Reports",
+                          "Property Details",
                         ].map((c) => (
-                          <label key={c} className="mb-1 flex items-center gap-2">
-                            <Checkbox checked={selectedCategories.includes(c)} onCheckedChange={() => setSelectedCategories((prev) => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])} />
+                          <label
+                            key={c}
+                            className="mb-1 flex items-center gap-2"
+                          >
+                            <Checkbox
+                              checked={selectedCategories.includes(c)}
+                              onCheckedChange={() =>
+                                setSelectedCategories((prev) =>
+                                  prev.includes(c)
+                                    ? prev.filter((x) => x !== c)
+                                    : [...prev, c]
+                                )
+                              }
+                            />
                             <span>{c}</span>
                           </label>
                         ))}
                       </div>
                       <div>
-                        <div className="mb-2 text-xs font-medium text-gray-500">Status</div>
-                        {["Processing","Urgent","Expiring","Ready","Error"].map((s) => (
-                          <label key={s} className="mb-1 flex items-center gap-2">
-                            <Checkbox checked={selectedStatuses.includes(s)} onCheckedChange={() => setSelectedStatuses((prev) => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])} />
+                        <div className="mb-2 text-xs font-medium text-gray-500">
+                          Status
+                        </div>
+                        {[
+                          "Processing",
+                          "Urgent",
+                          "Expiring",
+                          "Ready",
+                          "Error",
+                        ].map((s) => (
+                          <label
+                            key={s}
+                            className="mb-1 flex items-center gap-2"
+                          >
+                            <Checkbox
+                              checked={selectedStatuses.includes(s)}
+                              onCheckedChange={() =>
+                                setSelectedStatuses((prev) =>
+                                  prev.includes(s)
+                                    ? prev.filter((x) => x !== s)
+                                    : [...prev, s]
+                                )
+                              }
+                            />
                             <span>{s}</span>
                           </label>
                         ))}
                       </div>
                       <div>
-                        <div className="mb-2 text-xs font-medium text-gray-500">Type</div>
-                        {[...new Set(documentsState.map(d => d.type))].slice(0,8).map((t) => (
-                          <label key={t} className="mb-1 flex items-center gap-2">
-                            <Checkbox checked={selectedTypes.includes(t)} onCheckedChange={() => setSelectedTypes((prev) => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} />
-                            <span>{t}</span>
-                          </label>
-                        ))}
+                        <div className="mb-2 text-xs font-medium text-gray-500">
+                          Type
+                        </div>
+                        {[...new Set(documentsState.map((d) => d.type))]
+                          .slice(0, 8)
+                          .map((t) => (
+                            <label
+                              key={t}
+                              className="mb-1 flex items-center gap-2"
+                            >
+                              <Checkbox
+                                checked={selectedTypes.includes(t)}
+                                onCheckedChange={() =>
+                                  setSelectedTypes((prev) =>
+                                    prev.includes(t)
+                                      ? prev.filter((x) => x !== t)
+                                      : [...prev, t]
+                                  )
+                                }
+                              />
+                              <span>{t}</span>
+                            </label>
+                          ))}
                       </div>
                       <div>
-                        <div className="mb-2 text-xs font-medium text-gray-500">Tags</div>
-                        {[...new Set(documentsState.flatMap(d => d.tags ?? []))].slice(0,10).map((t) => (
-                          <label key={t} className="mb-1 flex items-center gap-2">
-                            <Checkbox checked={selectedTags.includes(t)} onCheckedChange={() => setSelectedTags((prev) => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} />
-                            <span>{t}</span>
-                          </label>
-                        ))}
+                        <div className="mb-2 text-xs font-medium text-gray-500">
+                          Tags
+                        </div>
+                        {[
+                          ...new Set(
+                            documentsState.flatMap((d) => d.tags ?? [])
+                          ),
+                        ]
+                          .slice(0, 10)
+                          .map((t) => (
+                            <label
+                              key={t}
+                              className="mb-1 flex items-center gap-2"
+                            >
+                              <Checkbox
+                                checked={selectedTags.includes(t)}
+                                onCheckedChange={() =>
+                                  setSelectedTags((prev) =>
+                                    prev.includes(t)
+                                      ? prev.filter((x) => x !== t)
+                                      : [...prev, t]
+                                  )
+                                }
+                              />
+                              <span>{t}</span>
+                            </label>
+                          ))}
                       </div>
                     </div>
                     <div className="mt-3 flex justify-end">
-                      <Button size="sm" onClick={() => { setFiltersOpen(false); track({ name: "documents_filters_apply" }); }}>Apply</Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setFiltersOpen(false);
+                          track({ name: "documents_filters_apply" });
+                        }}
+                      >
+                        Apply
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -193,11 +410,26 @@ export default function DocumentsPage() {
                 </Button>
                 {sortOpen && (
                   <div className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-md border bg-white shadow-md">
-                    {["Newest","Name","Category","AI relevance"].map((opt) => (
-                      <button key={opt} className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${sortBy === opt ? "text-ht-primary" : ""}`} onClick={() => { setSortBy(opt as any); setSortOpen(false); track({ name: "documents_sort", props: { sortBy: opt } }); }}>
-                        {opt}
-                      </button>
-                    ))}
+                    {["Newest", "Name", "Category", "AI relevance"].map(
+                      (opt) => (
+                        <button
+                          key={opt}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+                            sortBy === opt ? "text-ht-primary" : ""
+                          }`}
+                          onClick={() => {
+                            setSortBy(opt as any);
+                            setSortOpen(false);
+                            track({
+                              name: "documents_sort",
+                              props: { sortBy: opt },
+                            });
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      )
+                    )}
                   </div>
                 )}
               </div>
@@ -222,13 +454,41 @@ export default function DocumentsPage() {
             </div>
           </div>
 
-          {/* Dropzone + Documents */}
+          {/* Uploader and Search Components */}
           <div className="flex-1 p-6 overflow-y-auto">
+            {showUploader && (
+              <div className="mb-6">
+                <DocumentUploader
+                  onUploadSuccess={(documentId) => {
+                    console.log("Document uploaded:", documentId);
+                    setShowUploader(false);
+                    // Refresh the page or update state
+                    window.location.reload();
+                  }}
+                />
+              </div>
+            )}
+
+            {showSearch && (
+              <div className="mb-6">
+                <DocumentSearch />
+              </div>
+            )}
+
+            {showKnowledge && (
+              <div className="mb-6">
+                <KnowledgeManager />
+              </div>
+            )}
+
             <Dropzone
               className="mb-6"
               plan={plan}
               onFilesAccepted={(files) => {
-                track({ name: "documents_upload_drop", props: { count: files.length } });
+                track({
+                  name: "documents_upload_drop",
+                  props: { count: files.length },
+                });
                 // Mock insert new docs to top of list
                 const newDocs = files.map((f, idx) => ({
                   id: `${Date.now()}-${idx}`,
@@ -244,7 +504,11 @@ export default function DocumentsPage() {
               }}
             />
 
-            <div className={`grid gap-6 ${previewId ? "lg:grid-cols-[1fr_360px]" : "lg:grid-cols-1"}`}>
+            <div
+              className={`grid gap-6 ${
+                previewId ? "lg:grid-cols-[1fr_360px]" : "lg:grid-cols-1"
+              }`}
+            >
               <div>
                 {view === "list" ? (
                   <div className="space-y-2">
@@ -258,10 +522,32 @@ export default function DocumentsPage() {
                         status={doc.status as any}
                         updatedAt={doc.dateAdded}
                         variant="list"
-                        onOpen={() => { setPreviewId(doc.id); track({ name: "documents_open", props: { id: doc.id } }); }}
-                        onPreview={() => { setPreviewId(doc.id); track({ name: "documents_preview", props: { id: doc.id } }); }}
-                        onEdit={() => track({ name: "documents_edit", props: { id: doc.id } })}
-                        onDelete={() => track({ name: "documents_delete", props: { id: doc.id } })}
+                        onOpen={() => {
+                          setPreviewId(doc.id);
+                          track({
+                            name: "documents_open",
+                            props: { id: doc.id },
+                          });
+                        }}
+                        onPreview={() => {
+                          setPreviewId(doc.id);
+                          track({
+                            name: "documents_preview",
+                            props: { id: doc.id },
+                          });
+                        }}
+                        onEdit={() =>
+                          track({
+                            name: "documents_edit",
+                            props: { id: doc.id },
+                          })
+                        }
+                        onDelete={() =>
+                          track({
+                            name: "documents_delete",
+                            props: { id: doc.id },
+                          })
+                        }
                       />
                     ))}
                   </div>
@@ -277,10 +563,32 @@ export default function DocumentsPage() {
                         status={doc.status as any}
                         updatedAt={doc.dateAdded}
                         variant="grid"
-                        onOpen={() => { setPreviewId(doc.id); track({ name: "documents_open", props: { id: doc.id } }); }}
-                        onPreview={() => { setPreviewId(doc.id); track({ name: "documents_preview", props: { id: doc.id } }); }}
-                        onEdit={() => track({ name: "documents_edit", props: { id: doc.id } })}
-                        onDelete={() => track({ name: "documents_delete", props: { id: doc.id } })}
+                        onOpen={() => {
+                          setPreviewId(doc.id);
+                          track({
+                            name: "documents_open",
+                            props: { id: doc.id },
+                          });
+                        }}
+                        onPreview={() => {
+                          setPreviewId(doc.id);
+                          track({
+                            name: "documents_preview",
+                            props: { id: doc.id },
+                          });
+                        }}
+                        onEdit={() =>
+                          track({
+                            name: "documents_edit",
+                            props: { id: doc.id },
+                          })
+                        }
+                        onDelete={() =>
+                          track({
+                            name: "documents_delete",
+                            props: { id: doc.id },
+                          })
+                        }
                       />
                     ))}
                   </div>
@@ -291,16 +599,26 @@ export default function DocumentsPage() {
                 <aside className="hidden lg:block">
                   <div className="sticky top-6 rounded-lg border bg-white p-4">
                     {(() => {
-                      const doc = documentsState.find(d => d.id === previewId);
+                      const doc = documentsState.find(
+                        (d) => d.id === previewId
+                      );
                       if (!doc) return null;
                       return (
                         <div>
                           <div className="mb-3 flex items-start justify-between">
                             <div>
-                              <div className="truncate text-sm text-gray-900">{doc.name}</div>
-                              <div className="text-xs text-gray-500">{doc.type}</div>
+                              <div className="truncate text-sm text-gray-900">
+                                {doc.name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {doc.type}
+                              </div>
                             </div>
-                            <button className="text-gray-400 hover:text-gray-600" aria-label="Close preview" onClick={() => setPreviewId(null)}>
+                            <button
+                              className="text-gray-400 hover:text-gray-600"
+                              aria-label="Close preview"
+                              onClick={() => setPreviewId(null)}
+                            >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
@@ -312,31 +630,75 @@ export default function DocumentsPage() {
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
                               <span className="text-gray-500">Category</span>
-                              <span className="text-gray-800">{doc.category || "—"}</span>
+                              <span className="text-gray-800">
+                                {doc.category || "—"}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-gray-500">Status</span>
-                              <span className="text-gray-800">{doc.status || "—"}</span>
+                              <span className="text-gray-800">
+                                {doc.status || "—"}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-gray-500">Added</span>
-                              <span className="text-gray-800">{doc.dateAdded}</span>
+                              <span className="text-gray-800">
+                                {doc.dateAdded}
+                              </span>
                             </div>
-                            {!!(doc.tags?.length) && (
+                            {!!doc.tags?.length && (
                               <div>
                                 <div className="text-gray-500">Tags</div>
                                 <div className="mt-1 flex flex-wrap gap-1">
-                                  {doc.tags!.map(t => (
-                                    <span key={t} className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{t}</span>
+                                  {doc.tags!.map((t) => (
+                                    <span
+                                      key={t}
+                                      className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                                    >
+                                      {t}
+                                    </span>
                                   ))}
                                 </div>
                               </div>
                             )}
                           </div>
                           <div className="mt-4 grid grid-cols-3 gap-2">
-                            <Button size="sm" className="bg-ht-primary text-white" onClick={() => track({ name: "ai_explain", props: { id: doc.id } })}>Explain</Button>
-                            <Button size="sm" variant="secondary" onClick={() => track({ name: "ai_summarize", props: { id: doc.id } })}>Summarize</Button>
-                            <Button size="sm" variant="outline" onClick={() => track({ name: "ai_extract", props: { id: doc.id } })}>Extract</Button>
+                            <Button
+                              size="sm"
+                              className="bg-ht-primary text-white"
+                              onClick={() =>
+                                track({
+                                  name: "ai_explain",
+                                  props: { id: doc.id },
+                                })
+                              }
+                            >
+                              Explain
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() =>
+                                track({
+                                  name: "ai_summarize",
+                                  props: { id: doc.id },
+                                })
+                              }
+                            >
+                              Summarize
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                track({
+                                  name: "ai_extract",
+                                  props: { id: doc.id },
+                                })
+                              }
+                            >
+                              Extract
+                            </Button>
                           </div>
                         </div>
                       );

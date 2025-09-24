@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircle, Send, Globe } from "lucide-react";
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import ChatMessage from "@/components/chat-message";
 
 interface ChatInterfaceProps {
@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
 interface Message {
   id: string;
   type: "user" | "ai";
-  content: string | React.ReactNode;
+  content: string;
   timestamp: string;
 }
 
@@ -80,7 +80,7 @@ export default function ChatInterface({
     setInputValue(question);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
