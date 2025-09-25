@@ -21,7 +21,7 @@ export default function WelcomePage() {
             {/* Welcome Message */}
             <h1 className="type-h2 text-gray-900 mb-4">Welcome, rayan!</h1>
             <p className="font-gill-sans-light text-gray-600 mb-8 text-lg leading-relaxed">
-              What's your vibe? A few fun questions and we'll craft your unique match.
+              What&apos;s your vibe? A few fun questions and we&apos;ll craft your unique match.
             </p>
 
             {/* Action Buttons */}

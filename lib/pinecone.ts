@@ -22,11 +22,30 @@ export interface DocumentMetadata {
   starred?: boolean;
   category?: string;
   tags?: string[];
-  status?: "Processing" | "Urgent" | "Expiring" | "Ready" | "Error";
+  status?: string;
   userId?: string;
   fileSize?: number;
   mimeType?: string;
   uploadDate?: string;
+  documentId?: string;
+  priority?: string;
+  source?: string;
+  url?: string;
+  originalUrl?: string;
+  title?: string;
+  contentType?: string;
+  chunkIndex?: number;
+  chunkCount?: number;
+  hash?: string;
+  contentHash?: string;
+  wordCount?: number;
+  charCount?: number;
+  accessedAt?: string;
+  ingestedAt?: string;
+  version?: string;
+  namespace?: string;
+  etag?: string;
+  lastModified?: string;
 }
 
 export interface DocumentChunk {
@@ -202,13 +221,14 @@ export class PineconeService {
   }
 
   // Knowledge Base Methods (for general RAG content)
-  async upsertKnowledgeContent(documents: DocumentChunk[]) {
+  async upsertKnowledgeContent(documents: DocumentChunk[], namespace: string = DEFAULT_KNOWLEDGE_NAMESPACE) {
     try {
       // Process in batches using integrated inference upserts
       // Pinecone integrated inference `upsertRecords` has a hard cap of 96 items
       const BATCH_SIZE = 96;
       const BATCH_DELAY_MS = Number(process.env.PINECONE_BATCH_DELAY_MS ?? 12000);
       const results: any[] = [];
+      const targetNamespace = namespace || DEFAULT_KNOWLEDGE_NAMESPACE;
 
       for (let i = 0; i < documents.length; i += BATCH_SIZE) {
         const batch = documents.slice(i, i + BATCH_SIZE);
@@ -217,21 +237,10 @@ export class PineconeService {
         const records = batch.map((d) => ({
           id: d.id,
           chunk_text: d.chunk_text,
-          document_id: d.metadata.id,
-          name: d.metadata.name,
-          type: d.metadata.type,
-          dateAdded: d.metadata.dateAdded,
-          starred: d.metadata.starred,
-          category: d.metadata.category,
-          tags: d.metadata.tags,
-          status: d.metadata.status,
-          userId: d.metadata.userId,
-          fileSize: d.metadata.fileSize,
-          mimeType: d.metadata.mimeType,
-          uploadDate: d.metadata.uploadDate,
+          ...this.flattenDocumentMetadata(d.metadata, targetNamespace),
         }));
 
-        const ns: any = this.knowledgeBaseIndex.namespace('general') as any;
+        const ns: any = this.knowledgeBaseIndex.namespace(targetNamespace) as any;
         if (typeof ns.upsertRecords === 'function') {
           const result = await ns.upsertRecords(records);
           results.push(result);
@@ -247,22 +256,11 @@ export class PineconeService {
             id: d.id,
             values: (embeds as any).data[i].values,
             metadata: {
-              document_id: d.metadata.id,
-              name: d.metadata.name,
-              type: d.metadata.type,
-              dateAdded: d.metadata.dateAdded,
-              starred: d.metadata.starred,
-              category: d.metadata.category,
-              tags: d.metadata.tags,
-              status: d.metadata.status,
-              userId: d.metadata.userId,
-              fileSize: d.metadata.fileSize,
-              mimeType: d.metadata.mimeType,
-              uploadDate: d.metadata.uploadDate,
+              ...this.flattenDocumentMetadata(d.metadata, targetNamespace),
               chunk_text: d.chunk_text,
             },
           }));
-          const result = await this.knowledgeBaseIndex.namespace('general').upsert(vectors as any);
+          const result = await this.knowledgeBaseIndex.namespace(targetNamespace).upsert(vectors as any);
           results.push(result);
         }
 
@@ -455,11 +453,11 @@ export class PineconeService {
     }
   }
 
-  async listKnowledgeDocuments(options: { limit?: number; paginationToken?: string } = {}) {
-    const { limit = 20, paginationToken } = options;
+  async listKnowledgeDocuments(options: { limit?: number; paginationToken?: string; namespace?: string } = {}) {
+    const { limit = 20, paginationToken, namespace = 'general' } = options;
 
     try {
-      const ns: any = this.knowledgeBaseIndex.namespace('general') as any;
+      const ns: any = this.knowledgeBaseIndex.namespace(namespace) as any;
 
       if (typeof ns.listPaginated !== 'function' || typeof ns.fetch !== 'function') {
         console.warn('Knowledge namespace does not support listPaginated/fetch operations; returning empty document list.');
@@ -496,7 +494,7 @@ export class PineconeService {
         for (let i = 0; i < ids.length; i += 100) {
           const batchIds = ids.slice(i, i + 100);
           const fetchResponse = await ns.fetch(batchIds);
-          const namespaceName = fetchResponse?.namespace || 'general';
+          const namespaceName = fetchResponse?.namespace || namespace;
           const records = fetchResponse?.records || {};
 
           for (const recordId of Object.keys(records)) {
@@ -712,6 +710,40 @@ export class PineconeService {
     }
 
     return bullets;
+  }
+
+  private flattenDocumentMetadata(metadata: DocumentMetadata, fallbackNamespace: string) {
+    return {
+      document_id: metadata.documentId ?? metadata.id,
+      name: metadata.name,
+      type: metadata.type,
+      dateAdded: metadata.dateAdded,
+      starred: metadata.starred,
+      category: metadata.category,
+      tags: metadata.tags,
+      status: metadata.status,
+      userId: metadata.userId,
+      fileSize: metadata.fileSize,
+      mimeType: metadata.mimeType ?? metadata.contentType,
+      uploadDate: metadata.uploadDate ?? metadata.ingestedAt,
+      source: metadata.source,
+      url: metadata.url,
+      originalUrl: metadata.originalUrl,
+      title: metadata.title ?? metadata.name,
+      contentType: metadata.contentType ?? metadata.mimeType,
+      chunkIndex: metadata.chunkIndex,
+      chunkCount: metadata.chunkCount,
+      hash: metadata.hash ?? metadata.contentHash,
+      contentHash: metadata.contentHash ?? metadata.hash,
+      wordCount: metadata.wordCount,
+      charCount: metadata.charCount,
+      accessedAt: metadata.accessedAt,
+      ingestedAt: metadata.ingestedAt ?? metadata.uploadDate,
+      version: metadata.version,
+      namespace: metadata.namespace ?? fallbackNamespace,
+      etag: metadata.etag,
+      lastModified: metadata.lastModified,
+    };
   }
 }
 

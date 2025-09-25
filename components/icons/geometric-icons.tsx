@@ -122,9 +122,11 @@ export const SaveIcon: React.FC<IconProps> = ({ className = "", size = 40 }) => 
   </svg>
 );
 
-export default {
+const GeometricIcons = {
   ChatIcon,
   ProfileIcon,
   InsightsIcon,
   SaveIcon,
 };
+
+export default GeometricIcons;

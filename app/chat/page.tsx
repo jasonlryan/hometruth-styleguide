@@ -35,8 +35,8 @@ export default function ChatPage() {
 
           {/* Chat Container in Card */}
           <div className="flex-1 w-[90%] mx-auto px-6 py-4">
-            <Card className="shadow-xl border-0 bg-white ring-1 ring-gray-200 h-[calc(100vh-220px)]">
-              <CardContent className="p-0 h-full">
+            <Card className="shadow-xl border-0 bg-white ring-1 ring-gray-200 h-[calc(100svh-220px)]">
+              <CardContent className="p-0 h-full flex flex-col min-h-0">
                 <ChatContainer showHistory={true} title="" />
               </CardContent>
             </Card>

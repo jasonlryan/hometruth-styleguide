@@ -21,7 +21,7 @@ export default function CompletePage() {
             {/* Thank You Message */}
             <h1 className="type-h2 text-gray-900 mb-4">Thanks for sharing!</h1>
             <p className="font-gill-sans-light text-gray-600 mb-8 text-lg leading-relaxed">
-              We've used your answers to customize your dashboard, insights, and tone.
+              We&apos;ve used your answers to customize your dashboard, insights, and tone.
               You can change your preferences anytime in Settings.
             </p>
 

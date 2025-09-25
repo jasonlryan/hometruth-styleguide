@@ -86,7 +86,7 @@ export default function HomeTruthLanding() {
                       <div className="flex justify-start">
                         <div className="bg-gray-100 rounded-lg p-3 max-w-md">
                           <p className="text-sm text-gray-800">
-                            Hi! I'm your property assistant. What would you like
+                            Hi! I&apos;m your property assistant. What would you like
                             to know?
                           </p>
                         </div>
@@ -100,7 +100,7 @@ export default function HomeTruthLanding() {
                         <div className="bg-gray-100 rounded-lg p-3 max-w-md">
                           <p className="text-sm text-gray-800">
                             Leasehold means you own the property for a fixed
-                            period, but not the land it's built on. The land
+                            period, but not the land it&apos;s built on. The land
                             belongs to the freeholder...
                           </p>
                         </div>
@@ -121,7 +121,7 @@ export default function HomeTruthLanding() {
                           variant="secondary"
                           className="cursor-pointer hover:bg-[#00BFFF] hover:text-white transition-colors"
                         >
-                          What's my property worth?
+                          What&apos;s my property worth?
                         </Badge>
                         <Badge
                           variant="secondary"

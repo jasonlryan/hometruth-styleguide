@@ -36,7 +36,7 @@ export default function ProFeatureCard({
         {examples && (
           <div className="space-y-1 type-caption text-gray-500">
             {examples.map((example, index) => (
-              <p key={index} className="line-clamp-1">"{example}"</p>
+              <p key={index} className="line-clamp-1">&ldquo;{example}&rdquo;</p>
             ))}
           </div>
         )}

@@ -137,7 +137,7 @@ export function MotivationsStep({ data, onDataChange }: StepProps) {
   return (
     <div className="space-y-4">
       <p className="font-gill-sans-light text-gray-600 text-center mb-6">
-        What's motivating you to find a new home?
+        What&apos;s motivating you to find a new home?
       </p>
       
       <div className="grid grid-cols-1 gap-3">

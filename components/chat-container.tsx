@@ -417,7 +417,7 @@ export default function ChatContainer({
         />
       )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {showHistory && (
@@ -449,7 +449,32 @@ export default function ChatContainer({
           </div>
         </div>
 
-        <div className="bg-white border-b border-gray-200 p-4">
+        <div className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50">
+          <div aria-live="polite" role="status" className="sr-only">
+            {isLoading ? "HomeTruth is responding" : ""}
+          </div>
+          {messages.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-gray-500 font-gill-sans-light">
+              Start a conversation to see answers here.
+            </div>
+          ) : (
+            messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                type={message.role === "user" ? "user" : "ai"}
+                content={message.content}
+                timestamp={formatTimestamp(message.createdAt)}
+                showCopyButton={message.role === "assistant" && Boolean(message.content)}
+                isStreaming={message.isStreaming}
+                sources={message.sources}
+                onCopy={() => handleCopy(message.content)}
+              />
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="bg-white border-t border-gray-200 p-4 pb-[env(safe-area-inset-bottom)]">
           <div className="space-y-3">
             <div className="flex space-x-2">
               <Input
@@ -498,31 +523,6 @@ export default function ChatContainer({
               )}
             </div>
           </div>
-        </div>
-
-        <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
-          <div aria-live="polite" role="status" className="sr-only">
-            {isLoading ? "HomeTruth is responding" : ""}
-          </div>
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-500 font-gill-sans-light">
-              Start a conversation to see answers here.
-            </div>
-          ) : (
-            messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                type={message.role === "user" ? "user" : "ai"}
-                content={message.content}
-                timestamp={formatTimestamp(message.createdAt)}
-                showCopyButton={message.role === "assistant" && Boolean(message.content)}
-                isStreaming={message.isStreaming}
-                sources={message.sources}
-                onCopy={() => handleCopy(message.content)}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
         </div>
       </div>
     </div>

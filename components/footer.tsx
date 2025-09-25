@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 interface FooterProps {
@@ -18,9 +19,11 @@ export default function Footer({
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src="/images/hometruth-logo-dark.png"
                       alt="HomeTruth - Your Personal Property Assistant"
+                      width={180}
+                      height={48}
                       className="h-12 w-auto"
                     />
                   </div>
@@ -113,9 +116,11 @@ export default function Footer({
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="flex items-center">
-                <img
+                <Image
                   src="/images/hometruth-logo-dark.png"
                   alt="HomeTruth - Your Personal Property Assistant"
+                  width={180}
+                  height={48}
                   className="h-12 w-auto"
                 />
               </div>

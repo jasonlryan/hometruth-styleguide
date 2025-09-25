@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 import { Home } from "lucide-react";
 
@@ -107,10 +108,13 @@ export default function Header({
       <div className="w-full px-4 py-4 flex items-center justify-between">
         <div className="flex items-center flex-shrink-0">
           <Link href="/" className="flex items-center">
-            <img
+            <Image
               src="/images/hometruth-logo.png"
               alt="HomeTruth - Your Personal Property Assistant"
+              width={196}
+              height={56}
               className="h-14 w-auto"
+              priority
             />
           </Link>
         </div>

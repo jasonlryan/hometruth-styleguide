@@ -190,7 +190,9 @@ export default function KnowledgeAdminPage() {
   }, [kbStats]);
 
   const loadDocuments = useCallback(
-    async ({ cursor, append }: { cursor?: string | null; append?: boolean } = {}) => {
+    async (
+      { cursor, append, namespace }: { cursor?: string | null; append?: boolean; namespace?: string } = {},
+    ) => {
       const effectiveCursor = cursor ?? (append ? docsCursor ?? undefined : undefined);
 
       if (append && !effectiveCursor) {
@@ -209,6 +211,10 @@ export default function KnowledgeAdminPage() {
         params.set("limit", "20");
         if (effectiveCursor) {
           params.set("cursor", effectiveCursor);
+        }
+        // Default to 'general'; allow switching to 'urls' to surface scraped pages
+        if (namespace) {
+          params.set("namespace", namespace);
         }
 
         const response = await fetch(
@@ -307,7 +313,12 @@ export default function KnowledgeAdminPage() {
 
   useEffect(() => {
     if (activeView === "docs" && !docsInitialized && !docsLoading) {
-      loadDocuments();
+      // Load both namespaces: show scraped URL docs first
+      (async () => {
+        await loadDocuments({ namespace: "urls" });
+        // then append general so both appear
+        await loadDocuments({ namespace: "general", append: true });
+      })();
     }
   }, [activeView, docsInitialized, docsLoading, loadDocuments]);
 
@@ -505,9 +516,11 @@ export default function KnowledgeAdminPage() {
         setLastUpload({
           documentId: uploadedDocId,
           chunks: data.chunksUploaded,
-          totalRecords:
-            statsFromResponse?.totalRecordCount ??
-            statsFromResponse?.totalVectorCount,
+          totalRecords: (typeof statsFromResponse?.totalRecordCount === 'number'
+            ? statsFromResponse?.totalRecordCount
+            : typeof statsFromResponse?.totalVectorCount === 'number'
+              ? (statsFromResponse as any).totalVectorCount
+              : undefined),
           timestamp: new Date().toISOString(),
         });
         setDocsInitialized(false);
