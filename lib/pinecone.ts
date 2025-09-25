@@ -613,6 +613,35 @@ export class PineconeService {
     }
   }
 
+  // Fetch all chunks for a given documentId (for preview/inspection)
+  async getKnowledgeDocumentChunks(documentId: string, namespace: string = 'urls') {
+    try {
+      const ns: any = this.knowledgeBaseIndex.namespace(namespace) as any;
+
+      // Preferred: record search with filter
+      if (typeof ns.searchRecords === 'function') {
+        const res = await ns.searchRecords({
+          query: { topK: 1000, inputs: { text: documentId } },
+          includeMetadata: true,
+          filter: { document_id: { $eq: documentId } },
+        });
+        return res?.matches || [];
+      }
+
+      // Fallback: vector query with filter using a dummy vector
+      const res = await this.knowledgeBaseIndex.namespace(namespace).query({
+        topK: 1000,
+        vector: new Array(1024).fill(0),
+        includeMetadata: true,
+        filter: { document_id: { $eq: documentId } },
+      } as any);
+      return res?.matches || [];
+    } catch (error) {
+      console.error('Error fetching knowledge document chunks:', error);
+      throw error;
+    }
+  }
+
   private buildFilter(filters?: RetrievalFilters) {
     if (!filters) return undefined;
 

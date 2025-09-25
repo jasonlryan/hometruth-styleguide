@@ -113,6 +113,7 @@ export default function KnowledgeAdminPage() {
   const [docsLoadingMore, setDocsLoadingMore] = useState(false);
   const [docsError, setDocsError] = useState<string | null>(null);
   const [docsInitialized, setDocsInitialized] = useState(false);
+  const [preview, setPreview] = useState<{ documentId: string; chunks: { id: string; chunkText: string; wordCount?: number; charCount?: number; chunkIndex: number; chunkCount?: number }[] } | null>(null);
 
   const feedbackStyle = useMemo(() => {
     if (!uploadFeedback) return "";
@@ -1368,7 +1369,29 @@ export default function KnowledgeAdminPage() {
                           )}
                         </div>
 
-                        <div className="mt-4 flex flex-col items-end gap-2 md:mt-0 md:min-w-[140px]">
+                <div className="mt-4 flex flex-col items-end gap-2 md:mt-0 md:min-w-[220px]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={async () => {
+                      try {
+                        const params = new URLSearchParams();
+                        params.set('namespace', doc.namespace || 'urls');
+                        params.set('previewId', doc.documentId);
+                        const res = await fetch(`/api/knowledge/documents?${params.toString()}`);
+                        const data = await res.json();
+                        if (data.success) {
+                          setPreview({ documentId: doc.documentId, chunks: data.chunks });
+                        }
+                      } catch (e) {
+                        console.error('Failed to preview document', e);
+                      }
+                    }}
+                  >
+                    <FileText className="h-3 w-3" /> Preview
+                  </Button>
                           {doc.priority && (
                             <Badge variant={priorityVariant} className="uppercase">
                               {doc.priority}
@@ -1427,6 +1450,34 @@ export default function KnowledgeAdminPage() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {preview && (
+          <Card className="border-blue-100 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Preview: {preview.documentId}
+              </CardTitle>
+              <div className="text-sm text-muted-foreground">
+                {preview.chunks.length} chunks • words ~{preview.chunks.reduce((a,c)=>a+(c.wordCount||0),0).toLocaleString()} • chars ~{preview.chunks.reduce((a,c)=>a+(c.charCount||0),0).toLocaleString()}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {preview.chunks
+                .sort((a,b)=>a.chunkIndex-b.chunkIndex)
+                .slice(0,5)
+                .map(c => (
+                  <div key={c.id} className="rounded border p-3 text-sm">{c.chunkText.slice(0,500)}{c.chunkText.length>500?'…':''}</div>
+                ))}
+              {preview.chunks.length>5 && (
+                <div className="text-xs text-muted-foreground">Showing first 5 chunks</div>
+              )}
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={()=>setPreview(null)}>Close</Button>
+              </div>
             </CardContent>
           </Card>
         )}
