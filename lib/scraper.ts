@@ -1,6 +1,21 @@
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
-import pdfParse from 'pdf-parse';
+type PdfParseFn = (data: Buffer, options?: { max?: number }) => Promise<{ text: string }>;
+
+let pdfParseFnPromise: Promise<PdfParseFn> | null = null;
+
+async function loadPdfParser(): Promise<PdfParseFn> {
+  if (!pdfParseFnPromise) {
+    pdfParseFnPromise = import('pdf-parse/lib/pdf-parse.js').then((mod) => {
+      const fn = (mod as unknown as { default?: PdfParseFn }).default ?? (mod as unknown as PdfParseFn);
+      if (typeof fn !== 'function') {
+        throw new Error('Failed to load pdf-parse module');
+      }
+      return fn;
+    });
+  }
+  return pdfParseFnPromise;
+}
 
 export interface ScrapedContent {
   title: string;
@@ -277,6 +292,7 @@ export class WebScraper {
   }
 
   private static async extractPdfText(buffer: Buffer, maxPages: number) {
+    const pdfParse = await loadPdfParser();
     const data = await pdfParse(buffer, { max: maxPages });
     return data.text || '';
   }
