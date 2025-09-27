@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { Globe, Send, History, Plus } from "lucide-react";
 
-import ChatHistory, { type ChatHistorySession } from "@/components/chat-history";
+import ChatHistory, {
+  type ChatHistorySession,
+} from "@/components/chat-history";
 import ChatMessage, { type ChatSource } from "@/components/chat-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +38,10 @@ const STORAGE_KEY = "ht.chat.sessions";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function generateId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -49,9 +60,13 @@ function deriveTitle(messages: ChatMessageRecord[]): string {
 }
 
 function derivePreview(messages: ChatMessageRecord[]): string {
-  const latestAssistant = [...messages].reverse().find((message) => message.role === "assistant" && message.content);
+  const latestAssistant = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant" && message.content);
   if (!latestAssistant) {
-    const latestUser = [...messages].reverse().find((message) => message.role === "user" && message.content);
+    const latestUser = [...messages]
+      .reverse()
+      .find((message) => message.role === "user" && message.content);
     if (!latestUser) return "";
     const preview = latestUser.content.trim();
     return preview.length > 70 ? `${preview.slice(0, 67)}…` : preview;
@@ -92,7 +107,10 @@ function formatTimestamp(timestamp: number) {
   }
 }
 
-function parseEventChunk(rawEvent: string, onEvent: (event: string, payload: unknown) => void) {
+function parseEventChunk(
+  rawEvent: string,
+  onEvent: (event: string, payload: unknown) => void
+) {
   const trimmed = rawEvent.trim();
   if (!trimmed) return;
 
@@ -122,7 +140,7 @@ function parseEventChunk(rawEvent: string, onEvent: (event: string, payload: unk
 
 async function consumeSSE(
   stream: ReadableStream<Uint8Array>,
-  onEvent: (event: string, payload: unknown) => void,
+  onEvent: (event: string, payload: unknown) => void
 ) {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
@@ -172,16 +190,11 @@ export default function ChatContainer({
   const activeControllerRef = useRef<AbortController | null>(null);
   const currentReplyIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesViewportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const sessions = loadSessionsFromStorage();
     setStoredSessions(sessions);
-
-    if (sessions.length > 0) {
-      const latest = [...sessions].sort((a, b) => b.updatedAt - a.updatedAt)[0];
-      setSessionId(latest.id);
-      setMessages(latest.messages ?? []);
-    }
 
     setIsHydrated(true);
   }, []);
@@ -192,9 +205,14 @@ export default function ChatContainer({
 
     setStoredSessions((prev) => {
       const now = Date.now();
-      const preserved = prev.filter((session) => now - session.updatedAt < SESSION_TTL_MS);
-      const existingIndex = preserved.findIndex((session) => session.id === sessionId);
-      const existing = existingIndex >= 0 ? preserved[existingIndex] : undefined;
+      const preserved = prev.filter(
+        (session) => now - session.updatedAt < SESSION_TTL_MS
+      );
+      const existingIndex = preserved.findIndex(
+        (session) => session.id === sessionId
+      );
+      const existing =
+        existingIndex >= 0 ? preserved[existingIndex] : undefined;
       const title = existing?.title || deriveTitle(messages);
       const updatedSession: StoredSession = {
         id: sessionId,
@@ -216,7 +234,13 @@ export default function ChatContainer({
   }, [messages, sessionId, isHydrated]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const viewport = messagesViewportRef.current;
+    if (!viewport) return;
+
+    viewport.scrollTo({
+      top: viewport.scrollHeight,
+      behavior: messages[messages.length - 1]?.isStreaming ? "auto" : "smooth",
+    });
   }, [messages]);
 
   const sessionSummaries: ChatHistorySession[] = useMemo(
@@ -227,7 +251,7 @@ export default function ChatContainer({
         preview: derivePreview(session.messages),
         updatedAt: session.updatedAt,
       })),
-    [storedSessions],
+    [storedSessions]
   );
 
   const handleSelectSession = (id: string) => {
@@ -258,11 +282,15 @@ export default function ChatContainer({
     setInputValue("");
   };
 
-  const updateCurrentReply = (updater: (message: ChatMessageRecord) => ChatMessageRecord) => {
+  const updateCurrentReply = (
+    updater: (message: ChatMessageRecord) => ChatMessageRecord
+  ) => {
     const replyId = currentReplyIdRef.current;
     if (!replyId) return;
     setMessages((prev) =>
-      prev.map((message) => (message.id === replyId ? updater({ ...message }) : message)),
+      prev.map((message) =>
+        message.id === replyId ? updater({ ...message }) : message
+      )
     );
   };
 
@@ -366,7 +394,8 @@ export default function ChatContainer({
         return;
       }
       console.error("Chat request error:", streamError);
-      const fallback = "Sorry, I could not complete that request. Please try again.";
+      const fallback =
+        "Sorry, I could not complete that request. Please try again.";
       updateCurrentReply((message) => ({
         ...message,
         content: fallback,
@@ -425,7 +454,9 @@ export default function ChatContainer({
                 size="sm"
                 className="bg-[#00BFFF] hover:bg-blue-600 text-white font-gill-sans-light"
                 onClick={toggleHistory}
-                title={isHistoryOpen ? "Hide chat history" : "Show chat history"}
+                title={
+                  isHistoryOpen ? "Hide chat history" : "Show chat history"
+                }
               >
                 <History className="h-4 w-4 mr-2" />
                 {isHistoryOpen ? "Hide History" : "Show History"}
@@ -442,14 +473,21 @@ export default function ChatContainer({
             </Button>
           </div>
           <div className="flex items-center space-x-3">
-            <div className={`w-3 h-3 rounded-full ${isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"}`} />
+            <div
+              className={`w-3 h-3 rounded-full ${
+                isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"
+              }`}
+            />
             <div className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-gill-sans-light">
               {isLoading ? "Responding" : "Online"}
             </div>
           </div>
         </div>
 
-        <div className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50">
+        <div
+          ref={messagesViewportRef}
+          className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50"
+        >
           <div aria-live="polite" role="status" className="sr-only">
             {isLoading ? "HomeTruth is responding" : ""}
           </div>
@@ -464,7 +502,9 @@ export default function ChatContainer({
                 type={message.role === "user" ? "user" : "ai"}
                 content={message.content}
                 timestamp={formatTimestamp(message.createdAt)}
-                showCopyButton={message.role === "assistant" && Boolean(message.content)}
+                showCopyButton={
+                  message.role === "assistant" && Boolean(message.content)
+                }
                 isStreaming={message.isStreaming}
                 sources={message.sources}
                 onCopy={() => handleCopy(message.content)}
@@ -509,7 +549,9 @@ export default function ChatContainer({
 
               {messages.length === 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm text-gray-500 font-gill-sans-light">Try asking:</span>
+                  <span className="text-sm text-gray-500 font-gill-sans-light">
+                    Try asking:
+                  </span>
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion}

@@ -128,6 +128,39 @@
   p, span, div, a, button, input, textarea, label {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   }
+
+  .prose {
+    --tw-prose-body: theme('colors.gray.800');
+    --tw-prose-headings: theme('colors.gray.900');
+    --tw-prose-links: #00BFFF;
+    --tw-prose-links-hover: #0095cc;
+    --tw-prose-code: theme('colors.gray.800');
+    --tw-prose-pre-code: theme('colors.gray.100');
+    --tw-prose-pre-bg: theme('colors.gray.900');
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    @apply max-w-none text-sm leading-relaxed;
+  }
+
+  .prose a {
+    @apply underline-offset-4 transition-colors;
+    word-break: break-word;
+  }
+
+  .prose pre {
+    @apply rounded-md p-4 my-4 overflow-x-auto bg-gray-900 text-gray-100;
+  }
+
+  .prose code {
+    @apply px-1 py-0.5 rounded bg-gray-100 text-sm font-medium text-gray-800;
+  }
+
+  .prose pre code {
+    @apply bg-transparent p-0 text-sm text-gray-100;
+  }
+
+  .prose table {
+    @apply block w-full overflow-x-auto;
+  }
 }
 
 @layer utilities {

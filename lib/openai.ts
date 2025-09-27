@@ -4,7 +4,7 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const DEFAULT_CHAT_MODEL = process.env.OPENAI_MODEL_CHAT || 'gpt-4o-mini';
+const DEFAULT_CHAT_MODEL = process.env.OPENAI_MODEL_CHAT || 'gpt-5';
 const DEFAULT_CHAT_TEMPERATURE = Number(process.env.OPENAI_CHAT_TEMPERATURE ?? 0.35);
 const DEFAULT_MAX_COMPLETION_TOKENS = Number(process.env.MAX_TOKENS ?? 900);
 const DEFAULT_CHAT_SYSTEM_PROMPT = `You are HomeTruth, an AI assistant helping UK homebuyers make informed decisions.
@@ -24,14 +24,14 @@ export class OpenAIService {
   // Analyze document content and suggest metadata
   static async analyzeDocument(text: string, filename: string) {
     try {
-      const response = await client.chat.completions.create({
-        model: "gpt-4o-mini", // Cost-effective model for analysis
-        messages: [
+      const response = await client.responses.create({
+        model: 'gpt-4o-mini', // Cost-effective model for analysis
+        input: [
           {
-            role: "system",
-            content: `You are an expert document analyzer for a homebuying knowledge base. 
+            role: 'system',
+            content: `You are an expert document analyzer for a homebuying knowledge base.
             Analyze the provided document and suggest appropriate metadata.
-            
+
             Return a JSON object with these fields:
             - title: A clear, descriptive title
             - category: One of: "Legal", "Financial", "Property Assessment", "Buying Process", "General"
@@ -39,22 +39,38 @@ export class OpenAIService {
             - source: One of: "Government", "Legal Firm", "Financial Institution", "Internal", "Manual Upload"
             - tags: Array of relevant tags (max 5)
             - summary: Brief summary of the document content
-            
-            Focus on homebuying, property, legal, and financial content.`
+
+            Focus on homebuying, property, legal, and financial content.`,
           },
           {
-            role: "user",
+            role: 'user',
             content: `Analyze this document:
-            
+
             Filename: ${filename}
-            Content: ${text.substring(0, 4000)}`
-          }
+            Content: ${text.substring(0, 4000)}`,
+          },
         ],
         temperature: 0.3, // Lower temperature for more consistent results
-        response_format: { type: "json_object" }
+        response_format: { type: 'json_object' },
       });
 
-      const analysis = JSON.parse(response.choices[0].message.content || '{}');
+      const outputText = response.output_text?.trim()
+        || response.output?.map((item) => {
+          if (!('content' in item) || !Array.isArray(item.content)) {
+            return '';
+          }
+          return item.content
+            .map((part) => {
+              if (part && typeof part === 'object' && 'text' in part && typeof part.text === 'string') {
+                return part.text;
+              }
+              return '';
+            })
+            .join('');
+        }).join('')
+        || '';
+
+      const analysis = JSON.parse(outputText || '{}');
       return {
         success: true,
         ...analysis
@@ -188,49 +204,55 @@ export class OpenAIService {
 
     const userContent = this.composeChatPrompt(question, context);
 
-    const response = await client.chat.completions.create(
+    // GPT-5 Responses API: omit unsupported params like `temperature`
+    const responseStream = await client.responses.stream(
       {
         model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
+        input: [
+          { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
+          { role: 'user', content: [{ type: 'input_text', text: userContent }] },
         ],
-        temperature,
-        max_tokens: maxTokens,
-        stream: true,
+        max_output_tokens: maxTokens,
       },
       { signal },
     );
 
-    let resolveUsage: ((usage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null) => void) | undefined;
-    let rejectUsage: ((error: unknown) => void) | undefined;
-    let usageResolved = false;
-
-    const usage = new Promise<{ prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } | null>((resolve, reject) => {
-      resolveUsage = resolve;
-      rejectUsage = reject;
-    });
+    const usage = (async () => {
+      try {
+        const finalResponse = await responseStream.finalResponse();
+        const usageData = finalResponse?.usage;
+        if (!usageData) {
+          return null;
+        }
+        return {
+          prompt_tokens: usageData.input_tokens,
+          completion_tokens: usageData.output_tokens,
+          total_tokens: usageData.total_tokens,
+        };
+      } catch (error) {
+        throw error;
+      }
+    })();
 
     const stream = (async function* (): AsyncGenerator<string, void, unknown> {
       try {
-        for await (const chunk of response) {
-          if (!usageResolved && chunk?.usage) {
-            usageResolved = true;
-            resolveUsage?.(chunk.usage);
+        for await (const event of responseStream) {
+          if (event.type === 'response.output_text.delta' && event.delta) {
+            yield event.delta;
           }
 
-          const token = chunk?.choices?.[0]?.delta?.content;
-          if (token) {
-            yield token;
+          if (event.type === 'response.refusal.delta' && event.delta) {
+            yield event.delta;
           }
-        }
 
-        if (!usageResolved) {
-          usageResolved = true;
-          resolveUsage?.(null);
+          if (event.type === 'response.error') {
+            const message = event.error?.message || 'OpenAI streaming error';
+            const err = new Error(message);
+            (err as Error & { cause?: unknown }).cause = event.error;
+            throw err;
+          }
         }
       } catch (error) {
-        rejectUsage?.(error);
         throw error;
       }
     })();
