@@ -69,6 +69,16 @@ export interface KnowledgeDocumentSummary {
   namespace?: string;
 }
 
+export interface KnowledgeDocumentChunk {
+  id: string;
+  chunkText: string;
+  chunkIndex: number;
+  chunkCount?: number;
+  wordCount?: number;
+  charCount?: number;
+  metadata?: Record<string, any>;
+}
+
 export type RetrievalMode = 'knowledge' | 'user' | 'hybrid';
 
 export interface RetrievalFilters {
@@ -303,6 +313,209 @@ export class PineconeService {
       return result;
     } catch (error) {
       console.error('Error searching knowledge base:', error);
+      throw error;
+    }
+  }
+
+  namespace(namespace: string) {
+    return this.knowledgeBaseIndex.namespace(namespace);
+  }
+
+  async getKnowledgeDocumentChunks(documentId: string, namespace: string = DEFAULT_KNOWLEDGE_NAMESPACE, topK: number = 1000): Promise<KnowledgeDocumentChunk[]> {
+    try {
+      const targetNamespace = namespace || DEFAULT_KNOWLEDGE_NAMESPACE;
+      const ns: any = this.knowledgeBaseIndex.namespace(targetNamespace) as any;
+
+      const chunks: KnowledgeDocumentChunk[] = [];
+      const seen = new Set<string>();
+      let declaredChunkTotal: number | undefined;
+
+      const parseNumber = (value: unknown) => {
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string') {
+          const parsed = Number(value);
+          return Number.isFinite(parsed) ? parsed : undefined;
+        }
+        return undefined;
+      };
+
+      const extractField = (fields: Record<string, any>, metadata: Record<string, any>, ...keys: string[]) => {
+        for (const key of keys) {
+          if (fields && fields[key] != null) return fields[key];
+          if (metadata && metadata[key] != null) return metadata[key];
+        }
+        return undefined;
+      };
+
+      const materializeChunk = (id: string | undefined, data: { metadata?: Record<string, any>; fields?: Record<string, any> }): KnowledgeDocumentChunk | undefined => {
+        if (!id || seen.has(id)) return undefined;
+        const metadata = data?.metadata ?? {};
+        const fields = data?.fields ?? {};
+        const combined = { ...metadata, ...fields };
+
+        const rawText = extractField(fields, metadata, 'chunk_text', 'text', 'chunkText', 'content');
+        const chunkText = typeof rawText === 'string' ? rawText : rawText != null ? String(rawText) : '';
+
+        const chunkIndexValue = extractField(fields, metadata, 'chunkIndex', 'chunk_index', 'index');
+        const chunkIndex = parseNumber(chunkIndexValue) ?? 0;
+
+        const chunkCountValue = extractField(fields, metadata, 'chunkCount', 'chunk_count', 'totalChunks');
+        const chunkCount = parseNumber(chunkCountValue);
+
+        const wordCountValue = extractField(fields, metadata, 'wordCount', 'word_count');
+        const wordCount = parseNumber(wordCountValue);
+
+        const charCountValue = extractField(fields, metadata, 'charCount', 'char_count');
+        const charCount = parseNumber(charCountValue);
+
+        const normalizedChunk: KnowledgeDocumentChunk = {
+          id,
+          chunkText,
+          chunkIndex,
+          chunkCount,
+          wordCount,
+          charCount,
+          metadata: combined,
+        };
+
+        if (!normalizedChunk.chunkText && wordCount == null && charCount == null && Object.keys(combined).length === 0) {
+          return;
+        }
+
+        if (wordCount == null && chunkText) {
+          const trimmed = chunkText.trim();
+          normalizedChunk.wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
+        }
+
+        if (charCount == null && chunkText) {
+          normalizedChunk.charCount = chunkText.length;
+        }
+
+        chunks.push(normalizedChunk);
+        seen.add(id);
+        return normalizedChunk;
+      };
+
+      if (typeof ns.listPaginated === 'function' && typeof ns.fetch === 'function') {
+        let paginationToken: string | undefined = undefined;
+        let iterations = 0;
+        const MAX_ITERATIONS = 50;
+
+        while (iterations < MAX_ITERATIONS) {
+          iterations += 1;
+
+          const listResponse = await ns.listPaginated({
+            prefix: '',
+            limit: 99,
+            paginationToken,
+          });
+
+          const ids: string[] = (listResponse?.vectors || [])
+            .map((vector: any) => vector?.id)
+            .filter((id: string | undefined): id is string => Boolean(id));
+
+          if (ids.length === 0) {
+            break;
+          }
+
+          const fetchResponse = await ns.fetch(ids);
+          const records = fetchResponse?.records || {};
+
+          Object.entries(records).forEach(([id, record]) => {
+            if (!id) return;
+            const metadata: Record<string, any> = record?.metadata ?? {};
+            const fields: Record<string, any> = record?.fields ?? {};
+            const combined = { ...metadata, ...fields };
+            const recordDocumentId = combined.document_id ?? combined.documentId ?? combined.id;
+            if (recordDocumentId !== documentId) return;
+
+            const chunk = materializeChunk(id, { metadata, fields });
+            const chunkCountCandidate = chunk?.chunkCount ?? parseNumber(combined.chunkCount ?? combined.chunk_count);
+            if (chunkCountCandidate && (!declaredChunkTotal || declaredChunkTotal < chunkCountCandidate)) {
+              declaredChunkTotal = chunkCountCandidate;
+            }
+          });
+
+          if (declaredChunkTotal && chunks.length >= declaredChunkTotal) {
+            break;
+          }
+
+          paginationToken = listResponse?.pagination?.next;
+          if (!paginationToken) {
+            break;
+          }
+        }
+
+        return chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+      }
+
+      if (typeof ns.searchRecords === 'function') {
+        const response = await ns.searchRecords({
+          query: { topK, inputs: { text: documentId } },
+          includeMetadata: true,
+          filter: { document_id: { $eq: documentId } },
+        });
+        if (Array.isArray(response?.hits)) {
+          response.hits.forEach((hit: any) => {
+            if (!hit) return;
+            const id = hit.id ?? hit.vectorId ?? '';
+            const fields: Record<string, any> = hit.fields ?? {};
+            const metadata: Record<string, any> = hit.metadata ?? {};
+            const combined = { ...metadata, ...fields };
+            const recordDocumentId = combined.document_id ?? combined.documentId ?? combined.id;
+            if (recordDocumentId !== documentId) return;
+            const chunk = materializeChunk(id, { metadata, fields });
+            if (chunk?.chunkCount && (!declaredChunkTotal || declaredChunkTotal < chunk.chunkCount)) {
+              declaredChunkTotal = chunk.chunkCount;
+            }
+          });
+        } else if (Array.isArray(response?.matches)) {
+          response.matches.forEach((match: any) => {
+            if (!match) return;
+            const id = match.id ?? '';
+            const metadata: Record<string, any> = match.metadata ?? {};
+            const chunk = materializeChunk(id, { metadata });
+            if (chunk?.chunkCount && (!declaredChunkTotal || declaredChunkTotal < chunk.chunkCount)) {
+              declaredChunkTotal = chunk.chunkCount;
+            }
+          });
+        }
+
+        if (chunks.length > 0) {
+          return chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+        }
+      }
+
+      // Final fallback: embed a lightweight query to satisfy classic vector search APIs
+      const embed = await pc.inference.embed(
+        'llama-text-embed-v2' as any,
+        [documentId],
+        { inputType: 'query', truncate: 'END' } as any
+      );
+
+      const vector = (embed as any)?.data?.[0]?.values;
+      if (!Array.isArray(vector)) {
+        return chunks;
+      }
+
+      const response = await this.knowledgeBaseIndex.namespace(targetNamespace).query({
+        topK,
+        vector,
+        includeMetadata: true,
+        filter: { document_id: { $eq: documentId } },
+      } as any);
+
+      const matches: any[] = Array.isArray(response?.matches) ? response.matches : [];
+      matches.forEach((match) => {
+        if (!match) return;
+        const id = match.id ?? '';
+        const metadata: Record<string, any> = match.metadata ?? {};
+        materializeChunk(id, { metadata });
+      });
+
+      return chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+    } catch (error) {
+      console.error('Error fetching knowledge document chunks:', error);
       throw error;
     }
   }
@@ -609,35 +822,6 @@ export class PineconeService {
       return delRes;
     } catch (error) {
       console.error('Error deleting knowledge document:', error);
-      throw error;
-    }
-  }
-
-  // Fetch all chunks for a given documentId (for preview/inspection)
-  async getKnowledgeDocumentChunks(documentId: string, namespace: string = 'urls') {
-    try {
-      const ns: any = this.knowledgeBaseIndex.namespace(namespace) as any;
-
-      // Preferred: record search with filter
-      if (typeof ns.searchRecords === 'function') {
-        const res = await ns.searchRecords({
-          query: { topK: 1000, inputs: { text: documentId } },
-          includeMetadata: true,
-          filter: { document_id: { $eq: documentId } },
-        });
-        return res?.matches || [];
-      }
-
-      // Fallback: vector query with filter using a dummy vector
-      const res = await this.knowledgeBaseIndex.namespace(namespace).query({
-        topK: 1000,
-        vector: new Array(1024).fill(0),
-        includeMetadata: true,
-        filter: { document_id: { $eq: documentId } },
-      } as any);
-      return res?.matches || [];
-    } catch (error) {
-      console.error('Error fetching knowledge document chunks:', error);
       throw error;
     }
   }

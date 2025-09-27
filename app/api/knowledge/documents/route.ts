@@ -13,19 +13,19 @@ export async function GET(request: NextRequest) {
 
     // Preview mode: return chunks for a specific document
     if (previewId) {
-      const chunks = await pineconeService.getKnowledgeDocumentChunks(previewId, namespace || 'urls');
-      const normalized = chunks.map((m: any) => ({
-        id: m?.id,
-        chunkText:
-          (m?.metadata?.chunk_text || m?.metadata?.chunkText || '').toString(),
-        wordCount: Number(m?.metadata?.wordCount ?? 0) || undefined,
-        charCount: Number(m?.metadata?.charCount ?? 0) || undefined,
-        url:
-          m?.metadata?.url || m?.metadata?.originalUrl || m?.metadata?.sourceUrl,
-        title: m?.metadata?.title || m?.metadata?.name,
-        hash: m?.metadata?.hash || m?.metadata?.contentHash,
-        chunkIndex: Number(m?.metadata?.chunkIndex ?? 0) || 0,
-        chunkCount: Number(m?.metadata?.chunkCount ?? 0) || undefined,
+      const chunks = await pineconeService.getKnowledgeDocumentChunks(
+        previewId,
+        namespace || 'urls'
+      );
+
+      const normalized = chunks.map((chunk) => ({
+        id: chunk.id,
+        chunkText: chunk.chunkText,
+        wordCount: chunk.wordCount,
+        charCount: chunk.charCount,
+        chunkIndex: chunk.chunkIndex,
+        chunkCount: chunk.chunkCount,
+        metadata: chunk.metadata,
       }));
 
       return NextResponse.json({ success: true, chunks: normalized });

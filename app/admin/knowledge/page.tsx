@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogBody,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,6 +40,9 @@ import {
   Trash2,
   Layers,
   Calendar,
+  ExternalLink,
+  Copy,
+  Download,
 } from "lucide-react";
 import { Chatbot } from "@/components/chatbot";
 
@@ -70,6 +81,34 @@ type KnowledgeDocument = {
   source?: string;
   status?: string;
   namespace?: string;
+};
+
+type PreviewChunk = {
+  id: string;
+  chunkText: string;
+  chunkIndex: number;
+  chunkCount?: number;
+  wordCount?: number;
+  charCount?: number;
+  metadata?: Record<string, any>;
+};
+
+type DocumentPreview = {
+  documentId: string;
+  namespace?: string;
+  chunks: PreviewChunk[];
+};
+
+type PreviewSummary = {
+  chunkCount: number;
+  wordTotal: number;
+  charTotal: number;
+};
+
+const EMPTY_PREVIEW_SUMMARY: PreviewSummary = {
+  chunkCount: 0,
+  wordTotal: 0,
+  charTotal: 0,
 };
 
 type AdminView = "search" | "stats" | "bulk" | "export" | "docs";
@@ -113,7 +152,58 @@ export default function KnowledgeAdminPage() {
   const [docsLoadingMore, setDocsLoadingMore] = useState(false);
   const [docsError, setDocsError] = useState<string | null>(null);
   const [docsInitialized, setDocsInitialized] = useState(false);
-  const [preview, setPreview] = useState<{ documentId: string; chunks: { id: string; chunkText: string; wordCount?: number; charCount?: number; chunkIndex: number; chunkCount?: number }[] } | null>(null);
+  const [preview, setPreview] = useState<DocumentPreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<KnowledgeDocument | null>(null);
+  const [previewSummary, setPreviewSummary] = useState<PreviewSummary>(
+    EMPTY_PREVIEW_SUMMARY
+  );
+  const [previewText, setPreviewText] = useState("");
+  const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const copyStatusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const previewRequestRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (copyStatusTimeoutRef.current) {
+        clearTimeout(copyStatusTimeoutRef.current);
+        copyStatusTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  const mergeDocuments = useCallback(
+    (incoming: KnowledgeDocument[], append: boolean) => {
+      setDocuments((prev) => {
+        const base = append ? prev : [];
+        const map = new Map<string, KnowledgeDocument>();
+        for (const doc of base) {
+          map.set(doc.documentId, doc);
+        }
+        for (const doc of incoming) {
+          map.set(doc.documentId, doc);
+        }
+
+        const merged = Array.from(map.values()).sort((a, b) => {
+          const aDate = a.uploadDate ? Date.parse(a.uploadDate) : 0;
+          const bDate = b.uploadDate ? Date.parse(b.uploadDate) : 0;
+          if (aDate && bDate) {
+            return bDate - aDate;
+          }
+          if (aDate) return -1;
+          if (bDate) return 1;
+          return b.documentId.localeCompare(a.documentId);
+        });
+
+        return merged;
+      });
+    },
+    []
+  );
 
   const feedbackStyle = useMemo(() => {
     if (!uploadFeedback) return "";
@@ -192,11 +282,21 @@ export default function KnowledgeAdminPage() {
 
   const loadDocuments = useCallback(
     async (
-      { cursor, append, namespace }: { cursor?: string | null; append?: boolean; namespace?: string } = {},
+      {
+        cursor,
+        append,
+        namespace,
+        fetchAll,
+      }: {
+        cursor?: string | null;
+        append?: boolean;
+        namespace?: string;
+        fetchAll?: boolean;
+      } = {}
     ) => {
       const effectiveCursor = cursor ?? (append ? docsCursor ?? undefined : undefined);
 
-      if (append && !effectiveCursor) {
+      if (append && !effectiveCursor && !fetchAll) {
         return;
       }
 
@@ -207,40 +307,46 @@ export default function KnowledgeAdminPage() {
         setDocsError(null);
       }
 
+      const collected: KnowledgeDocument[] = [];
+      let nextCursorLocal: string | undefined = effectiveCursor;
+      let encounteredError = false;
+
       try {
-        const params = new URLSearchParams();
-        params.set("limit", "20");
-        if (effectiveCursor) {
-          params.set("cursor", effectiveCursor);
-        }
-        // Default to 'general'; allow switching to 'urls' to surface scraped pages
-        if (namespace) {
-          params.set("namespace", namespace);
-        }
+        do {
+          const params = new URLSearchParams();
+          params.set("limit", fetchAll ? "100" : "50");
+          if (nextCursorLocal) {
+            params.set("cursor", nextCursorLocal);
+          }
+          if (namespace) {
+            params.set("namespace", namespace);
+          }
 
-        const response = await fetch(
-          `/api/knowledge/documents?${params.toString()}`
-        );
-        const data = await response.json();
+          const response = await fetch(
+            `/api/knowledge/documents?${params.toString()}`
+          );
+          const data = await response.json();
 
-        if (data.success) {
+          if (!data.success) {
+            encounteredError = true;
+            setDocsError(data.error || "Failed to load documents.");
+            break;
+          }
+
           const incoming: KnowledgeDocument[] = data.documents || [];
-          setDocuments((prev) => {
-            if (append) {
-              const existingIds = new Set(prev.map((doc) => doc.documentId));
-              const merged = [...prev];
-              for (const doc of incoming) {
-                if (!existingIds.has(doc.documentId)) {
-                  merged.push(doc);
-                }
-              }
-              return merged;
-            }
-            return incoming;
-          });
-          setDocsCursor(data.nextPageToken ?? null);
-        } else {
-          setDocsError(data.error || "Failed to load documents.");
+          collected.push(...incoming);
+          nextCursorLocal = data.nextPageToken ?? undefined;
+
+          if (!fetchAll) {
+            mergeDocuments(incoming, Boolean(append));
+            setDocsCursor(nextCursorLocal ?? null);
+            break;
+          }
+        } while (fetchAll && nextCursorLocal);
+
+        if (fetchAll && !encounteredError) {
+          mergeDocuments(collected, Boolean(append));
+          setDocsCursor(nextCursorLocal ?? null);
         }
       } catch (error) {
         console.error("Failed to load knowledge documents:", error);
@@ -254,7 +360,7 @@ export default function KnowledgeAdminPage() {
         }
       }
     },
-    [docsCursor]
+    [docsCursor, mergeDocuments]
   );
 
   const formatFileSize = useCallback((bytes?: number) => {
@@ -275,6 +381,207 @@ export default function KnowledgeAdminPage() {
     return new Date(timestamp).toLocaleString();
   }, []);
 
+  const handleClosePreview = () => {
+    if (copyStatusTimeoutRef.current) {
+      clearTimeout(copyStatusTimeoutRef.current);
+      copyStatusTimeoutRef.current = null;
+    }
+    setIsPreviewOpen(false);
+    setPreview(null);
+    setPreviewDoc(null);
+    setPreviewError(null);
+    setPreviewLoading(false);
+    setPreviewSummary({ ...EMPTY_PREVIEW_SUMMARY });
+    setPreviewText("");
+    setCopyStatus(null);
+  };
+
+  const handlePreview = async (doc: KnowledgeDocument) => {
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
+
+    if (copyStatusTimeoutRef.current) {
+      clearTimeout(copyStatusTimeoutRef.current);
+      copyStatusTimeoutRef.current = null;
+    }
+    setCopyStatus(null);
+    setPreviewDoc(doc);
+    setIsPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewSummary({ ...EMPTY_PREVIEW_SUMMARY });
+    setPreviewText("");
+
+    setPreview({
+      documentId: doc.documentId,
+      namespace: doc.namespace || "urls",
+      chunks: [],
+    });
+
+    try {
+      const params = new URLSearchParams();
+      params.set("namespace", doc.namespace || "urls");
+      params.set("previewId", doc.documentId);
+      const res = await fetch(`/api/knowledge/documents?${params.toString()}`);
+      const data = await res.json();
+
+      if (previewRequestRef.current !== requestId) {
+        return;
+      }
+
+      if (data.success && Array.isArray(data.chunks)) {
+        const chunks: PreviewChunk[] = data.chunks
+          .map((chunk: any) => {
+            if (!chunk) return null;
+            const metadata: Record<string, any> = chunk.metadata ?? {};
+            const rawText =
+              typeof chunk.chunkText === "string"
+                ? chunk.chunkText
+                : typeof metadata.chunk_text === "string"
+                ? metadata.chunk_text
+                : "";
+            let wordCount =
+              typeof chunk.wordCount === "number"
+                ? chunk.wordCount
+                : typeof metadata.wordCount === "number"
+                ? metadata.wordCount
+                : typeof metadata.word_count === "number"
+                ? metadata.word_count
+                : undefined;
+            let charCount =
+              typeof chunk.charCount === "number"
+                ? chunk.charCount
+                : typeof metadata.charCount === "number"
+                ? metadata.charCount
+                : typeof metadata.char_count === "number"
+                ? metadata.char_count
+                : undefined;
+
+            if (wordCount == null) {
+              const trimmed = rawText.trim();
+              wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
+            }
+
+            if (charCount == null) {
+              charCount = rawText.length;
+            }
+
+            return {
+              id: String(chunk.id ?? ""),
+              chunkText: rawText,
+              chunkIndex:
+                typeof chunk.chunkIndex === "number"
+                  ? chunk.chunkIndex
+                  : typeof metadata.chunkIndex === "number"
+                  ? metadata.chunkIndex
+                  : typeof metadata.chunk_index === "number"
+                  ? metadata.chunk_index
+                  : 0,
+              chunkCount:
+                typeof chunk.chunkCount === "number"
+                  ? chunk.chunkCount
+                  : typeof metadata.chunkCount === "number"
+                  ? metadata.chunkCount
+                  : typeof metadata.chunk_count === "number"
+                  ? metadata.chunk_count
+                  : undefined,
+              wordCount,
+              charCount,
+              metadata,
+            } as PreviewChunk;
+          })
+          .filter((chunk: PreviewChunk | null): chunk is PreviewChunk =>
+            Boolean(chunk?.id)
+          );
+
+        const sortedChunks = chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+        const wordTotal = sortedChunks.reduce(
+          (total, chunk) => total + (chunk.wordCount || 0),
+          0
+        );
+        const charTotal = sortedChunks.reduce(
+          (total, chunk) => total + (chunk.charCount || 0),
+          0
+        );
+        const combinedText = sortedChunks
+          .map((chunk) => chunk.chunkText?.trim())
+          .filter((text): text is string => Boolean(text))
+          .join("\n\n");
+
+        setPreview({
+          documentId: doc.documentId,
+          namespace: doc.namespace || "urls",
+          chunks: sortedChunks,
+        });
+        setPreviewSummary({
+          chunkCount: sortedChunks.length,
+          wordTotal,
+          charTotal,
+        });
+        setPreviewText(combinedText);
+
+        if (sortedChunks.length === 0) {
+          setPreviewError("No chunk text was returned for this document.");
+        }
+      } else {
+        setPreviewError(data?.error || "Preview request failed.");
+        setPreview((prev) => (prev ? { ...prev, chunks: [] } : prev));
+      }
+    } catch (e) {
+      if (previewRequestRef.current !== requestId) {
+        return;
+      }
+      console.error("Failed to preview document", e);
+      setPreviewError("Failed to load preview. See console for details.");
+      setPreview((prev) => (prev ? { ...prev, chunks: [] } : prev));
+    } finally {
+      if (previewRequestRef.current === requestId) {
+        setPreviewLoading(false);
+      }
+    }
+  };
+
+  const handleRetryPreview = () => {
+    if (previewDoc) {
+      void handlePreview(previewDoc);
+    }
+  };
+
+  const handleCopyPreview = async () => {
+    if (!previewText) return;
+    try {
+      await navigator.clipboard.writeText(previewText);
+      setCopyStatus("Copied");
+      if (copyStatusTimeoutRef.current) {
+        clearTimeout(copyStatusTimeoutRef.current);
+      }
+      copyStatusTimeoutRef.current = setTimeout(() => {
+        setCopyStatus(null);
+        copyStatusTimeoutRef.current = null;
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy preview", error);
+      setCopyStatus("Copy failed");
+      if (copyStatusTimeoutRef.current) {
+        clearTimeout(copyStatusTimeoutRef.current);
+        copyStatusTimeoutRef.current = null;
+      }
+    }
+  };
+
+  const handleDownloadPreview = () => {
+    if (!previewText) return;
+    const blob = new Blob([previewText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${previewDoc?.documentId || "document-preview"}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
+
   const generalNamespace = useMemo(() => {
     return namespaceStats.find((ns) => ns.name === "general");
   }, [namespaceStats]);
@@ -288,6 +595,31 @@ export default function KnowledgeAdminPage() {
     }
     return null;
   }, [kbStats?.dimension]);
+
+  const previewTitle =
+    previewDoc?.name?.trim() ||
+    preview?.documentId ||
+    previewDoc?.documentId ||
+    "Document preview";
+  const previewNamespace = preview?.namespace;
+  const previewSource = previewDoc?.source;
+  const chunkCountDisplay =
+    previewSummary.chunkCount > 0
+      ? previewSummary.chunkCount
+      : previewDoc?.chunkCount ?? 0;
+  const formattedChunkCount = chunkCountDisplay.toLocaleString();
+  const formattedWordTotal =
+    previewSummary.wordTotal > 0
+      ? previewSummary.wordTotal.toLocaleString()
+      : previewLoading && isPreviewOpen
+      ? "—"
+      : "0";
+  const formattedCharTotal =
+    previewSummary.charTotal > 0
+      ? previewSummary.charTotal.toLocaleString()
+      : previewLoading && isPreviewOpen
+      ? "—"
+      : "0";
 
   const refreshStats = useCallback(async () => {
     try {
@@ -316,9 +648,9 @@ export default function KnowledgeAdminPage() {
     if (activeView === "docs" && !docsInitialized && !docsLoading) {
       // Load both namespaces: show scraped URL docs first
       (async () => {
-        await loadDocuments({ namespace: "urls" });
+        await loadDocuments({ namespace: "urls", fetchAll: true });
         // then append general so both appear
-        await loadDocuments({ namespace: "general", append: true });
+        await loadDocuments({ namespace: "general", append: true, fetchAll: true });
       })();
     }
   }, [activeView, docsInitialized, docsLoading, loadDocuments]);
@@ -1261,9 +1593,10 @@ export default function KnowledgeAdminPage() {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => {
+                  onClick={async () => {
                     setDocsInitialized(false);
-                    loadDocuments();
+                    await loadDocuments({ namespace: 'urls', fetchAll: true });
+                    await loadDocuments({ namespace: 'general', append: true, fetchAll: true });
                   }}
                   disabled={docsLoading}
                 >
@@ -1375,19 +1708,11 @@ export default function KnowledgeAdminPage() {
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    onClick={async () => {
-                      try {
-                        const params = new URLSearchParams();
-                        params.set('namespace', doc.namespace || 'urls');
-                        params.set('previewId', doc.documentId);
-                        const res = await fetch(`/api/knowledge/documents?${params.toString()}`);
-                        const data = await res.json();
-                        if (data.success) {
-                          setPreview({ documentId: doc.documentId, chunks: data.chunks });
-                        }
-                      } catch (e) {
-                        console.error('Failed to preview document', e);
-                      }
+                    disabled={
+                      previewLoading && previewDoc?.documentId === doc.documentId
+                    }
+                    onClick={() => {
+                      void handlePreview(doc);
                     }}
                   >
                     <FileText className="h-3 w-3" /> Preview
@@ -1454,33 +1779,124 @@ export default function KnowledgeAdminPage() {
           </Card>
         )}
 
-        {preview && (
-          <Card className="border-blue-100 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <FileText className="h-5 w-5 text-blue-600" />
-                Preview: {preview.documentId}
-              </CardTitle>
-              <div className="text-sm text-muted-foreground">
-                {preview.chunks.length} chunks • words ~{preview.chunks.reduce((a,c)=>a+(c.wordCount||0),0).toLocaleString()} • chars ~{preview.chunks.reduce((a,c)=>a+(c.charCount||0),0).toLocaleString()}
+        <Dialog
+          open={isPreviewOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleClosePreview();
+            }
+          }}
+          ariaLabel={`Preview for ${previewTitle}`}
+        >
+          <DialogHeader>
+            <div className="flex flex-1 flex-col gap-3">
+              <DialogTitle>
+                <span className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  {previewTitle}
+                </span>
+              </DialogTitle>
+              <DialogDescription>
+                Preview combined document chunks fetched from the knowledge base.
+              </DialogDescription>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                {preview?.documentId && (
+                  <span>Document ID: {preview.documentId}</span>
+                )}
+                {previewNamespace && <span>Namespace: {previewNamespace}</span>}
+                <span>Chunks: {formattedChunkCount}</span>
+                <span>Words: {formattedWordTotal}</span>
+                <span>Characters: {formattedCharTotal}</span>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {preview.chunks
-                .sort((a,b)=>a.chunkIndex-b.chunkIndex)
-                .slice(0,5)
-                .map(c => (
-                  <div key={c.id} className="rounded border p-3 text-sm">{c.chunkText.slice(0,500)}{c.chunkText.length>500?'…':''}</div>
-                ))}
-              {preview.chunks.length>5 && (
-                <div className="text-xs text-muted-foreground">Showing first 5 chunks</div>
+              {previewSource && (
+                <a
+                  href={previewSource}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex max-w-xl items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  <span className="truncate" title={previewSource}>
+                    {previewSource}
+                  </span>
+                </a>
               )}
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={()=>setPreview(null)}>Close</Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex h-full flex-col gap-4">
+              {previewLoading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading document preview…
+                </div>
+              )}
+              {previewError && (
+                <div className="space-y-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <span>{previewError}</span>
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={handleRetryPreview}
+                      disabled={previewLoading || !previewDoc}
+                    >
+                      <RefreshCw className="h-3 w-3" /> Retry
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {!previewLoading && !previewError && (
+                <div className="rounded border border-blue-100 bg-slate-50 p-4 text-sm leading-relaxed text-slate-900">
+                  {previewText ? (
+                    <pre className="whitespace-pre-wrap">{previewText}</pre>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      No chunk text returned for this document.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            {copyStatus && (
+              <span className="mr-auto text-xs text-muted-foreground">
+                {copyStatus}
+              </span>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleCopyPreview}
+              disabled={!previewText || previewLoading}
+            >
+              <Copy className="h-3 w-3" /> Copy All
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleDownloadPreview}
+              disabled={!previewText || previewLoading}
+            >
+              <Download className="h-3 w-3" /> Download .txt
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              onClick={handleClosePreview}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </Dialog>
 
         {activeView === "stats" && (
           <Card

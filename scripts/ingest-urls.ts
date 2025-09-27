@@ -2,7 +2,6 @@ import 'dotenv/config';
 
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import crypto from 'crypto';
 import { Command } from 'commander';
 import pMap from 'p-map';
@@ -10,9 +9,17 @@ import pMap from 'p-map';
 import { WebScraper, ScrapeOptions } from '../lib/scraper';
 import { DocumentProcessor } from '../lib/document-processor';
 import { pineconeService } from '../lib/pinecone';
-
-type LogLevel = 'info' | 'debug' | 'error';
-type ReportFormat = 'jsonl' | 'csv';
+import {
+  Logger,
+  HostConcurrencyController,
+  parseUrlsFile,
+  parseReportFormats,
+  collectTags,
+  normalizeUrlForLookup,
+  LogLevel,
+  UrlEntry,
+} from './utils/common';
+import { Reporter } from './utils/reporter';
 
 interface CliOptions {
   file: string;
@@ -30,15 +37,6 @@ interface CliOptions {
   reportFile?: string;
   tags: string[];
   ignoreErrors: boolean;
-}
-
-interface UrlEntry {
-  line: string;
-  originalUrl: string;
-  normalizedUrl: string;
-  title: string;
-  accessedAt?: string;
-  tags: string[];
 }
 
 interface ResumeRecord {
@@ -71,267 +69,7 @@ interface IngestionResult {
   tags: string[];
 }
 
-interface ReportRecord extends IngestionResult {
-  reportVersion: string;
-  metadata?: Record<string, unknown>;
-}
-
 const SCRIPT_VERSION = 'ingest-urls@0.1.0';
-
-class Logger {
-  constructor(private level: LogLevel) {}
-
-  info(message: string) {
-    if (this.level === 'info' || this.level === 'debug') {
-      console.log(message);
-    }
-  }
-
-  debug(message: string) {
-    if (this.level === 'debug') {
-      console.debug(message);
-    }
-  }
-
-  error(message: string) {
-    console.error(message);
-  }
-}
-
-class HostConcurrencyController {
-  private active = new Map<string, number>();
-  private queues = new Map<string, Array<() => void>>();
-
-  constructor(private limit: number) {}
-
-  async acquire(host: string): Promise<() => void> {
-    return new Promise((resolve) => {
-      const normalizedHost = host.toLowerCase();
-      const current = this.active.get(normalizedHost) ?? 0;
-
-      if (current < this.limit) {
-        this.active.set(normalizedHost, current + 1);
-        resolve(() => this.release(normalizedHost));
-        return;
-      }
-
-      const queue = this.queues.get(normalizedHost) ?? [];
-      queue.push(() => {
-        const nextCount = this.active.get(normalizedHost) ?? 0;
-        this.active.set(normalizedHost, nextCount + 1);
-        resolve(() => this.release(normalizedHost));
-      });
-      this.queues.set(normalizedHost, queue);
-    });
-  }
-
-  private release(host: string) {
-    const current = this.active.get(host) ?? 0;
-    if (current <= 1) {
-      this.active.delete(host);
-    } else {
-      this.active.set(host, current - 1);
-    }
-
-    const queue = this.queues.get(host);
-    if (queue && queue.length > 0) {
-      const next = queue.shift();
-      if (next) {
-        setTimeout(next, 50 + Math.random() * 100);
-      }
-    }
-  }
-}
-
-class Reporter {
-  private readonly targets: Set<ReportFormat>;
-  private jsonlStream?: fs.WriteStream;
-  private csvStream?: fs.WriteStream;
-  private readonly records: ReportRecord[] = [];
-
-  constructor(formats: ReportFormat[], basePath?: string) {
-    this.targets = new Set(formats);
-    if (this.targets.size === 0) {
-      return;
-    }
-
-    const reportDir = basePath ? path.dirname(basePath) : path.resolve(process.cwd(), 'reports');
-    if (!fs.existsSync(reportDir)) {
-      fs.mkdirSync(reportDir, { recursive: true });
-    }
-
-    const baseName = basePath
-      ? path.basename(basePath, path.extname(basePath))
-      : `ingest-urls-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-
-    if (this.targets.has('jsonl')) {
-      const jsonlPath = basePath && this.targets.size === 1 && basePath.endsWith('.jsonl')
-        ? basePath
-        : path.join(reportDir, `${baseName}.jsonl`);
-      this.jsonlStream = fs.createWriteStream(jsonlPath, { flags: 'a' });
-      this.jsonlStream.write(`{"reportVersion":"${SCRIPT_VERSION}","startedAt":"${new Date().toISOString()}"}${os.EOL}`);
-    }
-
-    if (this.targets.has('csv')) {
-      const csvPath = basePath && this.targets.size === 1 && basePath.endsWith('.csv')
-        ? basePath
-        : path.join(reportDir, `${baseName}.csv`);
-      const exists = fs.existsSync(csvPath);
-      this.csvStream = fs.createWriteStream(csvPath, { flags: 'a' });
-      if (!exists) {
-        this.csvStream.write(
-          'originalUrl,canonicalUrl,status,title,contentHash,chunkCount,vectorIds,accessedAt,ingestedAt,etag,lastModified,elapsedMs,wordCount,charCount,namespace,tags,error,reportVersion' +
-            os.EOL,
-        );
-      }
-    }
-  }
-
-  record(entry: IngestionResult, metadata?: Record<string, unknown>) {
-    const report: ReportRecord = {
-      ...entry,
-      reportVersion: SCRIPT_VERSION,
-      metadata,
-    };
-    this.records.push(report);
-
-    if (this.jsonlStream) {
-      this.jsonlStream.write(`${JSON.stringify(report)}${os.EOL}`);
-    }
-
-    if (this.csvStream) {
-      const vectorIds = report.vectorIds?.join('|') ?? '';
-      const tags = report.tags.join('|');
-      const csvRow = [
-        report.originalUrl,
-        report.canonicalUrl ?? '',
-        report.status,
-        (report.title ?? '').replace(/"/g, '""'),
-        report.contentHash ?? '',
-        report.chunkCount ?? '',
-        vectorIds.replace(/"/g, '""'),
-        report.accessedAt ?? '',
-        report.ingestedAt ?? '',
-        report.etag ?? '',
-        report.lastModified ?? '',
-        report.elapsedMs,
-        report.wordCount ?? '',
-        report.charCount ?? '',
-        report.namespace,
-        tags.replace(/"/g, '""'),
-        report.error ? report.error.replace(/"/g, '""') : '',
-        report.reportVersion,
-      ]
-        .map((value) => (typeof value === 'string' ? `"${value}"` : String(value)))
-        .join(',');
-      this.csvStream.write(`${csvRow}${os.EOL}`);
-    }
-  }
-
-  summary() {
-    const totals = {
-      total: this.records.length,
-      new: 0,
-      updated: 0,
-      unchanged: 0,
-      skipped: 0,
-      duplicate: 0,
-      failed: 0,
-    };
-
-    for (const record of this.records) {
-      if (record.status in totals) {
-        // @ts-expect-error indexed intentionally
-        totals[record.status] += 1;
-      }
-    }
-
-    return totals;
-  }
-
-  close() {
-    this.jsonlStream?.end();
-    this.csvStream?.end();
-  }
-
-  getRecords() {
-    return this.records;
-  }
-}
-
-function normalizeUrlForLookup(rawUrl: string): string {
-  try {
-    const url = new URL(rawUrl);
-    url.hash = '';
-    const params = url.searchParams;
-    const keysToRemove: string[] = [];
-    params.forEach((_, key) => {
-      const lower = key.toLowerCase();
-      if (lower.startsWith('utm_') || lower === 'fbclid') {
-        keysToRemove.push(key);
-      }
-    });
-    keysToRemove.forEach((key) => params.delete(key));
-    url.search = params.toString();
-    if (url.pathname !== '/' && url.pathname.endsWith('/')) {
-      url.pathname = url.pathname.slice(0, -1);
-    }
-    return url.toString();
-  } catch {
-    return rawUrl;
-  }
-}
-
-function parseUrlsFile(filePath: string, logger: Logger): UrlEntry[] {
-  const resolved = path.resolve(filePath);
-  if (!fs.existsSync(resolved)) {
-    throw new Error(`Input file not found: ${resolved}`);
-  }
-
-  const content = fs.readFileSync(resolved, 'utf8');
-  const lines = content.split(/\r?\n/);
-  const results: UrlEntry[] = [];
-  const seen = new Set<string>();
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('#')) {
-      continue;
-    }
-
-    const match = line.match(/^(.*?),\s*accessed\s+(.+),\s*(https?:\/\/\S+)/i);
-    if (!match) {
-      logger.debug(`Skipping unrecognised line: ${line}`);
-      continue;
-    }
-
-    const [, titlePart, accessed, url] = match;
-    const normalizedUrl = normalizeUrlForLookup(url);
-    if (seen.has(normalizedUrl)) {
-      logger.debug(`Duplicate URL skipped in source file: ${normalizedUrl}`);
-      continue;
-    }
-
-    seen.add(normalizedUrl);
-    results.push({
-      line,
-      originalUrl: url,
-      normalizedUrl,
-      title: titlePart.trim(),
-      accessedAt: accessed.trim(),
-      tags: [],
-    });
-  }
-
-  return results;
-}
-
-function parseReportFormats(value: string): ReportFormat[] {
-  return value
-    .split(',')
-    .map((item) => item.trim().toLowerCase())
-    .filter((item): item is ReportFormat => item === 'jsonl' || item === 'csv');
-}
 
 function loadResumeFile(filePath: string | undefined, logger: Logger): Map<string, ResumeRecord> {
   if (!filePath) {
@@ -363,14 +101,6 @@ function loadResumeFile(filePath: string | undefined, logger: Logger): Map<strin
   }
 
   return map;
-}
-
-function collectTags(value: string, previous: string[]): string[] {
-  const tags = value
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-  return Array.from(new Set([...previous, ...tags]));
 }
 
 function buildScraperOptions(options: CliOptions): ScrapeOptions {
@@ -622,7 +352,53 @@ async function main() {
 
   const logger = new Logger(options.logLevel);
   const formats = options.report === 'none' ? [] : parseReportFormats(options.report);
-  const reporter = new Reporter(formats, options.reportFile);
+  const reporter = new Reporter<IngestionResult>({
+    formats,
+    version: SCRIPT_VERSION,
+    filePrefix: 'ingest-urls',
+    basePath: options.reportFile,
+    summaryStatuses: ['new', 'updated', 'unchanged', 'skipped', 'duplicate', 'failed'],
+    csvHeaders: [
+      'originalUrl',
+      'canonicalUrl',
+      'status',
+      'title',
+      'contentHash',
+      'chunkCount',
+      'vectorIds',
+      'accessedAt',
+      'ingestedAt',
+      'etag',
+      'lastModified',
+      'elapsedMs',
+      'wordCount',
+      'charCount',
+      'namespace',
+      'tags',
+      'error',
+      'reportVersion',
+    ],
+    csvRow: (record) => [
+      record.originalUrl,
+      record.canonicalUrl ?? '',
+      record.status,
+      record.title ?? '',
+      record.contentHash ?? '',
+      record.chunkCount ?? '',
+      (record.vectorIds ?? []).join('|'),
+      record.accessedAt ?? '',
+      record.ingestedAt ?? '',
+      record.etag ?? '',
+      record.lastModified ?? '',
+      record.elapsedMs,
+      record.wordCount ?? '',
+      record.charCount ?? '',
+      record.namespace,
+      record.tags.join('|'),
+      record.error ?? '',
+      record.reportVersion,
+    ],
+  });
 
   try {
     if (!options.dryRun && !process.env.PINECONE_API_KEY) {
@@ -669,10 +445,12 @@ async function main() {
 
     const totals = reporter.summary();
     logger.info('--- Summary ---');
-    logger.info(`Processed: ${totals.total}`);
-    logger.info(`New: ${totals.new}, Updated: ${totals.updated}, Unchanged: ${totals.unchanged}`);
-    logger.info(`Skipped: ${totals.skipped}, Duplicates: ${totals.duplicate}`);
-    logger.info(`Failed: ${totals.failed}`);
+    logger.info(`Processed: ${totals.total ?? 0}`);
+    logger.info(
+      `New: ${totals.new ?? 0}, Updated: ${totals.updated ?? 0}, Unchanged: ${totals.unchanged ?? 0}`,
+    );
+    logger.info(`Skipped: ${totals.skipped ?? 0}, Duplicates: ${totals.duplicate ?? 0}`);
+    logger.info(`Failed: ${totals.failed ?? 0}`);
 
     reporter.close();
 

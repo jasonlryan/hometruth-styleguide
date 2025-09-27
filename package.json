@@ -8,7 +8,8 @@
     "lint": "next lint",
     "start": "node --max-old-space-size=4096 node_modules/.bin/next start",
     "ingest:urls": "tsx scripts/ingest-urls.ts",
-    "ingest:urls:dry": "tsx scripts/ingest-urls.ts --dry-run --log-level debug"
+    "ingest:urls:dry": "tsx scripts/ingest-urls.ts --dry-run --log-level debug",
+    "check:updates": "tsx scripts/check-updates.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

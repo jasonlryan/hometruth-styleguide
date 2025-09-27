@@ -30,6 +30,7 @@ export interface ScrapeOptions {
   maxPdfPages?: number;
   maxContentLength?: number;
   userAgent?: string;
+  useHeadlessFallback?: boolean;
 }
 
 interface FetchResult {
@@ -97,22 +98,74 @@ export class WebScraper {
       };
     }
 
-    const html = responseBody.toString('utf-8');
-    const dom = new JSDOM(html, { url: finalUrl });
-    const { document } = dom.window;
+    let html = responseBody.toString('utf-8');
+    let finalResolvedUrl = finalUrl;
+    let dom = new JSDOM(html, { url: finalResolvedUrl });
+    let { document } = dom.window;
 
     const canonicalHref = this.extractCanonicalUrl(document);
-    const canonicalUrl = canonicalHref ? this.canonicalizeUrl(canonicalHref) : this.canonicalizeUrl(finalUrl);
+    const canonicalUrl = canonicalHref ? this.canonicalizeUrl(canonicalHref) : this.canonicalizeUrl(finalResolvedUrl);
 
-    const readability = new Readability(document);
-    const article = readability.parse();
+    let readability = new Readability(document);
+    let article = readability.parse();
 
-    const title = article?.title?.trim() || document.title?.trim() || this.fallbackTitleFromUrl(finalUrl);
-    const content = article?.textContent?.trim() || this.extractBodyText(document);
-    const cleanedContent = this.normalizeWhitespace(content);
+    const title = article?.title?.trim() || document.title?.trim() || this.fallbackTitleFromUrl(finalResolvedUrl);
+    let content = article?.textContent?.trim() || this.extractBodyText(document);
+    let cleanedContent = this.normalizeWhitespace(content);
+
+    // Fallbacks: if content is too short (likely footer-only), try common main/article containers
+    const MIN_CONTENT_CHARS = 500;
+    if (cleanedContent.length < MIN_CONTENT_CHARS) {
+      const mainCandidate =
+        (document.querySelector('main') as HTMLElement | null) ||
+        (document.querySelector('article') as HTMLElement | null) ||
+        (document.getElementById('content') as HTMLElement | null) ||
+        (document.querySelector('[role="main"]') as HTMLElement | null);
+      if (mainCandidate) {
+        const clone = mainCandidate.cloneNode(true) as HTMLElement;
+        // remove obvious noise within the candidate
+        ['script','style','nav','header','footer','noscript','iframe','.advertisement','.ads','.social-share','.sidebar','.related','.comments']
+          .forEach((selector) => clone.querySelectorAll(selector).forEach((n) => n.remove()));
+        const fallbackText = clone.textContent || '';
+        const fallbackClean = this.normalizeWhitespace(fallbackText);
+        if (fallbackClean.length > cleanedContent.length) {
+          cleanedContent = fallbackClean;
+        }
+      }
+    }
+    // Last resort: full body text extraction if still too short
+    if (cleanedContent.length < MIN_CONTENT_CHARS) {
+      const bodyText = this.extractBodyText(document);
+      const bodyClean = this.normalizeWhitespace(bodyText);
+      if (bodyClean.length > cleanedContent.length) {
+        cleanedContent = bodyClean;
+      }
+    }
     const description = article?.excerpt?.trim() || this.extractMetaContent(document, 'description');
     const author = this.extractAuthor(document);
     const publishedDate = this.extractPublicationDate(document);
+
+    // Headless fallback if content still too short
+    if ((options.useHeadlessFallback ?? true) && cleanedContent.length < MIN_CONTENT_CHARS && (headers['content-type']?.includes('text/html') ?? true)) {
+      try {
+        const rendered = await this.renderWithHeadless(finalResolvedUrl, { timeoutMs, userAgent });
+        if (rendered?.html || rendered?.text) {
+          html = rendered.html || html;
+          finalResolvedUrl = rendered.finalUrl || finalResolvedUrl;
+          dom = new JSDOM(html, { url: finalResolvedUrl });
+          document = dom.window.document;
+          readability = new Readability(document);
+          article = readability.parse();
+          const altContent = article?.textContent?.trim() || rendered.text || this.extractBodyText(document);
+          const altClean = this.normalizeWhitespace(altContent);
+          if (altClean.length > cleanedContent.length) {
+            cleanedContent = altClean;
+          }
+        }
+      } catch {
+        // ignore headless failure
+      }
+    }
 
     return {
       title,
@@ -183,11 +236,17 @@ export class WebScraper {
     const timeout = setTimeout(() => controller.abort(), options.timeoutMs);
 
     try {
+      const u = new URL(url);
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
           'user-agent': options.userAgent,
-          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,application/pdf;q=0.8,*/*;q=0.7',
+          'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/pdf;q=0.8,*/*;q=0.7',
+          'accept-language': 'en-GB,en;q=0.9',
+          'referer': `${u.protocol}//${u.host}/`,
+          'sec-fetch-dest': 'document',
+          'sec-fetch-mode': 'navigate',
+          'sec-fetch-site': 'same-origin',
         },
       });
 
@@ -365,6 +424,28 @@ export class WebScraper {
       .filter(Boolean);
 
     return paragraphs.join('\n\n');
+  }
+
+  // Minimal headless renderer for blocked sites
+  private static async renderWithHeadless(url: string, opts: { timeoutMs: number; userAgent: string }): Promise<{ html?: string; text?: string; finalUrl?: string } | null> {
+    try {
+      // Lazy import to avoid heavy startup when not needed
+      const puppeteer = await import('puppeteer');
+      const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox','--disable-setuid-sandbox'] as any });
+      const page = await browser.newPage();
+      await page.setUserAgent(opts.userAgent);
+      await page.setExtraHTTPHeaders({ 'Accept-Language': 'en-GB,en;q=0.9' } as any);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: opts.timeoutMs });
+      // try to dismiss common cookie banners quickly
+      try { await page.waitForTimeout(800); } catch {}
+      const html = await page.content();
+      const text = await page.evaluate(() => document.body?.innerText || '');
+      const finalUrl = page.url();
+      await browser.close();
+      return { html, text, finalUrl };
+    } catch {
+      return null;
+    }
   }
 
   private static deriveTitleFromPdf(url: string): string {
