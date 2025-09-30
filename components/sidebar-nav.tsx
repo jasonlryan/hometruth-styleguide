@@ -7,11 +7,12 @@ import {
   ClipboardList,
   Search,
   FileText,
-  Bookmark,
   FolderOpen,
   DollarSign,
   Settings,
 } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
@@ -44,13 +45,6 @@ const navItems: NavItem[] = [
     bgColor: "bg-purple-50",
   },
   {
-    href: "/bookmarked",
-    label: "Bookmarked",
-    icon: Bookmark,
-    color: "text-[#10B981]",
-    bgColor: "bg-green-50",
-  },
-  {
     href: "/documents",
     label: "Documents",
     icon: FolderOpen,
@@ -75,13 +69,14 @@ const navItems: NavItem[] = [
 
 interface SidebarNavProps {
   className?: string;
+  onNavigate?: () => void;
 }
 
-export default function SidebarNav({ className = "" }: SidebarNavProps) {
+export default function SidebarNav({ className = "", onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <aside className={`w-48 bg-white border-r border-gray-200 p-3 ${className}`}>
+    <aside className={cn("w-48 bg-white border-r border-gray-200 p-3 h-full overflow-y-auto", className)}>
       <nav className="space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -96,6 +91,7 @@ export default function SidebarNav({ className = "" }: SidebarNavProps) {
                   ? `${item.bgColor} ${item.color} shadow-sm`
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
+              onClick={() => onNavigate?.()}
             >
               <Icon
                 className={`h-5 w-5 transition-colors ${

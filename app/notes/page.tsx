@@ -1,6 +1,4 @@
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import SidebarNav from "@/components/sidebar-nav";
+import AppLayout from "@/components/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import NoteCard from "@/components/note-card";
 import Link from "next/link";
@@ -40,53 +38,45 @@ const notes = [
 
 export default function SavedNotesPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header variant="landing" />
+    <AppLayout>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Top bar */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <h1 className="type-h3 text-gray-900">Saved Notes</h1>
+          <Button className="bg-[#B19CD9] hover:bg-purple-600 text-white">
+            + Add new
+          </Button>
+        </div>
 
-      <div className="flex flex-1">
-        <SidebarNav />
-
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Top bar */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-            <h1 className="type-h3 text-gray-900">Saved Notes</h1>
-            <Button className="bg-[#B19CD9] hover:bg-purple-600 text-white">
-              + Add new
-            </Button>
+        {/* Content */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {notes.map((n) => (
+              <NoteCard
+                key={n.title}
+                title={n.title}
+                excerpt={n.excerpt}
+                date={n.date}
+                href="#"
+              />
+            ))}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {notes.map((n) => (
-                <NoteCard
-                  key={n.title}
-                  title={n.title}
-                  excerpt={n.excerpt}
-                  date={n.date}
-                  href="#"
-                />
-              ))}
-            </div>
-
-            {/* Upgrade CTA */}
-            <div className="mt-10">
-              <div className="rounded-2xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 p-8 text-center">
-                <p className="type-h4 text-gray-900 mb-3">
-                  Want to add more notes?
-                </p>
-                <Link href="/pro">
-                  <Button className="bg-[#00BFFF] hover:bg-blue-600 text-white px-6 py-2">
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
+          {/* Upgrade CTA */}
+          <div className="mt-10">
+            <div className="rounded-2xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 p-8 text-center">
+              <p className="type-h4 text-gray-900 mb-3">
+                Want to add more notes?
+              </p>
+              <Link href="/pro">
+                <Button className="bg-[#00BFFF] hover:bg-blue-600 text-white px-6 py-2">
+                  Upgrade to Pro
+                </Button>
+              </Link>
             </div>
           </div>
-        </main>
-      </div>
-
-      <Footer variant="app" />
-    </div>
+        </div>
+      </main>
+    </AppLayout>
   );
 }

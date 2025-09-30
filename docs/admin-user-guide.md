@@ -233,6 +233,12 @@ To manually update existing content:
 3. **Review Responses**: See AI-generated answers with source citations
 4. **Verify Sources**: Check which documents informed the response
 
+### Streaming Controls
+
+- **Pause auto-scroll**: Scroll upward or click inside the message panel while a reply is streaming. The interface pauses automatic scrolling so you can read or copy earlier content without losing your place.
+- **Resume**: Scroll back to the bottom manually or press the "Jump to latest" button that appears while new tokens arrive. This clears the pause and restores automatic scrolling for future replies.
+- **Visual cue**: When paused, the sticky "Jump to latest" pill appears above the composer to highlight that new activity is available off-screen.
+
 ### Example Conversations
 
 **Query**: "What's the first step in buying a home?"

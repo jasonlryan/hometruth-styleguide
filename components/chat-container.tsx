@@ -189,6 +189,9 @@ export default function ChatContainer({
   const [error, setError] = useState<string | null>(null);
   const [isAutoScrollLocked, setIsAutoScrollLocked] = useState(false);
   const [hasNewActivity, setHasNewActivity] = useState(false);
+  const [pendingSources, setPendingSources] = useState<
+    Record<string, ChatSource[]>
+  >({});
 
   const activeControllerRef = useRef<AbortController | null>(null);
   const currentReplyIdRef = useRef<string | null>(null);
@@ -273,7 +276,9 @@ export default function ChatContainer({
       const element = getViewport();
       if (!element) return;
       const shouldLock = !isNearBottom(element);
-      setIsAutoScrollLocked((prev) => (prev === shouldLock ? prev : shouldLock));
+      setIsAutoScrollLocked((prev) =>
+        prev === shouldLock ? prev : shouldLock
+      );
     };
 
     const handleScroll = () => {
@@ -288,6 +293,7 @@ export default function ChatContainer({
 
     const handlePointerUp = () => {
       pointerInteractingRef.current = false;
+      updateLockFromPosition();
     };
 
     initialViewport.addEventListener("scroll", handleScroll, { passive: true });
@@ -330,6 +336,7 @@ export default function ChatContainer({
       activeControllerRef.current = null;
     }
     currentReplyIdRef.current = null;
+    setPendingSources({});
     setSessionId(session.id);
     setMessages(session.messages ?? []);
     setIsHistoryOpen(false);
@@ -343,6 +350,7 @@ export default function ChatContainer({
       activeControllerRef.current = null;
     }
     currentReplyIdRef.current = null;
+    setPendingSources({});
     setMessages([]);
     setSessionId(generateId());
     setError(null);
@@ -377,10 +385,13 @@ export default function ChatContainer({
     switch (event) {
       case "sources":
         if (Array.isArray(payload)) {
-          updateCurrentReply((message) => ({
-            ...message,
-            sources: payload as ChatSource[],
-          }));
+          const replyId = currentReplyIdRef.current;
+          if (replyId) {
+            setPendingSources((prev) => ({
+              ...prev,
+              [replyId]: payload as ChatSource[],
+            }));
+          }
         }
         break;
       case "token":
@@ -391,23 +402,49 @@ export default function ChatContainer({
           }));
         }
         break;
-      case "done":
-        updateCurrentReply((message) => ({
-          ...message,
-          isStreaming: false,
-        }));
+      case "done": {
+        const replyId = currentReplyIdRef.current;
+        if (replyId) {
+          updateCurrentReply((message) => ({
+            ...message,
+            sources: pendingSources[replyId] ?? message.sources,
+            isStreaming: false,
+          }));
+          setPendingSources((prev) => {
+            const next = { ...prev };
+            delete next[replyId];
+            return next;
+          });
+        } else {
+          updateCurrentReply((message) => ({
+            ...message,
+            isStreaming: false,
+          }));
+        }
         currentReplyIdRef.current = null;
         break;
+      }
       case "error": {
         const fallbackMessage =
           typeof (payload as { message?: string } | null)?.message === "string"
             ? (payload as { message: string }).message
-            : "Sorry, I ran into an issue with that request.";
+            : "Sorry, I couldn't complete that. Let's try again?";
+        const replyId = currentReplyIdRef.current;
         updateCurrentReply((message) => ({
           ...message,
           content: fallbackMessage,
+          sources: replyId
+            ? pendingSources[replyId] ?? message.sources
+            : message.sources,
           isStreaming: false,
         }));
+        if (replyId) {
+          setPendingSources((prev) => {
+            const next = { ...prev };
+            delete next[replyId];
+            return next;
+          });
+        }
         setError(fallbackMessage);
         currentReplyIdRef.current = null;
         break;
@@ -436,7 +473,7 @@ export default function ChatContainer({
       content: "",
       createdAt: Date.now(),
       isStreaming: true,
-      sources: [],
+      sources: undefined,
     };
 
     currentReplyIdRef.current = assistantMessage.id;
@@ -470,17 +507,42 @@ export default function ChatContainer({
       await consumeSSE(response.body, handleStreamEvent);
     } catch (streamError) {
       if ((streamError as Error)?.name === "AbortError") {
+        const replyId = currentReplyIdRef.current;
+        if (replyId) {
+          updateCurrentReply((message) => ({
+            ...message,
+            sources: pendingSources[replyId] ?? message.sources,
+            isStreaming: false,
+          }));
+          setPendingSources((prev) => {
+            const next = { ...prev };
+            delete next[replyId];
+            return next;
+          });
+        }
+        currentReplyIdRef.current = null;
         return;
       }
       console.error("Chat request error:", streamError);
-      const fallback =
-        "Sorry, I could not complete that request. Please try again.";
+      const fallback = "Sorry, I couldn't complete that. Let's try again?";
+      const replyId = currentReplyIdRef.current;
       updateCurrentReply((message) => ({
         ...message,
         content: fallback,
+        sources: replyId
+          ? pendingSources[replyId] ?? message.sources
+          : message.sources,
         isStreaming: false,
       }));
+      if (replyId) {
+        setPendingSources((prev) => {
+          const next = { ...prev };
+          delete next[replyId];
+          return next;
+        });
+      }
       setError(fallback);
+      currentReplyIdRef.current = null;
     } finally {
       setIsLoading(false);
       activeControllerRef.current = null;
@@ -504,15 +566,6 @@ export default function ChatContainer({
     "What does the conveyancing process involve?",
   ];
 
-  const handleCopy = async (text: string) => {
-    if (typeof navigator === "undefined" || !navigator.clipboard) return;
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (copyError) {
-      console.warn("Copy to clipboard failed", copyError);
-    }
-  };
-
   return (
     <div className={`flex h-full ${className}`}>
       {showHistory && isHistoryOpen && (
@@ -526,7 +579,7 @@ export default function ChatContainer({
       )}
 
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-gray-200 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {showHistory && (
               <Button
@@ -552,6 +605,9 @@ export default function ChatContainer({
             </Button>
           </div>
           <div className="flex items-center space-x-3">
+            {title && (
+              <h1 className="type-h2 text-gray-900">{title}</h1>
+            )}
             <div
               className={`w-3 h-3 rounded-full ${
                 isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"
@@ -565,7 +621,7 @@ export default function ChatContainer({
 
         <div
           ref={messagesViewportRef}
-          className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50 relative"
+          className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto bg-gray-50 relative"
         >
           <div aria-live="polite" role="status" className="sr-only">
             {isLoading ? "HomeTruth is responding" : ""}
@@ -586,7 +642,6 @@ export default function ChatContainer({
                 }
                 isStreaming={message.isStreaming}
                 sources={message.sources}
-                onCopy={() => handleCopy(message.content)}
               />
             ))
           )}
@@ -605,7 +660,7 @@ export default function ChatContainer({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="bg-white border-t border-gray-200 p-4 pb-[env(safe-area-inset-bottom)]">
+        <div className="bg-white border-t border-gray-200 p-3 sm:p-4 pb-[env(safe-area-inset-bottom)]">
           <div className="space-y-3">
             <div className="flex space-x-2">
               <Input

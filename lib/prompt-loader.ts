@@ -203,4 +203,9 @@ export class PromptLoader {
   }
 }
 
+export async function loadSystemPrompt() {
+  const result = await PromptLoader.load();
+  return result.content ?? DEFAULT_CHAT_SYSTEM_PROMPT;
+}
+
 export const promptLoader = PromptLoader;

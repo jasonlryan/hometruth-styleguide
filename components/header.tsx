@@ -1,13 +1,21 @@
+"use client";
+
+import { useEffect, useRef, useState, type Ref } from "react";
+
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { Home } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 interface HeaderProps {
   variant?: "landing" | "app";
   showProButton?: boolean;
   showUserInfo?: boolean;
   userName?: string;
+  showBurger?: boolean;
+  onBurgerClick?: () => void;
+  burgerButtonRef?: Ref<HTMLButtonElement>;
 }
 
 export default function Header({
@@ -15,25 +23,56 @@ export default function Header({
   showProButton = true,
   showUserInfo = false,
   userName = "Lujain",
+  showBurger = false,
+  onBurgerClick,
+  burgerButtonRef,
 }: HeaderProps) {
+  const [landingMenuOpen, setLandingMenuOpen] = useState(false);
+  const landingMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const wasLandingMenuOpen = useRef(false);
+
+  useEffect(() => {
+    if (variant !== "landing") return;
+    if (!landingMenuOpen && wasLandingMenuOpen.current) {
+      landingMenuTriggerRef.current?.focus();
+    }
+    wasLandingMenuOpen.current = landingMenuOpen;
+  }, [landingMenuOpen, variant]);
+
   if (variant === "app") {
     return (
       <header className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 mr-6">
-              <div className="w-8 h-8 bg-[#00BFFF] rounded-lg flex items-center justify-center">
-                <Home className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-gill-sans-light text-gray-900">
-                Home truth
+            {showBurger && (
+              <button
+                type="button"
+                onClick={onBurgerClick}
+                ref={burgerButtonRef}
+                className="mr-3 rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden"
+                aria-label="Open menu"
+              >
+                <Menu className="h-6 w-6 text-gray-600" />
+              </button>
+            )}
+            <Link href="/" className="mr-6 flex items-center space-x-2">
+              <Image
+                src="/images/hometruth-icon.svg"
+                alt="HomeTruth"
+                width={32}
+                height={32}
+                className="h-8 w-8"
+                priority
+              />
+              <span className="hidden lg:inline text-xl font-gill-sans-light text-gray-900">
+                HomeTruth
               </span>
             </Link>
           </div>
 
           <div className="flex items-center space-x-4">
             {showUserInfo && (
-              <span className="text-gray-700 font-gill-sans-regular">
+              <span className="font-gill-sans-regular text-gray-700">
                 Hi, {userName}!
               </span>
             )}
@@ -85,14 +124,14 @@ export default function Header({
               </Button>
             </div>
             {showUserInfo && (
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-700 font-gill-sans-regular">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
+                <span className="text-sm font-gill-sans-regular font-medium text-gray-700">
                   {userName.charAt(0)}
                 </span>
               </div>
             )}
             {showProButton && (
-              <Button className="bg-[#00BFFF] hover:bg-blue-600 text-white">
+              <Button className="bg-[#00BFFF] text-white hover:bg-blue-600">
                 Upgrade to Pro
               </Button>
             )}
@@ -102,47 +141,111 @@ export default function Header({
     );
   }
 
-  // Landing page header
+  const landingNavItems = [
+    {
+      href: "/#how-it-works",
+      label: "How It Works",
+    },
+    {
+      href: "/#security",
+      label: "Security",
+    },
+  ];
+
+  const handleLandingMenuChange = (open: boolean) => {
+    setLandingMenuOpen(open);
+  };
+
   return (
-    <header className="border-b border-gray-100 bg-white/95 backdrop-blur-sm sticky top-0 z-50">
-      <div className="w-full px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center flex-shrink-0">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/hometruth-logo.png"
-              alt="HomeTruth - Your Personal Property Assistant"
-              width={196}
-              height={56}
-              className="h-14 w-auto"
-              priority
-            />
-          </Link>
-        </div>
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link
-            href="/#how-it-works"
-            className="text-gray-600 hover:text-[#00BFFF] transition-colors font-gill-sans-regular"
-          >
-            How It Works
-          </Link>
-          <Link
-            href="/#security"
-            className="text-gray-600 hover:text-[#00BFFF] transition-colors font-gill-sans-regular"
-          >
-            Security
-          </Link>
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+      <div className="flex w-full items-center justify-between px-4 py-4">
+        <Link href="/" className="flex items-center space-x-2">
+          <Image
+            src="/images/hometruth-icon.svg"
+            alt="HomeTruth"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+            priority
+          />
+          <span className="hidden lg:inline text-xl font-gill-sans-light text-gray-900">
+            HomeTruth
+          </span>
+        </Link>
+        <nav className="hidden items-center space-x-6 lg:flex">
+          {landingNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="font-gill-sans-regular text-gray-600 transition-colors hover:text-[#00BFFF]"
+            >
+              {item.label}
+            </Link>
+          ))}
           {showProButton && (
             <Link href="/pro">
               <Button
                 variant="outline"
-                className="border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-white bg-transparent"
+                className="border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-white"
               >
                 Explore Pro Features
               </Button>
             </Link>
           )}
         </nav>
+        <button
+          type="button"
+          className="rounded-lg p-2 transition-colors hover:bg-gray-100 lg:hidden"
+          aria-label="Open menu"
+          onClick={() => handleLandingMenuChange(true)}
+          ref={landingMenuTriggerRef}
+        >
+          <Menu className="h-6 w-6 text-gray-600" />
+        </button>
       </div>
+      <Dialog
+        open={landingMenuOpen}
+        onOpenChange={handleLandingMenuChange}
+        ariaLabel="Navigation menu"
+        containerClassName="fixed inset-0 z-50 flex justify-end lg:hidden"
+        panelClassName="relative z-10 mx-0 my-0 flex h-full w-full justify-end"
+        contentClassName="flex h-full justify-end rounded-none border-none bg-transparent shadow-none"
+      >
+        <div className="flex h-full w-64 max-w-[85vw] flex-col bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b px-4 py-4">
+            <span className="text-base font-semibold text-gray-900">Menu</span>
+            <button
+              type="button"
+              className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+              onClick={() => handleLandingMenuChange(false)}
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
+          <nav className="flex flex-1 flex-col gap-1 px-4 py-3">
+            {landingNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-md px-2 py-2 text-base font-gill-sans-regular text-gray-700 hover:bg-gray-100"
+                onClick={() => handleLandingMenuChange(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {showProButton && (
+              <Link
+                href="/pro"
+                className="mt-2 rounded-md bg-[#00BFFF] px-3 py-2 text-center font-gill-sans-regular text-white hover:bg-[#0095cc]"
+                onClick={() => handleLandingMenuChange(false)}
+              >
+                Explore Pro Features
+              </Link>
+            )}
+          </nav>
+        </div>
+      </Dialog>
     </header>
   );
 }

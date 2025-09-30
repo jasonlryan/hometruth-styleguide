@@ -2,14 +2,36 @@
 
 import React, { useEffect } from "react";
 
+import { cn } from "@/lib/utils";
+
 export interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   ariaLabel?: string;
+  /**
+   * Allows overriding the default centered dialog layout (e.g. for drawers).
+   */
+  containerClassName?: string;
+  /**
+   * Optional class overrides for the wrapper div around the dialog content.
+   */
+  panelClassName?: string;
+  /**
+   * Optional class overrides for the innermost content container.
+   */
+  contentClassName?: string;
 }
 
-export function Dialog({ open, onOpenChange, children, ariaLabel = "Dialog" }: DialogProps) {
+export function Dialog({
+  open,
+  onOpenChange,
+  children,
+  ariaLabel = "Dialog",
+  containerClassName,
+  panelClassName,
+  contentClassName,
+}: DialogProps) {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -25,11 +47,19 @@ export function Dialog({ open, onOpenChange, children, ariaLabel = "Dialog" }: D
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto"
+      className={cn(
+        "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto",
+        containerClassName,
+      )}
     >
       <div className="absolute inset-0 bg-black/40" onClick={() => onOpenChange(false)} />
-      <div className="relative z-10 mx-4 my-10 w-full max-w-3xl">
-        <div className="flex max-h-[90vh] flex-col overflow-hidden rounded-lg border bg-white shadow-lg">
+      <div className={cn("relative z-10 mx-4 my-10 w-full max-w-3xl", panelClassName)}>
+        <div
+          className={cn(
+            "flex max-h-[90vh] flex-col overflow-hidden rounded-lg border bg-white shadow-lg",
+            contentClassName,
+          )}
+        >
           {children}
         </div>
       </div>

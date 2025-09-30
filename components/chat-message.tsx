@@ -13,7 +13,10 @@ import type { PluggableList } from "unified";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CITATIONS_ENABLED } from "@/lib/feature-flags";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, ChevronDown } from "lucide-react";
+import { visit } from "unist-util-visit";
+import type { Root, Text } from "mdast";
+import type { Parent } from "unist";
 
 export interface ChatSource {
   id: string;
@@ -33,7 +36,6 @@ interface ChatMessageProps {
   showCopyButton?: boolean;
   isStreaming?: boolean;
   sources?: ChatSource[];
-  onCopy?: () => void;
 }
 
 const STREAMING_DEBOUNCE_MS = 40;
@@ -45,6 +47,75 @@ const mergeUnique = <T,>(...sources: (T[] | undefined)[]): T[] => {
     source?.forEach((item) => set.add(item));
   });
   return Array.from(set);
+};
+
+const CITATION_PATTERN = /\[(\d+)\]/g;
+
+const stripCitations = (value: string) =>
+  value.replace(/\s*\[(\d+)\]/g, (match) => (match.startsWith(" ") ? " " : ""));
+
+const remarkInlineCitations = () => {
+  return (tree: Root) => {
+    visit(tree, "text", (node, index, parent) => {
+      if (!parent || typeof index !== "number") return;
+      if (
+        (parent as Parent).type === "link" ||
+        (parent as Parent).type === "code" ||
+        (parent as Parent).type === "inlineCode"
+      ) {
+        return;
+      }
+      const textNode = node as Text;
+      const value = textNode.value;
+      if (!value) return;
+
+      const matches = [...value.matchAll(CITATION_PATTERN)];
+      if (matches.length === 0) return;
+
+      const replacements: any[] = [];
+      let lastIndex = 0;
+
+      for (const match of matches) {
+        const matchIndex = match.index ?? 0;
+        if (matchIndex > lastIndex) {
+          replacements.push({
+            type: "text",
+            value: value.slice(lastIndex, matchIndex),
+          });
+        }
+
+        const citationIndex = match[1];
+        replacements.push({
+          type: "link",
+          url: `#source-${citationIndex}`,
+          data: {
+            hProperties: {
+              className: "inline-citation",
+              "data-citation-index": citationIndex,
+            },
+          },
+          children: [
+            {
+              type: "text",
+              value: citationIndex,
+            },
+          ],
+        });
+
+        lastIndex = matchIndex + match[0].length;
+      }
+
+      if (lastIndex < value.length) {
+        replacements.push({
+          type: "text",
+          value: value.slice(lastIndex),
+        });
+      }
+
+      (parent as Parent).children.splice(index, 1, ...replacements);
+      return index + replacements.length;
+    });
+  };
 };
 
 type AttributeEntry = string | [string, string];
@@ -76,12 +147,14 @@ const markdownSanitizeSchema: Schema = {
     "h4",
     "h5",
     "h6",
+    "sup",
+    "button",
   ]),
   attributes: {
     ...defaultSchema.attributes,
     a: mergeUnique(
       defaultSchema.attributes?.a as AttributeEntry[] | undefined,
-      ["href", "title", "target", "rel"]
+      ["href", "title", "target", "rel", "data-citation-index"]
     ),
     code: mergeUnique(
       defaultSchema.attributes?.code as AttributeEntry[] | undefined,
@@ -103,6 +176,21 @@ const markdownSanitizeSchema: Schema = {
       defaultSchema.attributes?.th as AttributeEntry[] | undefined,
       ["class", "className"]
     ),
+    sup: mergeUnique(
+      defaultSchema.attributes?.sup as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
+    button: mergeUnique(
+      defaultSchema.attributes?.button as AttributeEntry[] | undefined,
+      [
+        "type",
+        "class",
+        "className",
+        "title",
+        "aria-label",
+        "data-citation-index",
+      ]
+    ),
   },
 };
 
@@ -119,16 +207,18 @@ interface MarkdownContentProps {
   content: string;
   components: Components;
   rehypePlugins: PluggableList;
+  remarkPlugins: PluggableList;
 }
 
 const MarkdownContent = memo(function MarkdownContent({
   content,
   components,
   rehypePlugins,
+  remarkPlugins,
 }: MarkdownContentProps) {
   return (
     <ReactMarkdown
-      remarkPlugins={MARKDOWN_REMARK_PLUGINS}
+      remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}
       components={components}
     >
@@ -163,12 +253,24 @@ function ChatMessageComponent({
   showCopyButton = false,
   isStreaming = false,
   sources,
-  onCopy,
 }: ChatMessageProps) {
   const [displayContent, setDisplayContent] = useState(content);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<"answer" | "citations" | null>(
+    null
+  );
   const debounceTimerRef = useRef<number>();
   const copyResetTimerRef = useRef<number>();
+  const copyStatusTimerRef = useRef<number>();
+
+  const sourcesCount = sources?.length ?? 0;
+  const enableSourcesUI = !isStreaming && sourcesCount > 0;
+  const [sourcesExpanded, setSourcesExpanded] = useState(() => {
+    if (!enableSourcesUI) return false;
+    const isMobile =
+      typeof window !== "undefined" ? window.innerWidth < 768 : false;
+    return !isMobile && sourcesCount <= 3;
+  });
 
   useEffect(() => {
     if (isStreaming) {
@@ -183,15 +285,35 @@ function ChatMessageComponent({
   }, [content, isStreaming]);
 
   useEffect(() => {
+    setCopyStatus(null);
+  }, [content]);
+
+  useEffect(() => {
+    if (!enableSourcesUI) {
+      setSourcesExpanded(false);
+      return;
+    }
+
+    const isMobile =
+      typeof window !== "undefined" ? window.innerWidth < 768 : false;
+    const shouldExpandByDefault = !isMobile && sourcesCount <= 3;
+    setSourcesExpanded((prev) =>
+      prev === shouldExpandByDefault ? prev : shouldExpandByDefault
+    );
+  }, [enableSourcesUI, sourcesCount]);
+
+  useEffect(() => {
     return () => {
       window.clearTimeout(debounceTimerRef.current);
       window.clearTimeout(copyResetTimerRef.current);
+      window.clearTimeout(copyStatusTimerRef.current);
     };
   }, []);
 
-  const effectiveContent =
-    displayContent || (isStreaming ? "HomeTruth is thinking…" : "");
+  const effectiveContent = displayContent || "";
   const shouldRenderPlainText = hasUnclosedCodeFence(displayContent);
+
+  const shouldRenderInlineCitations = CITATIONS_ENABLED && enableSourcesUI;
 
   const rehypePlugins = useMemo(() => {
     const plugins: PluggableList = [[rehypeSanitize, markdownSanitizeSchema]];
@@ -202,6 +324,13 @@ function ChatMessageComponent({
 
     return plugins;
   }, [isStreaming, shouldRenderPlainText]);
+
+  const remarkPlugins = useMemo(() => {
+    if (shouldRenderInlineCitations) {
+      return [...MARKDOWN_REMARK_PLUGINS, remarkInlineCitations];
+    }
+    return MARKDOWN_REMARK_PLUGINS;
+  }, [shouldRenderInlineCitations]);
 
   const handleCopySnippet = useCallback(
     async (snippet: string, snippetId: string) => {
@@ -221,6 +350,54 @@ function ChatMessageComponent({
     },
     []
   );
+
+  const handleCopyAnswer = useCallback(async () => {
+    const cleanContent = stripCitations(content).trim();
+    if (!cleanContent) return;
+    if (typeof navigator === "undefined" || !navigator.clipboard) return;
+
+    try {
+      await navigator.clipboard.writeText(cleanContent);
+      setCopyStatus("answer");
+      window.clearTimeout(copyStatusTimerRef.current);
+      copyStatusTimerRef.current = window.setTimeout(() => {
+        setCopyStatus(null);
+      }, COPIED_RESET_MS);
+    } catch (error) {
+      console.warn("Copy answer failed", error);
+    }
+  }, [content]);
+
+  const handleCopyWithCitations = useCallback(async () => {
+    const baseContent = content.trim();
+    if (!baseContent) {
+      await handleCopyAnswer();
+      return;
+    }
+    if (typeof navigator === "undefined" || !navigator.clipboard) return;
+
+    const sourcesText = (sources ?? []).map((source, index) => {
+      const label = source.citation ?? index + 1;
+      const title = source.title || "Source";
+      const url = source.url ? ` - ${source.url}` : "";
+      return `[${label}] ${title}${url}`;
+    });
+
+    const payload = sourcesText.length
+      ? `${baseContent}\n\nSources:\n${sourcesText.join("\n")}`
+      : baseContent;
+
+    try {
+      await navigator.clipboard.writeText(payload);
+      setCopyStatus("citations");
+      window.clearTimeout(copyStatusTimerRef.current);
+      copyStatusTimerRef.current = window.setTimeout(() => {
+        setCopyStatus(null);
+      }, COPIED_RESET_MS);
+    } catch (error) {
+      console.warn("Copy with citations failed", error);
+    }
+  }, [content, handleCopyAnswer, sources]);
 
   const markdownComponents = useMemo<Components>(() => {
     const CodeBlock: CodeRenderer = ({
@@ -283,16 +460,68 @@ function ChatMessageComponent({
     };
 
     return {
-      a: ({ href, children, rel, ...rest }) => (
-        <a
-          {...rest}
-          href={href}
-          target="_blank"
-          rel={cn("noopener noreferrer", rel)}
-        >
-          {children}
-        </a>
-      ),
+      a: ({ href, children, rel, ...rest }) => {
+        const citationMatch =
+          typeof href === "string" && href.startsWith("#source-")
+            ? Number.parseInt(href.replace("#source-", ""), 10)
+            : null;
+
+        if (
+          shouldRenderInlineCitations &&
+          citationMatch &&
+          Number.isFinite(citationMatch)
+        ) {
+          const citationNumber = citationMatch;
+          const matchingSource =
+            sources?.find((source) => source.citation === citationNumber) ??
+            sources?.[citationNumber - 1];
+
+          const handleCitationClick = () => {
+            setSourcesExpanded(true);
+            if (typeof window === "undefined" || typeof document === "undefined") {
+              return;
+            }
+            window.requestAnimationFrame(() => {
+              const target = document.getElementById(`source-${citationNumber}`);
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+            });
+          };
+
+          const title = matchingSource?.title || `Source ${citationNumber}`;
+          const ariaLabel = matchingSource?.title
+            ? `View source ${citationNumber}: ${matchingSource.title}`
+            : `View source ${citationNumber}`;
+
+          return (
+            <sup className="inline align-baseline text-[#00BFFF]">
+              <button
+                type="button"
+                onClick={handleCitationClick}
+                className="rounded px-1 text-[0.65rem] font-semibold leading-none text-[#00BFFF] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#00BFFF]"
+                title={title}
+                aria-label={ariaLabel}
+                {...rest}
+                data-citation-index={citationNumber}
+              >
+                {citationNumber}
+              </button>
+            </sup>
+          );
+        }
+
+        return (
+          <a
+            {...rest}
+            href={href}
+            target="_blank"
+            rel={cn("noopener noreferrer", rel)}
+          >
+            {children}
+          </a>
+        );
+      },
       code: CodeBlock,
       table: ({ children, ...rest }) => (
         <div className="w-full overflow-x-auto">
@@ -301,7 +530,13 @@ function ChatMessageComponent({
       ),
       img: () => null,
     } as Components;
-  }, [copiedCodeId, handleCopySnippet]);
+  }, [
+    copiedCodeId,
+    handleCopySnippet,
+    shouldRenderInlineCitations,
+    sources,
+    setSourcesExpanded,
+  ]);
 
   if (type === "user") {
     return (
@@ -324,7 +559,7 @@ function ChatMessageComponent({
     <div className="flex justify-start">
       <div className="max-w-2xl">
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          <div className="space-y-3">
+          <div className="space-y-3 message-content">
             {shouldRenderPlainText ? (
               <pre className="whitespace-pre-wrap break-words text-gray-800 font-gill-sans-regular">
                 {effectiveContent}
@@ -335,92 +570,141 @@ function ChatMessageComponent({
                   content={effectiveContent}
                   components={markdownComponents}
                   rehypePlugins={rehypePlugins}
+                  remarkPlugins={remarkPlugins}
                 />
               </div>
             )}
 
-            {sources && sources.length > 0 && (
+            {enableSourcesUI && sources && (
               <div className="flex flex-wrap gap-2 pt-1">
-                {sources.map((source) => (
-                  <div
-                    key={`${source.id}-${source.citation}`}
-                    className="inline-flex items-center space-x-2 rounded-full border border-[#00BFFF]/30 bg-[#00BFFF]/5 px-3 py-1"
-                    title={source.title || "Source"}
-                  >
-                    <span className="text-xs font-semibold text-[#00BFFF]">
-                      [{source.citation}]
-                    </span>
-                    <span className="text-xs text-gray-600 truncate max-w-[160px]">
-                      {source.title || "Source"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {CITATIONS_ENABLED && sources && sources.length > 0 && (
-              <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-tight text-gray-500">
-                  Sources
-                </p>
-                <ul className="mt-2 space-y-2">
-                  {sources.map((source) => (
-                    <li
-                      key={`source-detail-${source.id}-${source.citation}`}
-                      className="text-sm text-gray-700"
+                {sources.map((source, index) => {
+                  const label = source.citation ?? index + 1;
+                  return (
+                    <div
+                      key={`${source.id}-${label}`}
+                      className="inline-flex items-center space-x-2 rounded-full border border-[#00BFFF]/30 bg-[#00BFFF]/5 px-3 py-1"
+                      title={source.title || "Source"}
                     >
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#00BFFF]/10 text-xs font-semibold text-[#00BFFF]">
-                          {source.citation}
-                        </span>
-                        <div className="space-y-1">
-                          <div className="font-gill-sans-regular">
-                            {source.url ? (
-                              <a
-                                href={source.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[#00BFFF] hover:underline"
-                              >
-                                {source.title || "Source"}
-                              </a>
-                            ) : (
-                              <span>{source.title || "Source"}</span>
-                            )}
-                          </div>
-                          {source.snippet && (
-                            <p className="text-xs text-gray-600">
-                              {source.snippet}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      <span className="text-xs font-semibold text-[#00BFFF]">
+                        [{label}]
+                      </span>
+                      <span className="text-xs text-gray-600 truncate max-w-[160px]">
+                        {source.title || "Source"}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            {isStreaming && (
-              <p className="text-xs text-gray-400 animate-pulse">
-                Streaming response…
-              </p>
+            {CITATIONS_ENABLED && enableSourcesUI && sources && (
+              <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSourcesExpanded((prev) => !prev)}
+                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-tight text-gray-500"
+                    aria-expanded={sourcesExpanded}
+                  >
+                    {sourcesExpanded ? "Hide sources" : "Show sources"} ({
+                      sourcesCount
+                    })
+                    <ChevronDown
+                      className={cn(
+                        "h-3 w-3 transition-transform",
+                        sourcesExpanded ? "rotate-180" : ""
+                      )}
+                    />
+                  </button>
+                </div>
+                {sourcesExpanded && (
+                  <ul className="mt-2 space-y-2">
+                    {sources.map((source, index) => {
+                      const label = source.citation ?? index + 1;
+                      return (
+                        <li
+                          key={`source-detail-${source.id}-${label}`}
+                          id={`source-${label}`}
+                          className="text-sm text-gray-700"
+                          tabIndex={-1}
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#00BFFF]/10 text-xs font-semibold text-[#00BFFF]">
+                              {label}
+                            </span>
+                            <div className="space-y-1">
+                              <div className="font-gill-sans-regular">
+                                {source.url ? (
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-[#00BFFF] hover:underline"
+                                  >
+                                    {source.title || "Source"}
+                                  </a>
+                                ) : (
+                                  <span>{source.title || "Source"}</span>
+                                )}
+                              </div>
+                              {source.snippet && (
+                                <p className="text-xs text-gray-600">
+                                  {source.snippet}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {isStreaming && !effectiveContent && (
+              <div className="animate-pulse space-y-2">
+                <div className="h-4 w-3/4 rounded bg-gray-200" />
+                <div className="h-4 w-1/2 rounded bg-gray-200" />
+              </div>
             )}
           </div>
           {(timestamp || showCopyButton) && (
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
               {timestamp && (
                 <p className="text-xs text-gray-500">{timestamp}</p>
               )}
               {showCopyButton && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1"
-                  onClick={onCopy}
-                >
-                  <Copy className="h-4 w-4 text-gray-500" />
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={handleCopyAnswer}
+                  >
+                    {copyStatus === "answer" ? (
+                      <Check className="h-4 w-4 text-[#00BFFF]" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-gray-500" />
+                    )}
+                    <span className="text-xs">Copy answer</span>
+                  </Button>
+                  {sourcesCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={handleCopyWithCitations}
+                    >
+                      {copyStatus === "citations" ? (
+                        <Check className="h-4 w-4 text-[#00BFFF]" />
+                      ) : (
+                        <Copy className="h-4 w-4 text-gray-500" />
+                      )}
+                      <span className="text-xs">Copy with sources</span>
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           )}
