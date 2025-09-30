@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { OpenAIService } from '@/lib/openai';
 import { pineconeService, type RetrievalFilters, type RetrievalMode } from '@/lib/pinecone';
+import { PromptLoader } from '@/lib/prompt-loader';
 import { track } from '@/lib/telemetry';
 
 const MAX_INPUT_LENGTH = Number(process.env.CHAT_MAX_INPUT_LENGTH ?? 2000);
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+const systemPromptPromise = IS_DEVELOPMENT ? undefined : PromptLoader.load();
 
 function sanitizeMode(value: unknown): RetrievalMode {
   if (value === 'user' || value === 'hybrid' || value === 'knowledge') {
@@ -77,7 +80,10 @@ export async function POST(request: NextRequest) {
   const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : undefined;
   const userId = typeof body?.userId === 'string' ? body.userId : undefined;
   const mode = sanitizeMode(body?.mode);
-  const filters = sanitizeFilters(body?.filters);
+  let filters = sanitizeFilters(body?.filters);
+  if (!filters || !filters.namespace) {
+    filters = { ...(filters || {}), namespace: 'general,urls' };
+  }
 
   const requestStartedAt = Date.now();
 
@@ -98,6 +104,10 @@ export async function POST(request: NextRequest) {
 
       request.signal.addEventListener('abort', abortHandler, { once: true });
 
+      let systemPrompt:
+        | Awaited<ReturnType<typeof PromptLoader.load>>
+        | undefined;
+
       try {
         const retrievalStartedAt = Date.now();
         const retrieval = await pineconeService.retrieveChatContext({
@@ -111,9 +121,11 @@ export async function POST(request: NextRequest) {
         send('sources', retrieval.sources);
 
         const generationStartedAt = Date.now();
+        systemPrompt = await (systemPromptPromise ?? PromptLoader.load());
         const handle = await OpenAIService.streamChatResponse({
           question: messageRaw,
           context: retrieval.context,
+          systemPrompt: systemPrompt.content,
           signal: request.signal,
         });
 
@@ -155,6 +167,9 @@ export async function POST(request: NextRequest) {
             generationMs: generationCompletedAt - generationStartedAt,
             firstTokenMs: firstTokenLatency ?? null,
             totalMs: generationCompletedAt - requestStartedAt,
+            promptSource: systemPrompt.source,
+            promptHash: systemPrompt.hash,
+            promptSizeBytes: systemPrompt.sizeBytes,
           },
         });
       } catch (error) {
@@ -169,6 +184,13 @@ export async function POST(request: NextRequest) {
               sessionId,
               mode,
               userId,
+              ...(systemPrompt
+                ? {
+                    promptSource: systemPrompt.source,
+                    promptHash: systemPrompt.hash,
+                    promptSizeBytes: systemPrompt.sizeBytes,
+                  }
+                : {}),
             },
           });
         }

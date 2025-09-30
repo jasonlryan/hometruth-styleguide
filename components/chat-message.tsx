@@ -12,6 +12,7 @@ import type { Components } from "react-markdown";
 import type { PluggableList } from "unified";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CITATIONS_ENABLED } from "@/lib/feature-flags";
 import { Check, Copy } from "lucide-react";
 
 export interface ChatSource {
@@ -78,32 +79,30 @@ const markdownSanitizeSchema: Schema = {
   ]),
   attributes: {
     ...defaultSchema.attributes,
-    a: mergeUnique(defaultSchema.attributes?.a as AttributeEntry[] | undefined, [
-      "href",
-      "title",
-      "target",
-      "rel",
-    ]),
-    code: mergeUnique(defaultSchema.attributes?.code as AttributeEntry[] | undefined, [
-      "class",
-      "className",
-    ]),
-    pre: mergeUnique(defaultSchema.attributes?.pre as AttributeEntry[] | undefined, [
-      "class",
-      "className",
-    ]),
-    table: mergeUnique(defaultSchema.attributes?.table as AttributeEntry[] | undefined, [
-      "class",
-      "className",
-    ]),
-    td: mergeUnique(defaultSchema.attributes?.td as AttributeEntry[] | undefined, [
-      "class",
-      "className",
-    ]),
-    th: mergeUnique(defaultSchema.attributes?.th as AttributeEntry[] | undefined, [
-      "class",
-      "className",
-    ]),
+    a: mergeUnique(
+      defaultSchema.attributes?.a as AttributeEntry[] | undefined,
+      ["href", "title", "target", "rel"]
+    ),
+    code: mergeUnique(
+      defaultSchema.attributes?.code as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
+    pre: mergeUnique(
+      defaultSchema.attributes?.pre as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
+    table: mergeUnique(
+      defaultSchema.attributes?.table as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
+    td: mergeUnique(
+      defaultSchema.attributes?.td as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
+    th: mergeUnique(
+      defaultSchema.attributes?.th as AttributeEntry[] | undefined,
+      ["class", "className"]
+    ),
   },
 };
 
@@ -190,7 +189,8 @@ function ChatMessageComponent({
     };
   }, []);
 
-  const effectiveContent = displayContent || (isStreaming ? "HomeTruth is thinking…" : "");
+  const effectiveContent =
+    displayContent || (isStreaming ? "HomeTruth is thinking…" : "");
   const shouldRenderPlainText = hasUnclosedCodeFence(displayContent);
 
   const rehypePlugins = useMemo(() => {
@@ -203,21 +203,24 @@ function ChatMessageComponent({
     return plugins;
   }, [isStreaming, shouldRenderPlainText]);
 
-  const handleCopySnippet = useCallback(async (snippet: string, snippetId: string) => {
-    if (!snippet.trim()) return;
-    if (typeof navigator === "undefined" || !navigator.clipboard) return;
+  const handleCopySnippet = useCallback(
+    async (snippet: string, snippetId: string) => {
+      if (!snippet.trim()) return;
+      if (typeof navigator === "undefined" || !navigator.clipboard) return;
 
-    try {
-      await navigator.clipboard.writeText(snippet);
-      setCopiedCodeId(snippetId);
-      window.clearTimeout(copyResetTimerRef.current);
-      copyResetTimerRef.current = window.setTimeout(() => {
-        setCopiedCodeId(null);
-      }, COPIED_RESET_MS);
-    } catch (error) {
-      console.warn("Copy code block failed", error);
-    }
-  }, []);
+      try {
+        await navigator.clipboard.writeText(snippet);
+        setCopiedCodeId(snippetId);
+        window.clearTimeout(copyResetTimerRef.current);
+        copyResetTimerRef.current = window.setTimeout(() => {
+          setCopiedCodeId(null);
+        }, COPIED_RESET_MS);
+      } catch (error) {
+        console.warn("Copy code block failed", error);
+      }
+    },
+    []
+  );
 
   const markdownComponents = useMemo<Components>(() => {
     const CodeBlock: CodeRenderer = ({
@@ -232,7 +235,10 @@ function ChatMessageComponent({
 
       if (inline) {
         return (
-          <code {...rest} className={cn(className, "font-gill-sans-regular text-gray-800")}>
+          <code
+            {...rest}
+            className={cn(className, "font-gill-sans-regular text-gray-800")}
+          >
             {children}
           </code>
         );
@@ -240,9 +246,10 @@ function ChatMessageComponent({
 
       const languageMatch = className?.match(/language-([\w-]+)/);
       const language = languageMatch ? languageMatch[1] : "plaintext";
-      const snippetId = typeof node?.position?.start.offset === "number"
-        ? `${node.position.start.offset}`
-        : `${language}-${codeValue.length}`;
+      const snippetId =
+        typeof node?.position?.start.offset === "number"
+          ? `${node.position.start.offset}`
+          : `${language}-${codeValue.length}`;
       const isCopied = copiedCodeId === snippetId;
 
       return (
@@ -253,7 +260,11 @@ function ChatMessageComponent({
             className="absolute right-3 top-3 hidden items-center gap-1 rounded-md border border-white/15 bg-gray-900/80 px-2 py-1 text-xs font-medium text-gray-100 shadow-sm transition group-hover:flex group-focus-within:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00BFFF]"
             aria-label="Copy code block"
           >
-            {isCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {isCopied ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
             {isCopied ? "Copied" : "Copy"}
           </button>
           <pre
@@ -347,8 +358,53 @@ function ChatMessageComponent({
               </div>
             )}
 
+            {CITATIONS_ENABLED && sources && sources.length > 0 && (
+              <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-tight text-gray-500">
+                  Sources
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {sources.map((source) => (
+                    <li
+                      key={`source-detail-${source.id}-${source.citation}`}
+                      className="text-sm text-gray-700"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#00BFFF]/10 text-xs font-semibold text-[#00BFFF]">
+                          {source.citation}
+                        </span>
+                        <div className="space-y-1">
+                          <div className="font-gill-sans-regular">
+                            {source.url ? (
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[#00BFFF] hover:underline"
+                              >
+                                {source.title || "Source"}
+                              </a>
+                            ) : (
+                              <span>{source.title || "Source"}</span>
+                            )}
+                          </div>
+                          {source.snippet && (
+                            <p className="text-xs text-gray-600">
+                              {source.snippet}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {isStreaming && (
-              <p className="text-xs text-gray-400 animate-pulse">Streaming response…</p>
+              <p className="text-xs text-gray-400 animate-pulse">
+                Streaming response…
+              </p>
             )}
           </div>
           {(timestamp || showCopyButton) && (

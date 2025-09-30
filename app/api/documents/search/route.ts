@@ -3,7 +3,7 @@ import { pineconeService } from '@/lib/pinecone';
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, topK = 5, filter, userId = 'default-user', searchType = 'user' } = await request.json();
+    const { query, topK = 5, filter, userId = 'default-user', searchType = 'user', namespace } = await request.json();
 
     if (!query) {
       return NextResponse.json({ error: 'No query provided' }, { status: 400 });
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       results = await pineconeService.searchUserDocuments(query, userId, topK, filter);
     } else if (searchType === 'knowledge') {
       // Search knowledge base only
-      results = await pineconeService.searchKnowledgeBase(query, topK, filter);
+      results = await pineconeService.searchKnowledgeBase(query, topK, filter, namespace);
     } else {
       // Search both user docs and knowledge base
       const combinedResults = await pineconeService.searchAll(query, userId, topK);

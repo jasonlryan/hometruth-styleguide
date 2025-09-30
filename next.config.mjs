@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  env: {
+    CITATIONS_ON: process.env.CITATIONS_ON,
+  },
 }
 
 export default nextConfig

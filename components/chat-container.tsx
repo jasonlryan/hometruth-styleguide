@@ -36,6 +36,7 @@ type StoredSession = {
 
 const STORAGE_KEY = "ht.chat.sessions";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const AUTO_SCROLL_THRESHOLD_PX = 96;
 
 function generateId() {
   if (
@@ -186,11 +187,14 @@ export default function ChatContainer({
   const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAutoScrollLocked, setIsAutoScrollLocked] = useState(false);
+  const [hasNewActivity, setHasNewActivity] = useState(false);
 
   const activeControllerRef = useRef<AbortController | null>(null);
   const currentReplyIdRef = useRef<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
+  const pointerInteractingRef = useRef(false);
 
   useEffect(() => {
     const sessions = loadSessionsFromStorage();
@@ -235,13 +239,75 @@ export default function ChatContainer({
 
   useEffect(() => {
     const viewport = messagesViewportRef.current;
-    if (!viewport) return;
+    if (!viewport || isAutoScrollLocked) return;
 
     viewport.scrollTo({
       top: viewport.scrollHeight,
       behavior: messages[messages.length - 1]?.isStreaming ? "auto" : "smooth",
     });
-  }, [messages]);
+  }, [messages, isAutoScrollLocked]);
+
+  useEffect(() => {
+    if (!isAutoScrollLocked) {
+      setHasNewActivity(false);
+    }
+  }, [isAutoScrollLocked]);
+
+  useEffect(() => {
+    if (!isAutoScrollLocked || messages.length === 0) return;
+    setHasNewActivity(true);
+  }, [messages, isAutoScrollLocked]);
+
+  useEffect(() => {
+    const getViewport = () => messagesViewportRef.current;
+    const initialViewport = getViewport();
+    if (!initialViewport) return;
+
+    const isNearBottom = (element: HTMLDivElement) => {
+      const distanceFromBottom =
+        element.scrollHeight - element.scrollTop - element.clientHeight;
+      return distanceFromBottom <= AUTO_SCROLL_THRESHOLD_PX;
+    };
+
+    const updateLockFromPosition = () => {
+      const element = getViewport();
+      if (!element) return;
+      const shouldLock = !isNearBottom(element);
+      setIsAutoScrollLocked((prev) => (prev === shouldLock ? prev : shouldLock));
+    };
+
+    const handleScroll = () => {
+      if (pointerInteractingRef.current) return;
+      updateLockFromPosition();
+    };
+
+    const handlePointerDown = () => {
+      pointerInteractingRef.current = true;
+      setIsAutoScrollLocked(true);
+    };
+
+    const handlePointerUp = () => {
+      pointerInteractingRef.current = false;
+    };
+
+    initialViewport.addEventListener("scroll", handleScroll, { passive: true });
+    initialViewport.addEventListener("pointerdown", handlePointerDown);
+    initialViewport.addEventListener("pointerup", handlePointerUp);
+    initialViewport.addEventListener("pointercancel", handlePointerUp);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+
+    updateLockFromPosition();
+
+    return () => {
+      initialViewport.removeEventListener("scroll", handleScroll);
+      initialViewport.removeEventListener("pointerdown", handlePointerDown);
+      initialViewport.removeEventListener("pointerup", handlePointerUp);
+      initialViewport.removeEventListener("pointercancel", handlePointerUp);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, []);
 
   const sessionSummaries: ChatHistorySession[] = useMemo(
     () =>
@@ -268,6 +334,7 @@ export default function ChatContainer({
     setMessages(session.messages ?? []);
     setIsHistoryOpen(false);
     setError(null);
+    setIsAutoScrollLocked(false);
   };
 
   const handleNewConversation = () => {
@@ -280,6 +347,7 @@ export default function ChatContainer({
     setSessionId(generateId());
     setError(null);
     setInputValue("");
+    setIsAutoScrollLocked(false);
   };
 
   const updateCurrentReply = (
@@ -292,6 +360,17 @@ export default function ChatContainer({
         message.id === replyId ? updater({ ...message }) : message
       )
     );
+  };
+
+  const handleScrollToBottom = () => {
+    const viewport = messagesViewportRef.current;
+    if (!viewport) return;
+
+    setIsAutoScrollLocked(false);
+    viewport.scrollTo({
+      top: viewport.scrollHeight,
+      behavior: "smooth",
+    });
   };
 
   const handleStreamEvent = (event: string, payload: unknown) => {
@@ -486,7 +565,7 @@ export default function ChatContainer({
 
         <div
           ref={messagesViewportRef}
-          className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50"
+          className="flex-1 p-6 space-y-6 overflow-y-auto overscroll-contain bg-gray-50 relative"
         >
           <div aria-live="polite" role="status" className="sr-only">
             {isLoading ? "HomeTruth is responding" : ""}
@@ -510,6 +589,18 @@ export default function ChatContainer({
                 onCopy={() => handleCopy(message.content)}
               />
             ))
+          )}
+          {hasNewActivity && isAutoScrollLocked && (
+            <div className="sticky bottom-4 flex justify-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleScrollToBottom}
+                className="shadow-md"
+              >
+                Jump to latest
+              </Button>
+            </div>
           )}
           <div ref={messagesEndRef} />
         </div>

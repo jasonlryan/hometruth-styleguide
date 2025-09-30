@@ -3,14 +3,14 @@ import { pineconeService } from '@/lib/pinecone';
 
 export async function POST(request: NextRequest) {
   try {
-    const { query, topK = 5, filter } = await request.json();
+    const { query, topK = 5, filter, namespace } = await request.json();
 
     if (!query) {
       return NextResponse.json({ error: 'No query provided' }, { status: 400 });
     }
 
     // Search knowledge base
-    const results = await pineconeService.searchKnowledgeBase(query, topK, filter);
+    const results = await pineconeService.searchKnowledgeBase(query, topK, filter, namespace);
     
     return NextResponse.json({
       success: true,

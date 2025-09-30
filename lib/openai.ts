@@ -1,5 +1,8 @@
 import OpenAI from 'openai';
 
+import { DEFAULT_CHAT_SYSTEM_PROMPT } from './prompt-defaults';
+import { loadSystemPrompt } from './prompt-loader';
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -7,12 +10,6 @@ const client = new OpenAI({
 const DEFAULT_CHAT_MODEL = process.env.OPENAI_MODEL_CHAT || 'gpt-5';
 const DEFAULT_CHAT_TEMPERATURE = Number(process.env.OPENAI_CHAT_TEMPERATURE ?? 0.35);
 const DEFAULT_MAX_COMPLETION_TOKENS = Number(process.env.MAX_TOKENS ?? 900);
-const DEFAULT_CHAT_SYSTEM_PROMPT = `You are HomeTruth, an AI assistant helping UK homebuyers make informed decisions.
-Follow these rules:
-- Use the numbered sources provided and cite them with bracketed numbers like [1].
-- If the answer is uncertain or unsupported, say so and suggest practical next steps.
-- Keep responses concise, structured, and focused on the UK property market.
-- Never fabricate sources, figures, or guarantees.`;
 
 export interface StreamChatResponseHandle {
   stream: AsyncGenerator<string, void, unknown>;
@@ -195,7 +192,7 @@ export class OpenAIService {
     const {
       question,
       context,
-      systemPrompt = DEFAULT_CHAT_SYSTEM_PROMPT,
+      systemPrompt,
       temperature = DEFAULT_CHAT_TEMPERATURE,
       maxTokens = DEFAULT_MAX_COMPLETION_TOKENS,
       signal,
@@ -203,16 +200,42 @@ export class OpenAIService {
     } = options;
 
     const userContent = this.composeChatPrompt(question, context);
+    const effectiveSystemPrompt = await (async () => {
+      if (typeof systemPrompt === 'string' && systemPrompt.trim().length > 0) {
+        return systemPrompt;
+      }
+      try {
+        return await loadSystemPrompt();
+      } catch {
+        return DEFAULT_CHAT_SYSTEM_PROMPT;
+      }
+    })();
+
+    const approxPromptTokens = Math.ceil(effectiveSystemPrompt.length / 4) || 0;
+    const effectiveMaxTokens = (() => {
+      if (approxPromptTokens <= 2000) {
+        return maxTokens;
+      }
+
+      const ratio = 2000 / approxPromptTokens;
+      const adjusted = Math.max(200, Math.floor(maxTokens * ratio));
+      if (adjusted < maxTokens) {
+        console.warn(
+          `[openai] Large system prompt (~${approxPromptTokens} tokens). Reducing max_output_tokens from ${maxTokens} to ${adjusted}.`,
+        );
+      }
+      return adjusted;
+    })();
 
     // GPT-5 Responses API: omit unsupported params like `temperature`
     const responseStream = await client.responses.stream(
       {
         model,
         input: [
-          { role: 'system', content: [{ type: 'input_text', text: systemPrompt }] },
+          { role: 'system', content: [{ type: 'input_text', text: effectiveSystemPrompt }] },
           { role: 'user', content: [{ type: 'input_text', text: userContent }] },
         ],
-        max_output_tokens: maxTokens,
+        max_output_tokens: effectiveMaxTokens,
       },
       { signal },
     );

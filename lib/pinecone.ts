@@ -197,7 +197,14 @@ export class PineconeService {
           includeMetadata: true,
           filter,
         });
-        return result;
+        const rawHits = (result as any)?.result?.hits ?? (result as any)?.hits;
+        const hits: any[] = Array.isArray(rawHits) ? rawHits : [];
+        const matches = hits.map((hit: any) => ({
+          id: hit?._id ?? hit?.id,
+          score: hit?._score,
+          metadata: (hit?.fields ?? hit?.metadata) || {},
+        }));
+        return { matches } as any;
       }
 
       // Fallback: embed query and use vector search
@@ -295,7 +302,14 @@ export class PineconeService {
           includeMetadata: true,
           filter,
         });
-        return result;
+        const rawHits = (result as any)?.result?.hits ?? (result as any)?.hits;
+        const hits: any[] = Array.isArray(rawHits) ? rawHits : [];
+        const matches = hits.map((hit: any) => ({
+          id: hit?._id ?? hit?.id,
+          score: hit?._score,
+          metadata: (hit?.fields ?? hit?.metadata) || {},
+        }));
+        return { matches } as any;
       }
       // Fallback: embed query and use vector search
       const embed = await pc.inference.embed(
@@ -548,7 +562,20 @@ export class PineconeService {
       filters,
     } = options;
 
-    const requestedNamespace = filters?.namespace || namespace || DEFAULT_KNOWLEDGE_NAMESPACE;
+    const nsSpec = (filters?.namespace || namespace || DEFAULT_KNOWLEDGE_NAMESPACE).trim();
+    const namespaces: string[] = (() => {
+      if (!nsSpec) return [DEFAULT_KNOWLEDGE_NAMESPACE];
+      const lowered = nsSpec.toLowerCase();
+      if (lowered === 'all') {
+        // Known knowledge namespaces
+        return ['general', 'urls'];
+      }
+      return nsSpec
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry) => Boolean(entry));
+    })();
+
     const retrievalFilter = this.buildFilter(filters);
 
     const knowledgeMatches: NormalizedMatch[] =
@@ -556,16 +583,26 @@ export class PineconeService {
         ? []
         : await (async () => {
             try {
-              const searchResponse = await this.searchKnowledgeBase(
-                query,
-                topK,
-                retrievalFilter,
-                requestedNamespace,
+              const perNamespaceResults = await Promise.all(
+                namespaces.map(async (ns) => {
+                  try {
+                    const searchResponse = await this.searchKnowledgeBase(
+                      query,
+                      topK,
+                      retrievalFilter,
+                      ns,
+                    );
+                    const matches = Array.isArray(searchResponse?.matches)
+                      ? searchResponse.matches
+                      : [];
+                    return this.normalizeMatches(matches, ns);
+                  } catch (innerError) {
+                    console.error('Knowledge base retrieval failed for namespace', ns, innerError);
+                    return [] as NormalizedMatch[];
+                  }
+                }),
               );
-              const matches = Array.isArray(searchResponse?.matches)
-                ? searchResponse.matches
-                : [];
-              return this.normalizeMatches(matches, requestedNamespace);
+              return perNamespaceResults.flat();
             } catch (error) {
               console.error('Knowledge base retrieval failed:', error);
               return [];
@@ -614,6 +651,7 @@ export class PineconeService {
       const contextLines = [
         `Source [${citation}] ${match.title ?? 'Untitled'} (${match.category ?? 'General'})`,
         `Namespace: ${match.namespace}`,
+        ...(match.url ? [`URL: ${match.url}`] : []),
         ...bullets.map((bullet) => `- ${bullet}`),
       ];
 
