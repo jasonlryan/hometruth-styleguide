@@ -567,7 +567,7 @@ export default function ChatContainer({
   ];
 
   return (
-    <div className={`flex min-h-full ${className}`}>
+    <div className={`flex h-full ${className}`}>
       {showHistory && isHistoryOpen && (
         <ChatHistory
           sessions={sessionSummaries}
@@ -578,7 +578,7 @@ export default function ChatContainer({
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col h-full">
         <div className="bg-white border-b border-gray-200 px-3 py-3 sm:px-6 sm:py-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {title && (

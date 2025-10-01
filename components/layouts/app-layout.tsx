@@ -76,17 +76,15 @@ export default function AppLayout({
   // App pages with sidebar
   if (isAppPageWithSidebar) {
     return (
-      <div className="flex min-h-screen flex-col overflow-hidden bg-gray-50">
+      <div className="flex min-h-screen flex-col bg-gray-50">
         <Header {...headerProps} />
-        <div className="flex flex-1 min-h-0">
+        <div className="flex">
           <SidebarNav className="hidden lg:block" />
-          <main className="flex flex-1 min-h-0 flex-col overflow-y-auto bg-gray-50">
-            <div className="flex flex-1 min-h-0 flex-col">
-              {children}
-            </div>
-            <Footer variant="app" />
+          <main className="flex flex-col bg-gray-50 min-h-screen w-full">
+            <div className="flex flex-1 min-h-0 flex-col">{children}</div>
           </main>
         </div>
+        <Footer variant="app" />
         <Dialog
           open={mobileMenuOpen}
           onOpenChange={setMobileMenuOpen}
@@ -124,14 +122,12 @@ export default function AppLayout({
   // App pages without sidebar
   if (isAppPage && !showSidebar) {
     return (
-      <div className="flex min-h-screen flex-col overflow-hidden bg-gray-50">
+      <div className="flex min-h-screen flex-col bg-gray-50">
         <Header {...headerProps} />
-        <main className="flex flex-1 min-h-0 flex-col overflow-y-auto bg-gray-50">
-          <div className="flex flex-1 min-h-0 flex-col">
-            {children}
-          </div>
-          <Footer variant="app" />
+        <main className="flex flex-col bg-gray-50 min-h-screen w-full">
+          <div className="flex flex-1 min-h-0 flex-col">{children}</div>
         </main>
+        <Footer variant="app" />
       </div>
     );
   }
@@ -140,9 +136,7 @@ export default function AppLayout({
   return (
     <div className="flex min-h-screen flex-col overflow-hidden bg-white">
       <Header {...headerProps} />
-      <main className="flex flex-1 flex-col">
-        {children}
-      </main>
+      <main className="flex flex-1 flex-col">{children}</main>
       <Footer variant="landing" />
     </div>
   );

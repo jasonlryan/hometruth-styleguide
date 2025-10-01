@@ -24,7 +24,7 @@ export default function Footer({
                       alt="HomeTruth - Your Personal Property Assistant"
                       width={180}
                       height={48}
-                      className="h-12 w-auto"
+                      style={{ height: 48, width: "auto" }}
                     />
                   </div>
                 </div>
@@ -121,7 +121,7 @@ export default function Footer({
                   alt="HomeTruth - Your Personal Property Assistant"
                   width={180}
                   height={48}
-                  className="h-12 w-auto"
+                  style={{ height: 48, width: "auto" }}
                 />
               </div>
             </div>
