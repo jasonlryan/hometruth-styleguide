@@ -6,9 +6,9 @@ import ChatContainer from "@/components/chat-container";
 export default function ChatPage() {
   return (
     <AppLayout>
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         <ChatContainer
-          className="flex-1 min-h-0"
+          className="flex-1"
           showHistory={true}
           title="Ask HomeTruth"
         />

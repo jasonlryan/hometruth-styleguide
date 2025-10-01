@@ -29,7 +29,7 @@ export default function CompletePage() {
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="w-full bg-[#00BFFF] hover:bg-blue-600 text-white py-4 text-lg"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 text-lg"
               >
                 Go to Dashboard
                 <ArrowRight className="ml-2 h-5 w-5" />

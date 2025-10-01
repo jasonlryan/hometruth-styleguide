@@ -168,7 +168,7 @@ export default function MultiStepForm({
             )}
             <Button
               onClick={handleNext}
-              className="bg-[#00BFFF] hover:bg-blue-600 text-white px-8"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
             >
               {isLastStep ? "Complete" : "Next"}
             </Button>

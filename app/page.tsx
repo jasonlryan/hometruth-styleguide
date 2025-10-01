@@ -67,12 +67,12 @@ export default function HomeTruthLanding() {
             {/* Featured Chat Interface - Centered */}
             <div className="max-w-3xl mx-auto relative">
               {/* Subtle background glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#00BFFF]/5 to-[#B19CD9]/5 rounded-2xl blur-xl transform scale-105 -z-10"></div>
+              <div className="absolute inset-0 -z-10 transform scale-105 rounded-2xl bg-gradient-to-r from-[hsl(var(--primary))] to-[var(--ht-secondary)] opacity-10 blur-xl"></div>
               <Link href="/chat">
-                <Card className="shadow-xl hover:shadow-2xl border-0 bg-white cursor-pointer transition-all duration-300 ring-1 ring-gray-200 hover:ring-2 hover:ring-[#00BFFF]/20">
+                <Card className="shadow-xl hover:shadow-2xl border-0 bg-white cursor-pointer transition-all duration-300 ring-1 ring-gray-200 hover:ring-2 hover:ring-primary/20">
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2 mb-4">
-                      <MessageCircle className="h-5 w-5 text-[#00BFFF]" />
+                      <MessageCircle className="h-5 w-5 text-primary" />
                       <span className="font-gill-sans-light text-gray-800">
                         HomeTruth AI Assistant
                       </span>
@@ -92,7 +92,7 @@ export default function HomeTruthLanding() {
                         </div>
                       </div>
                       <div className="flex justify-end">
-                        <div className="bg-[#00BFFF] text-white rounded-lg p-3 max-w-md">
+                        <div className="rounded-lg bg-primary p-3 text-primary-foreground max-w-md">
                           <p className="text-sm">What is leasehold?</p>
                         </div>
                       </div>
@@ -113,19 +113,19 @@ export default function HomeTruthLanding() {
                       <div className="flex flex-wrap gap-2 justify-center">
                         <Badge
                           variant="secondary"
-                          className="cursor-pointer hover:bg-[#00BFFF] hover:text-white transition-colors"
+                          className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
                         >
                           How much stamp duty will I pay?
                         </Badge>
                         <Badge
                           variant="secondary"
-                          className="cursor-pointer hover:bg-[#00BFFF] hover:text-white transition-colors"
+                          className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
                         >
                           What&apos;s my property worth?
                         </Badge>
                         <Badge
                           variant="secondary"
-                          className="cursor-pointer hover:bg-[#00BFFF] hover:text-white transition-colors"
+                          className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
                         >
                           Should I remortgage?
                         </Badge>
@@ -136,11 +136,11 @@ export default function HomeTruthLanding() {
                     <div className="flex space-x-2">
                       <Input
                         placeholder="Ask any property question..."
-                        className="flex-1 border-gray-200 focus:border-[#00BFFF]"
+                        className="flex-1 border-gray-200 focus:border-primary"
                       />
                       <Button
                         size="sm"
-                        className="bg-[#00BFFF] hover:bg-blue-600"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -154,7 +154,7 @@ export default function HomeTruthLanding() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-[#00BFFF] hover:bg-blue-600 text-white px-8 py-3 text-lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
               >
                 Start Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -163,7 +163,7 @@ export default function HomeTruthLanding() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-white px-8 py-3 text-lg bg-transparent"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 text-lg bg-transparent"
                 >
                   Explore Pro Features
                 </Button>
@@ -255,7 +255,7 @@ export default function HomeTruthLanding() {
             {/* Encryption */}
             <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
               <CardContent className="p-4 text-center">
-                <div className="w-12 h-12 bg-[#00BFFF] rounded-lg mx-auto mb-4 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-primary mx-auto mb-4 flex items-center justify-center">
                   <Lock className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="type-h4 text-black mb-2">Encryption</h3>
@@ -298,7 +298,7 @@ export default function HomeTruthLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-6 bg-gradient-to-r from-[#00BFFF] to-[#B19CD9]">
+      <section className="py-6 bg-gradient-to-r from-[hsl(var(--primary))] to-[var(--ht-secondary)]">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="type-h2 text-white mb-6">
@@ -311,7 +311,7 @@ export default function HomeTruthLanding() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-white text-[#00BFFF] hover:bg-gray-100 px-8 py-3 text-lg font-gill-sans-light"
+                className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-lg font-gill-sans-light"
               >
                 Start Free Today
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -320,7 +320,7 @@ export default function HomeTruthLanding() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-[#00BFFF] px-8 py-3 text-lg bg-transparent"
+                  className="border-white text-white hover:bg-white hover:text-primary px-8 py-3 text-lg bg-transparent"
                 >
                   Explore Pro Features
                 </Button>

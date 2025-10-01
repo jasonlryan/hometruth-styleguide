@@ -434,7 +434,7 @@ function ChatMessageComponent({
           <button
             type="button"
             onClick={() => handleCopySnippet(codeValue, snippetId)}
-            className="absolute right-3 top-3 hidden items-center gap-1 rounded-md border border-white/15 bg-gray-900/80 px-2 py-1 text-xs font-medium text-gray-100 shadow-sm transition group-hover:flex group-focus-within:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00BFFF]"
+            className="absolute right-3 top-3 hidden items-center gap-1 rounded-md border border-white/15 bg-gray-900/80 px-2 py-1 text-xs font-medium text-gray-100 shadow-sm transition group-hover:flex group-focus-within:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Copy code block"
           >
             {isCopied ? (
@@ -495,11 +495,11 @@ function ChatMessageComponent({
             : `View source ${citationNumber}`;
 
           return (
-            <sup className="inline align-baseline text-[#00BFFF]">
+            <sup className="inline align-baseline text-primary">
               <button
                 type="button"
                 onClick={handleCitationClick}
-                className="rounded px-1 text-[0.65rem] font-semibold leading-none text-[#00BFFF] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#00BFFF]"
+                className="rounded px-1 text-[0.65rem] font-semibold leading-none text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
                 title={title}
                 aria-label={ariaLabel}
                 {...rest}
@@ -542,7 +542,7 @@ function ChatMessageComponent({
     return (
       <div className="flex justify-end">
         <div className="max-w-md">
-          <div className="bg-[#00BFFF] text-white rounded-lg p-4">
+          <div className="rounded-lg bg-primary p-4 text-white">
             <p className="text-sm font-gill-sans-regular whitespace-pre-wrap">
               {content}
             </p>
@@ -582,10 +582,10 @@ function ChatMessageComponent({
                   return (
                     <div
                       key={`${source.id}-${label}`}
-                      className="inline-flex items-center space-x-2 rounded-full border border-[#00BFFF]/30 bg-[#00BFFF]/5 px-3 py-1"
+                      className="inline-flex items-center space-x-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1"
                       title={source.title || "Source"}
                     >
-                      <span className="text-xs font-semibold text-[#00BFFF]">
+                      <span className="text-xs font-semibold text-primary">
                         [{label}]
                       </span>
                       <span className="text-xs text-gray-600 truncate max-w-[160px]">
@@ -629,7 +629,7 @@ function ChatMessageComponent({
                           tabIndex={-1}
                         >
                           <div className="flex items-start gap-2">
-                            <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#00BFFF]/10 text-xs font-semibold text-[#00BFFF]">
+                            <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                               {label}
                             </span>
                             <div className="space-y-1">
@@ -639,7 +639,7 @@ function ChatMessageComponent({
                                     href={source.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-[#00BFFF] hover:underline"
+                                    className="text-primary hover:underline"
                                   >
                                     {source.title || "Source"}
                                   </a>
@@ -683,7 +683,7 @@ function ChatMessageComponent({
                     onClick={handleCopyAnswer}
                   >
                     {copyStatus === "answer" ? (
-                      <Check className="h-4 w-4 text-[#00BFFF]" />
+                      <Check className="h-4 w-4 text-primary" />
                     ) : (
                       <Copy className="h-4 w-4 text-gray-500" />
                     )}
@@ -697,7 +697,7 @@ function ChatMessageComponent({
                       onClick={handleCopyWithCitations}
                     >
                       {copyStatus === "citations" ? (
-                        <Check className="h-4 w-4 text-[#00BFFF]" />
+                        <Check className="h-4 w-4 text-primary" />
                       ) : (
                         <Copy className="h-4 w-4 text-gray-500" />
                       )}

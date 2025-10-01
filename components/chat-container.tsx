@@ -567,7 +567,7 @@ export default function ChatContainer({
   ];
 
   return (
-    <div className={`flex h-full ${className}`}>
+    <div className={`flex min-h-full ${className}`}>
       {showHistory && isHistoryOpen && (
         <ChatHistory
           sessions={sessionSummaries}
@@ -579,49 +579,58 @@ export default function ChatContainer({
       )}
 
       <div className="flex-1 flex flex-col min-h-0">
-        <div className="bg-white border-b border-gray-200 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {showHistory && (
+        <div className="bg-white border-b border-gray-200 px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {title && (
+              <h1 className="type-h2 text-gray-900 sm:hidden">{title}</h1>
+            )}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              {showHistory && (
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-gill-sans-light"
+                  onClick={toggleHistory}
+                  title={
+                    isHistoryOpen ? "Hide chat history" : "Show chat history"
+                  }
+                >
+                  <History className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">
+                    {isHistoryOpen ? "Hide History" : "Show History"}
+                  </span>
+                </Button>
+              )}
               <Button
                 size="sm"
-                className="bg-[#00BFFF] hover:bg-blue-600 text-white font-gill-sans-light"
-                onClick={toggleHistory}
-                title={
-                  isHistoryOpen ? "Hide chat history" : "Show chat history"
-                }
+                variant="outline"
+                className="border-gray-200 text-gray-600 hover:text-primary hover:border-primary"
+                onClick={handleNewConversation}
               >
-                <History className="h-4 w-4 mr-2" />
-                {isHistoryOpen ? "Hide History" : "Show History"}
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">New Chat</span>
               </Button>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-gray-200 text-gray-600 hover:text-[#00BFFF] hover:border-[#00BFFF]"
-              onClick={handleNewConversation}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
-          </div>
-          <div className="flex items-center space-x-3">
-            {title && (
-              <h1 className="type-h2 text-gray-900">{title}</h1>
-            )}
-            <div
-              className={`w-3 h-3 rounded-full ${
-                isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"
-              }`}
-            />
-            <div className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-gill-sans-light">
-              {isLoading ? "Responding" : "Online"}
+            </div>
+            <div className="flex items-center space-x-3">
+              {title && (
+                <h1 className="type-h2 text-gray-900 hidden md:block">{title}</h1>
+              )}
+              <div className="flex items-center space-x-2">
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"
+                  }`}
+                />
+                <div className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-gill-sans-light">
+                  {isLoading ? "Responding" : "Online"}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div
           ref={messagesViewportRef}
-          className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto bg-gray-50 relative"
+          className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 relative"
         >
           <div aria-live="polite" role="status" className="sr-only">
             {isLoading ? "HomeTruth is responding" : ""}
@@ -665,7 +674,7 @@ export default function ChatContainer({
             <div className="flex space-x-2">
               <Input
                 placeholder="Ask HomeTruth anything about property..."
-                className="flex-1 border-gray-200 focus:border-[#00BFFF] focus:ring-1 focus:ring-[#00BFFF]/20 bg-gray-50/50 font-gill-sans-light"
+                className="flex-1 border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-gray-50/50 font-gill-sans-light"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -673,7 +682,7 @@ export default function ChatContainer({
               />
               <Button
                 size="sm"
-                className="bg-[#00BFFF] hover:bg-blue-600"
+                className="bg-primary hover:bg-primary/90"
                 onClick={handleSendMessage}
                 disabled={isLoading}
               >
@@ -686,7 +695,7 @@ export default function ChatContainer({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-gray-200 text-gray-600 hover:bg-[#00BFFF]/5 hover:border-[#00BFFF]/20 hover:text-[#00BFFF] transition-colors font-gill-sans-light"
+                  className="border-gray-200 text-gray-600 transition-colors font-gill-sans-light hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                 >
                   <Globe className="h-4 w-4 mr-2" />
                   Search the web
@@ -702,7 +711,7 @@ export default function ChatContainer({
                     <button
                       key={suggestion}
                       onClick={() => setInputValue(suggestion)}
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-[#00BFFF]/10 hover:text-[#00BFFF] transition-colors font-gill-sans-light"
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full transition-colors font-gill-sans-light hover:bg-primary/10 hover:text-primary"
                     >
                       {suggestion}
                     </button>

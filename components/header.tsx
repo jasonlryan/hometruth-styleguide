@@ -131,7 +131,7 @@ export default function Header({
               </div>
             )}
             {showProButton && (
-              <Button className="bg-[#00BFFF] text-white hover:bg-blue-600">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Upgrade to Pro
               </Button>
             )}
@@ -177,16 +177,16 @@ export default function Header({
             <Link
               key={item.href}
               href={item.href}
-              className="font-gill-sans-regular text-gray-600 transition-colors hover:text-[#00BFFF]"
-            >
-              {item.label}
-            </Link>
+            className="font-gill-sans-regular text-gray-600 transition-colors hover:text-primary"
+          >
+            {item.label}
+          </Link>
           ))}
           {showProButton && (
             <Link href="/pro">
               <Button
                 variant="outline"
-                className="border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-white"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 Explore Pro Features
               </Button>
@@ -237,7 +237,7 @@ export default function Header({
             {showProButton && (
               <Link
                 href="/pro"
-                className="mt-2 rounded-md bg-[#00BFFF] px-3 py-2 text-center font-gill-sans-regular text-white hover:bg-[#0095cc]"
+                className="mt-2 rounded-md bg-primary px-3 py-2 text-center font-gill-sans-regular text-primary-foreground hover:bg-primary/90"
                 onClick={() => handleLandingMenuChange(false)}
               >
                 Explore Pro Features

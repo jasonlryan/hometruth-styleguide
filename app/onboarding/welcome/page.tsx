@@ -14,7 +14,7 @@ export default function WelcomePage() {
         <Card className="shadow-lg border-0">
           <CardContent className="p-12">
             {/* Welcome Icon */}
-            <div className="w-16 h-16 bg-gradient-to-r from-[#00BFFF] to-[#B19CD9] rounded-full mx-auto mb-6 flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-[hsl(var(--primary))] to-[var(--ht-secondary)] rounded-full mx-auto mb-6 flex items-center justify-center">
               <span className="text-white text-2xl">👋</span>
             </div>
 
@@ -29,7 +29,7 @@ export default function WelcomePage() {
               <Link href="/onboarding/quiz">
                 <Button
                   size="lg"
-                  className="w-full bg-[#00BFFF] hover:bg-blue-600 text-white py-4 text-lg"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 text-lg"
                 >
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5" />

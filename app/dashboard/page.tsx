@@ -25,14 +25,14 @@ export default function DashboardPage() {
           <Link href="/chat">
             <Card className="hover:shadow-md transition-shadow cursor-pointer border-0 shadow-sm">
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-[#00BFFF] rounded-lg mx-auto mb-4 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-primary mx-auto mb-4 flex items-center justify-center">
                   <MessageCircle className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="type-h4 text-gray-900 mb-2">Ask HomeTruth</h3>
                 <p className="type-body text-gray-600">
                   Get instant answers to your property questions
                 </p>
-                <Button variant="ghost" size="sm" className="mt-3 text-[#00BFFF]">
+                <Button variant="ghost" size="sm" className="mt-3 text-primary">
                   Start Chat <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
@@ -101,15 +101,15 @@ export default function DashboardPage() {
               <h2 className="type-h3 text-gray-900 mb-4">Getting Started</h2>
               <div className="space-y-4">
                 <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="w-8 h-8 bg-[#00BFFF] rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm">1</span>
-                  </div>
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-white text-sm">1</span>
+                </div>
                   <div className="flex-1">
                     <h4 className="font-gill-sans-regular text-gray-900">Ask your first question</h4>
                     <p className="type-body text-gray-600">Try asking about property prices, mortgage rates, or local market trends.</p>
                   </div>
                   <Link href="/chat">
-                    <Button size="sm" className="bg-[#00BFFF] hover:bg-blue-600">
+                    <Button size="sm" className="bg-primary hover:bg-primary/90">
                       Try Now
                     </Button>
                   </Link>

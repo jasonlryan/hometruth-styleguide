@@ -76,12 +76,12 @@ export default function AppLayout({
   // App pages with sidebar
   if (isAppPageWithSidebar) {
     return (
-      <div className="flex min-h-[100svh] flex-col bg-gray-50">
+      <div className="flex min-h-screen flex-col overflow-hidden bg-gray-50">
         <Header {...headerProps} />
         <div className="flex flex-1 min-h-0">
-          <SidebarNav className="hidden h-full lg:block" />
+          <SidebarNav className="hidden lg:block" />
           <main className="flex flex-1 min-h-0 flex-col overflow-y-auto bg-gray-50">
-            <div className="flex flex-1 min-h-[100svh] flex-col">
+            <div className="flex flex-1 min-h-0 flex-col">
               {children}
             </div>
             <Footer variant="app" />
@@ -124,10 +124,10 @@ export default function AppLayout({
   // App pages without sidebar
   if (isAppPage && !showSidebar) {
     return (
-      <div className="flex min-h-[100svh] flex-col bg-gray-50">
+      <div className="flex min-h-screen flex-col overflow-hidden bg-gray-50">
         <Header {...headerProps} />
         <main className="flex flex-1 min-h-0 flex-col overflow-y-auto bg-gray-50">
-          <div className="flex flex-1 min-h-[100svh] flex-col">
+          <div className="flex flex-1 min-h-0 flex-col">
             {children}
           </div>
           <Footer variant="app" />
@@ -138,7 +138,7 @@ export default function AppLayout({
 
   // Landing pages
   return (
-    <div className="flex min-h-[100svh] flex-col bg-white">
+    <div className="flex min-h-screen flex-col overflow-hidden bg-white">
       <Header {...headerProps} />
       <main className="flex flex-1 flex-col">
         {children}

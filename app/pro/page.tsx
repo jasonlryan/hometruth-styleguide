@@ -52,7 +52,7 @@ export default function ProFeatures() {
               icon={Brain}
               title="Document-Aware AI Chat"
               description="Ask smarter questions and upload legal documents for context-aware responses."
-              iconBgColor="bg-[#00BFFF]"
+              iconBgColor="bg-primary"
               examples={[
                 "What's my earliest break clause?",
                 "Does my contract mention damp issues?"
@@ -78,7 +78,7 @@ export default function ProFeatures() {
               icon={Settings}
               title="Profile-Driven AI"
               description="AI assistant that adapts to your preferences, communication style, and needs."
-              iconBgColor="bg-gradient-to-br from-[#00BFFF] to-[#B19CD9]"
+              iconBgColor="bg-gradient-to-br from-[hsl(var(--primary))] to-[var(--ht-secondary)]"
             />
             
             <ProFeatureCard
@@ -102,7 +102,7 @@ export default function ProFeatures() {
       <section className="py-6 bg-gray-50">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="type-h2 text-[#00BFFF] mb-3">
+            <h2 className="type-h2 text-primary mb-3">
               Upgrade for £50/month
             </h2>
             <p className="text-base font-gill-sans-light text-gray-600 mb-6">
@@ -113,13 +113,13 @@ export default function ProFeatures() {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-[#00BFFF] text-[#00BFFF] hover:bg-[#00BFFF] hover:text-white px-6 py-2 font-gill-sans-light bg-transparent"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2 font-gill-sans-light bg-transparent"
               >
                 Start Free
               </Button>
               <Button
                 size="sm"
-                className="bg-[#00BFFF] hover:bg-blue-600 text-white px-6 py-2 font-gill-sans-light"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 font-gill-sans-light"
               >
                 Upgrade to Pro
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -139,7 +139,7 @@ export default function ProFeatures() {
           <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
             {/* Encryption */}
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#00BFFF] rounded-full mx-auto mb-3 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-primary mx-auto mb-3 flex items-center justify-center">
                 <Lock className="h-6 w-6 text-white" />
               </div>
               <p className="text-sm font-gill-sans-light text-gray-600">Your data is encrypted.</p>
