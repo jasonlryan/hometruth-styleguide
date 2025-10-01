@@ -39,7 +39,7 @@ export default function OnboardingLayout({
                   <span className="font-gill-sans-regular text-xl text-gray-900">
                     Home
                   </span>
-                  <span className="font-gill-sans-regular text-xl text-[#00BFFF]">
+                  <span className="font-gill-sans-regular text-xl text-primary">
                     Truth
                   </span>
                 </div>
@@ -61,7 +61,7 @@ export default function OnboardingLayout({
           <div className="container mx-auto px-4">
             <div className="h-1 bg-gray-200 relative overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#00BFFF] to-[#B19CD9] transition-all duration-500 ease-out"
+                className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 ease-out"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>

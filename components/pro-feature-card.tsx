@@ -14,7 +14,7 @@ export default function ProFeatureCard({
   icon: Icon,
   title,
   description,
-  iconBgColor = "bg-[#00BFFF]",
+  iconBgColor = "bg-primary",
   examples,
   additionalInfo,
 }: ProFeatureCardProps) {

@@ -44,7 +44,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
             key={option.value}
             className={cn(
               "relative flex items-center space-x-3 rounded-lg border border-gray-200 p-4 cursor-pointer transition-all hover:bg-gray-50",
-              value === option.value && "border-[#00BFFF] bg-blue-50",
+              value === option.value && "border-primary bg-primary/5",
               disabled && "cursor-not-allowed opacity-50"
             )}
           >
@@ -62,7 +62,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
             <div
               className={cn(
                 "flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300",
-                value === option.value && "border-[#00BFFF] bg-[#00BFFF]"
+                value === option.value && "border-primary bg-primary"
               )}
             >
               {value === option.value && (
@@ -80,7 +80,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
             {/* Label */}
             <span className={cn(
               "font-gill-sans-light text-gray-700 flex-1",
-              value === option.value && "text-[#00BFFF] font-gill-sans-regular"
+              value === option.value && "text-primary font-gill-sans-regular"
             )}>
               {option.label}
             </span>

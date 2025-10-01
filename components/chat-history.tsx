@@ -120,7 +120,7 @@ function ChatHistoryContent({
       <div className="mb-4">
         <p className="type-caption text-gray-500 mb-2">
           Chat history is stored locally for 7 days.{" "}
-          <Link href="/pro" className="text-[#00BFFF] hover:underline">
+          <Link href="/pro" className="text-primary hover:underline">
             Upgrade to pro
           </Link>
         </p>
@@ -146,7 +146,7 @@ function ChatHistoryContent({
               onClick={() => onSelect(session.id)}
               className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                 session.id === activeSessionId
-                  ? "bg-[#00BFFF]/10 text-[#00BFFF]"
+                  ? "bg-primary/10 text-primary"
                   : "hover:bg-gray-50 text-gray-700"
               }`}
             >

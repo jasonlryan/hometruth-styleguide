@@ -35,7 +35,7 @@ export default function TrustSection({
                 <div key={index} className="text-center">
                   <div
                     className={`w-16 h-16 ${
-                      item.iconBgColor || "bg-[#00BFFF]"
+                      item.iconBgColor || "bg-primary"
                     } rounded-full mx-auto mb-4 flex items-center justify-center`}
                   >
                     <Icon className="h-8 w-8 text-white" />
@@ -71,7 +71,7 @@ export default function TrustSection({
               <div key={index} className="text-center">
                 <div
                   className={`w-16 h-16 ${
-                    item.iconBgColor || "bg-[#00BFFF]"
+                    item.iconBgColor || "bg-primary"
                   } rounded-full mx-auto mb-4 flex items-center justify-center`}
                 >
                   <Icon className="h-8 w-8 text-white" />

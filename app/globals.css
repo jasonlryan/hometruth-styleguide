@@ -1,4 +1,23 @@
-/* Gill Sans is not available on Google Fonts - using system fallbacks */
+/* 
+ * Typography Strategy:
+ * 
+ * Gill Sans is the desired brand font but is not available on Google Fonts.
+ * We use system fallbacks: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+ * 
+ * This provides good coverage across:
+ * - macOS: Gill Sans
+ * - Windows: Gill Sans MT (if installed) or Calibri fallback
+ * - Other systems: Trebuchet MS or generic sans-serif
+ * 
+ * Alternative: Consider implementing Next.js font loading with a licensed Gill Sans
+ * variant or similar font if brand consistency is critical.
+ * 
+ * Usage:
+ * - .font-gill-sans: Base Gill Sans stack
+ * - .font-gill-sans-light: Light weight (300) 
+ * - .font-gill-sans-regular: Regular weight (400)
+ * - Typography scale: .type-hero, .type-h1, .type-h2, etc.
+ */
 
 @tailwind base;
 @tailwind components;
@@ -18,8 +37,8 @@
     --popover-foreground: 0 0% 3.9%;
     --primary: 195 100% 50%; /* HomeTruth Blue #00BFFF */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 281 50% 71%; /* HomeTruth Purple #B19CD9 */
+    --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
     --accent: 0 0% 96.1%;
@@ -57,8 +76,8 @@
     --popover-foreground: 0 0% 98%;
     --primary: 195 100% 50%; /* HomeTruth Blue #00BFFF */
     --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 281 50% 71%; /* HomeTruth Purple #B19CD9 */
+    --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 14.9%;

@@ -69,7 +69,7 @@ export default function SavedNotesPage() {
                 Want to add more notes?
               </p>
               <Link href="/pro">
-                <Button className="bg-[#00BFFF] hover:bg-blue-600 text-white px-6 py-2">
+                <Button className="bg-primary hover:bg-primary/90 px-6 py-2">
                   Upgrade to Pro
                 </Button>
               </Link>

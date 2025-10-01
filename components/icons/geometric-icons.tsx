@@ -19,7 +19,7 @@ export const ChatIcon: React.FC<IconProps> = ({ className = "", size = 40 }) => 
       {/* Top blue diamond */}
       <path 
         d="M0 -15 L8 -7 L0 1 L-8 -7 Z" 
-        fill="#00BFFF"
+        fill="hsl(var(--primary))"
       />
       {/* Bottom orange chevron */}
       <path 
@@ -75,7 +75,7 @@ export const InsightsIcon: React.FC<IconProps> = ({ className = "", size = 40 })
         y="-10" 
         width="12" 
         height="12" 
-        fill="#00BFFF"
+        fill="hsl(var(--primary))"
       />
       {/* Small blue square */}
       <rect 
@@ -83,7 +83,7 @@ export const InsightsIcon: React.FC<IconProps> = ({ className = "", size = 40 })
         y="4" 
         width="6" 
         height="6" 
-        fill="#00BFFF"
+        fill="hsl(var(--primary))"
       />
       {/* Purple diamond */}
       <path 

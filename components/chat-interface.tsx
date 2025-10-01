@@ -92,7 +92,7 @@ export default function ChatInterface({
       <CardContent className="p-8">
         {showHeader && (
           <div className="flex items-center space-x-2 mb-4">
-            <MessageCircle className="h-5 w-5 text-[#00BFFF]" />
+            <MessageCircle className="h-5 w-5 text-primary" />
             <span className="font-gill-sans-light text-gray-800">
               HomeTruth AI Assistant
             </span>
@@ -124,7 +124,7 @@ export default function ChatInterface({
                 <Badge
                   key={index}
                   variant="secondary"
-                  className="cursor-pointer hover:bg-[#00BFFF] hover:text-white transition-colors"
+                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
                   onClick={() => handleSuggestedQuestion(question)}
                 >
                   {question}
@@ -139,14 +139,14 @@ export default function ChatInterface({
           <div className="flex space-x-2">
             <Input
               placeholder="Ask any property question..."
-              className="flex-1 border-gray-200 focus:border-[#00BFFF]"
+              className="flex-1 border-gray-200 focus:border-primary"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
             />
             <Button
               size="sm"
-              className="bg-[#00BFFF] hover:bg-blue-600"
+              className="bg-primary hover:bg-primary/90"
               onClick={handleSendMessage}
             >
               <Send className="h-4 w-4" />

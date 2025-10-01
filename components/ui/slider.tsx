@@ -46,12 +46,12 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
             disabled={disabled}
             className={cn(
               "relative h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200",
-              "focus:outline-none focus:ring-2 focus:ring-[#00BFFF] focus:ring-offset-2",
+              "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
               "[&::-webkit-slider-thumb]:appearance-none",
               "[&::-webkit-slider-thumb]:h-5",
               "[&::-webkit-slider-thumb]:w-5",
               "[&::-webkit-slider-thumb]:rounded-full",
-              "[&::-webkit-slider-thumb]:bg-[#00BFFF]",
+              "[&::-webkit-slider-thumb]:bg-primary",
               "[&::-webkit-slider-thumb]:border-2",
               "[&::-webkit-slider-thumb]:border-white",
               "[&::-webkit-slider-thumb]:shadow-lg",
@@ -60,7 +60,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
               "[&::-moz-range-thumb]:h-5",
               "[&::-moz-range-thumb]:w-5",
               "[&::-moz-range-thumb]:rounded-full",
-              "[&::-moz-range-thumb]:bg-[#00BFFF]",
+              "[&::-moz-range-thumb]:bg-primary",
               "[&::-moz-range-thumb]:border-2",
               "[&::-moz-range-thumb]:border-white",
               "[&::-moz-range-thumb]:shadow-lg",
@@ -74,7 +74,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           
           {/* Progress bar */}
           <div
-            className="absolute top-0 h-2 rounded-lg bg-gradient-to-r from-[#00BFFF] to-[#00BFFF]/80 transition-all duration-200"
+            className="absolute top-0 h-2 rounded-lg bg-gradient-to-r from-primary to-primary/80 transition-all duration-200"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -83,7 +83,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         {formatValue && (
           <div className="mt-3 flex justify-between text-sm font-gill-sans-light text-gray-600">
             <span>{formatValue(min)}</span>
-            <span className="font-gill-sans-regular text-[#00BFFF]">
+            <span className="font-gill-sans-regular text-primary">
               {formatValue(value)}
             </span>
             <span>{formatValue(max)}</span>

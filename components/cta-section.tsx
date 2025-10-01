@@ -24,7 +24,7 @@ export default function CTASection({
   subtitle,
   primaryButton,
   secondaryButton,
-  bgColor = "bg-gradient-to-r from-[#00BFFF] to-[#B19CD9]",
+  bgColor = "bg-gradient-to-r from-primary to-secondary",
   textColor = "text-white",
   showArrow = true,
 }: CTASectionProps) {
@@ -47,8 +47,8 @@ export default function CTASection({
                 variant={primaryButton.variant || "default"}
                 className={`px-8 py-3 text-lg ${
                   primaryButton.variant === "outline"
-                    ? "border-white text-white hover:bg-white hover:text-[#00BFFF] bg-transparent"
-                    : "bg-white text-[#00BFFF] hover:bg-gray-100"
+                    ? "border-white text-white hover:bg-white hover:text-primary bg-transparent"
+                    : "bg-white text-primary hover:bg-gray-100"
                 }`}
               >
                 {primaryButton.text}
@@ -60,7 +60,7 @@ export default function CTASection({
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-[#00BFFF] px-8 py-3 text-lg bg-transparent"
+                  className="border-white text-white hover:bg-white hover:text-primary px-8 py-3 text-lg bg-transparent"
                 >
                   {secondaryButton.text}
                 </Button>
