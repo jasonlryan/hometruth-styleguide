@@ -3,9 +3,19 @@ import OpenAI from 'openai';
 import { DEFAULT_CHAT_SYSTEM_PROMPT } from './prompt-defaults';
 import { loadSystemPrompt } from './prompt-loader';
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let cachedClient: OpenAI | null | undefined;
+function getOpenAIClient(): OpenAI | null {
+  if (cachedClient !== undefined) {
+    return cachedClient;
+  }
+  const key = process.env.OPENAI_API_KEY;
+  if (!key || key.trim().length === 0) {
+    cachedClient = null;
+    return cachedClient;
+  }
+  cachedClient = new OpenAI({ apiKey: key });
+  return cachedClient;
+}
 
 const DEFAULT_CHAT_MODEL = process.env.OPENAI_MODEL_CHAT || 'gpt-5';
 const DEFAULT_CHAT_TEMPERATURE = Number(process.env.OPENAI_CHAT_TEMPERATURE ?? 0.35);
@@ -21,6 +31,12 @@ export class OpenAIService {
   // Analyze document content and suggest metadata
   static async analyzeDocument(text: string, filename: string) {
     try {
+      const client = getOpenAIClient();
+      if (!client) {
+        // No API key in the environment – fall back to heuristic metadata
+        return this.generateFallbackMetadata(text, filename);
+      }
+
       const response = await client.responses.create({
         model: 'gpt-4o-mini', // Cost-effective model for analysis
         input: [
@@ -228,6 +244,10 @@ export class OpenAIService {
     })();
 
     // GPT-5 Responses API: omit unsupported params like `temperature`
+    const client = getOpenAIClient();
+    if (!client) {
+      throw new Error('OpenAI is not configured');
+    }
     const responseStream = await client.responses.stream(
       {
         model,

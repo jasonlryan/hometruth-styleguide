@@ -9,11 +9,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No text provided' }, { status: 400 });
     }
 
-    // Use OpenAI to analyze the document
+    // Use OpenAI when configured, otherwise fall back to heuristic analysis
     const analysis = await OpenAIService.analyzeDocument(text, filename);
-
     if (!analysis.success) {
-      return NextResponse.json({ error: analysis.error }, { status: 500 });
+      const fallback = OpenAIService.generateFallbackMetadata(text, filename);
+      return NextResponse.json({ success: true, ...fallback });
     }
 
     return NextResponse.json({
