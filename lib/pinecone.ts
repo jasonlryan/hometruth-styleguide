@@ -241,45 +241,71 @@ export class PineconeService {
   async upsertKnowledgeContent(documents: DocumentChunk[], namespace: string = DEFAULT_KNOWLEDGE_NAMESPACE) {
     try {
       // Process in batches using integrated inference upserts
-      // Pinecone integrated inference `upsertRecords` has a hard cap of 96 items
-      const BATCH_SIZE = 96;
+      // Keep requests well under rate limits and split on 429 automatically
+      const BATCH_SIZE = Number(process.env.PINECONE_BATCH_SIZE ?? 48);
       const BATCH_DELAY_MS = Number(process.env.PINECONE_BATCH_DELAY_MS ?? 12000);
+      const MAX_BACKOFF_MS = 30000;
       const results: any[] = [];
       const targetNamespace = namespace || DEFAULT_KNOWLEDGE_NAMESPACE;
 
-      for (let i = 0; i < documents.length; i += BATCH_SIZE) {
-        const batch = documents.slice(i, i + BATCH_SIZE);
-        console.log(`📤 Uploading batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(documents.length / BATCH_SIZE)} (${batch.length} chunks)`);
+      const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-        const records = batch.map((d) => ({
+      const makeRecords = (batch: DocumentChunk[]) =>
+        batch.map((d) => ({
           id: d.id,
           chunk_text: d.chunk_text,
           ...this.flattenDocumentMetadata(d.metadata, targetNamespace),
         }));
 
+      const uploadWithRetry = async (records: any[], attempt = 1): Promise<any> => {
         const ns: any = this.knowledgeBaseIndex.namespace(targetNamespace) as any;
-        if (typeof ns.upsertRecords === 'function') {
-          const result = await ns.upsertRecords(records);
-          results.push(result);
-        } else {
+        try {
+          if (typeof ns.upsertRecords === 'function') {
+            return await ns.upsertRecords(records);
+          }
+
           // Fallback: embed and upsert vectors
-          const texts = batch.map((d) => d.chunk_text);
+          const texts = records.map((r) => r.chunk_text);
           const embeds = await pc.inference.embed(
             'llama-text-embed-v2' as any,
             texts,
             { inputType: 'passage', truncate: 'END' } as any
           );
-          const vectors = batch.map((d, i) => ({
-            id: d.id,
+          const vectors = records.map((r, i) => ({
+            id: r.id,
             values: (embeds as any).data[i].values,
-            metadata: {
-              ...this.flattenDocumentMetadata(d.metadata, targetNamespace),
-              chunk_text: d.chunk_text,
-            },
+            metadata: { ...r, chunk_text: r.chunk_text },
           }));
-          const result = await this.knowledgeBaseIndex.namespace(targetNamespace).upsert(vectors as any);
-          results.push(result);
+          return await this.knowledgeBaseIndex.namespace(targetNamespace).upsert(vectors as any);
+        } catch (err: any) {
+          const message = String(err?.message || '');
+          const status = (err as any)?.status;
+          const isRate = message.includes('RESOURCE_EXHAUSTED') || status === 429;
+          if (isRate) {
+            // Backoff then split the batch to reduce token load per request
+            const backoff = Math.min(MAX_BACKOFF_MS, attempt * 5000);
+            await sleep(backoff);
+            if (records.length > 1) {
+              const mid = Math.ceil(records.length / 2);
+              const left = await uploadWithRetry(records.slice(0, mid), attempt + 1);
+              await sleep(250);
+              const right = await uploadWithRetry(records.slice(mid), attempt + 1);
+              return [left, right];
+            }
+            // Single record: retry in place
+            return await uploadWithRetry(records, attempt + 1);
+          }
+          throw err;
         }
+      };
+
+      for (let i = 0; i < documents.length; i += BATCH_SIZE) {
+        const batch = documents.slice(i, i + BATCH_SIZE);
+        console.log(`📤 Uploading batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(documents.length / BATCH_SIZE)} (${batch.length} chunks)`);
+
+        const records = makeRecords(batch);
+        const result = await uploadWithRetry(records);
+        results.push(result);
 
         if (i + BATCH_SIZE < documents.length) {
           await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));

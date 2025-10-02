@@ -173,6 +173,13 @@
   }
 }
 
+@layer components {
+  .message-content {
+    min-height: 1.5rem;
+    transition: height 200ms ease-out;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

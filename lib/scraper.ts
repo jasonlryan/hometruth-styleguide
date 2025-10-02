@@ -71,15 +71,44 @@ export class WebScraper {
       userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
     } = options;
 
-    const fetchResult = await this.fetchWithRetry(url, {
-      timeoutMs,
-      retryCount,
-      retryDelayMs,
-      maxContentLength,
-      userAgent,
-    });
+    let headers: Record<string, string> = {};
+    let responseBody: Buffer | null = null;
+    let finalUrl = url;
+    let statusCode = 200;
+    let usedHeadlessFallback = false;
+    try {
+      const fetchResult = await this.fetchWithRetry(url, {
+        timeoutMs,
+        retryCount,
+        retryDelayMs,
+        maxContentLength,
+        userAgent,
+      });
 
-    const { headers, responseBody, finalUrl, statusCode } = fetchResult;
+      headers = fetchResult.headers;
+      responseBody = fetchResult.responseBody;
+      finalUrl = fetchResult.finalUrl;
+      statusCode = fetchResult.statusCode;
+    } catch (err) {
+      // If blocked (e.g., HTTP 403) or network error, try headless render fallback
+      if (options.useHeadlessFallback ?? true) {
+        const rendered = await this.renderWithHeadless(url, { timeoutMs: Math.min(30000, timeoutMs * 2), userAgent });
+        if (rendered?.html || rendered?.text) {
+          const htmlText = rendered.html || '';
+          finalUrl = rendered.finalUrl || url;
+          // Treat as HTML response
+          headers = { 'content-type': 'text/html' } as Record<string, string>;
+          responseBody = Buffer.from(htmlText || rendered.text || '', 'utf-8');
+          statusCode = 200;
+          usedHeadlessFallback = true;
+        } else {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
+
     const contentType = headers['content-type']?.split(';')[0].trim().toLowerCase() ?? 'text/html';
     const etag = headers['etag'] ?? null;
     const lastModified = headers['last-modified'] ?? null;
@@ -113,7 +142,7 @@ export class WebScraper {
       };
     }
 
-    let html = responseBody.toString('utf-8');
+    let html = (responseBody ?? Buffer.from('')).toString('utf-8');
     let finalResolvedUrl = finalUrl;
     let dom = new JSDOM(html, { url: finalResolvedUrl });
     let { document } = dom.window;
