@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import OnboardingLayout from "@/components/layouts/onboarding-layout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/contexts/user-context";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { setUser } = useUser();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -66,6 +68,12 @@ export default function SignupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Set user in context with the signup data
+      setUser({
+        name: formData.firstName,
+        email: formData.email,
+        hasCompletedOnboarding: false,
+      });
       // Here you would typically save to database/API
       router.push("/onboarding/welcome");
     }

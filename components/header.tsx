@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, X, LogOut } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
 
 interface HeaderProps {
   variant?: "landing" | "app";
@@ -30,6 +32,13 @@ export default function Header({
   const [landingMenuOpen, setLandingMenuOpen] = useState(false);
   const landingMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const wasLandingMenuOpen = useRef(false);
+  const { user, logout } = useUser();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   useEffect(() => {
     if (variant !== "landing") return;
@@ -71,9 +80,9 @@ export default function Header({
           </div>
 
           <div className="flex items-center space-x-4">
-            {showUserInfo && (
+            {showUserInfo && user && (
               <span className="font-gill-sans-regular text-gray-700">
-                Hi, {userName}!
+                Hi, {user.name || userName}!
               </span>
             )}
             <div className="flex items-center space-x-2">
@@ -122,11 +131,22 @@ export default function Header({
                   />
                 </svg>
               </Button>
+              {user && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2"
+                  onClick={handleLogout}
+                  title="Sign out"
+                >
+                  <LogOut className="h-4 w-4 text-gray-600" />
+                </Button>
+              )}
             </div>
-            {showUserInfo && (
+            {showUserInfo && user && (
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
                 <span className="text-sm font-gill-sans-regular font-medium text-gray-700">
-                  {userName.charAt(0)}
+                  {(user.name || userName).charAt(0)}
                 </span>
               </div>
             )}
@@ -145,6 +165,10 @@ export default function Header({
     {
       href: "/#how-it-works",
       label: "How It Works",
+    },
+    {
+      href: "/resources",
+      label: "Resources",
     },
     {
       href: "/#security",
@@ -189,6 +213,13 @@ export default function Header({
                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 Explore Pro Features
+              </Button>
+            </Link>
+          )}
+          {!user && (
+            <Link href="/signin">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Sign In
               </Button>
             </Link>
           )}
@@ -241,6 +272,15 @@ export default function Header({
                 onClick={() => handleLandingMenuChange(false)}
               >
                 Explore Pro Features
+              </Link>
+            )}
+            {!user && (
+              <Link
+                href="/signin"
+                className="mt-2 rounded-md border border-primary px-3 py-2 text-center font-gill-sans-regular text-primary hover:bg-primary hover:text-primary-foreground"
+                onClick={() => handleLandingMenuChange(false)}
+              >
+                Sign In
               </Link>
             )}
           </nav>

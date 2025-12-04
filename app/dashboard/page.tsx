@@ -2,6 +2,7 @@
 
 import React from "react";
 import AppLayout from "@/components/layouts/app-layout";
+import AuthGuard from "@/components/auth-guard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,9 +10,10 @@ import { MessageCircle, FileText, Calculator, BookOpen, ArrowRight } from "lucid
 
 export default function DashboardPage() {
   return (
-    <AppLayout>
-      <div className="flex flex-1 min-h-0 flex-col">
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+    <AuthGuard>
+      <AppLayout>
+      <div className="flex flex-1 flex-col">
+        <div className="flex-1 p-6 space-y-6">
         {/* Welcome Header */}
         <div className="text-center py-8">
           <h1 className="type-h1 text-gray-900 mb-4">Welcome to HomeTruth</h1>
@@ -137,5 +139,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </AppLayout>
+    </AuthGuard>
   );
 }

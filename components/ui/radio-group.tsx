@@ -16,6 +16,7 @@ export interface RadioGroupProps {
   className?: string;
   disabled?: boolean;
   layout?: "vertical" | "horizontal" | "grid";
+  name?: string;
 }
 
 const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
@@ -26,8 +27,12 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
     onValueChange,
     disabled = false,
     layout = "vertical",
+    name,
     ...props
   }, ref) => {
+    const internalId = React.useId();
+    const groupName = name ?? `radio-group-${internalId}`;
+
     return (
       <div
         ref={ref}
@@ -48,14 +53,14 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
               disabled && "cursor-not-allowed opacity-50"
             )}
           >
-            <input
-              type="radio"
-              name="radio-group"
-              value={option.value}
-              checked={value === option.value}
-              onChange={(e) => onValueChange?.(e.target.value)}
-              disabled={disabled}
-              className="sr-only"
+              <input
+                type="radio"
+                name={groupName}
+                value={option.value}
+                checked={value === option.value}
+                onChange={(e) => onValueChange?.(e.target.value)}
+                disabled={disabled}
+                className="sr-only"
             />
             
             {/* Custom radio button */}

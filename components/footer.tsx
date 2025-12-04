@@ -12,9 +12,9 @@ export default function Footer({
 }: FooterProps) {
   if (variant === "app") {
     return (
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-6">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-6">
             {showLogo && (
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
@@ -98,7 +98,7 @@ export default function Footer({
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+          <div className="border-t border-gray-800 mt-4 pt-4 text-center">
             <p className="text-gray-400 text-sm font-gill-sans-regular">
               © 2025 HomeTruth. All rights reserved.
             </p>

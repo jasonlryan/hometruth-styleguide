@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
@@ -13,7 +14,7 @@ import type { PluggableList } from "unified";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CITATIONS_ENABLED } from "@/lib/feature-flags";
-import { Check, Copy, ChevronDown } from "lucide-react";
+import { Check, Copy, ChevronDown, BookmarkPlus } from "lucide-react";
 import { visit } from "unist-util-visit";
 import type { Root, Text } from "mdast";
 import type { Parent } from "unist";
@@ -36,6 +37,15 @@ interface ChatMessageProps {
   showCopyButton?: boolean;
   isStreaming?: boolean;
   sources?: ChatSource[];
+  onSaveToNotes?: (content: string, sources?: ChatSource[]) => void;
+  onSaveConversationToNotes?: (
+    allMessages: Array<{ role: string; content: string; timestamp?: string }>
+  ) => void;
+  conversationMessages?: Array<{
+    role: string;
+    content: string;
+    timestamp?: string;
+  }>;
 }
 
 const STREAMING_DEBOUNCE_MS = 40;
@@ -122,7 +132,7 @@ type AttributeEntry = string | [string, string];
 
 const markdownSanitizeSchema: Schema = {
   ...defaultSchema,
-  tagNames: mergeUnique(defaultSchema.tagNames, [
+  tagNames: mergeUnique(defaultSchema.tagNames || [], [
     "a",
     "p",
     "ul",
@@ -154,7 +164,13 @@ const markdownSanitizeSchema: Schema = {
     ...defaultSchema.attributes,
     a: mergeUnique(
       defaultSchema.attributes?.a as AttributeEntry[] | undefined,
-      ["href", "title", "target", "rel", "data-citation-index"]
+      [
+        "href",
+        "title",
+        "target",
+        "rel",
+        "data-citation-index",
+      ] as AttributeEntry[]
     ),
     code: mergeUnique(
       defaultSchema.attributes?.code as AttributeEntry[] | undefined,
@@ -253,12 +269,16 @@ function ChatMessageComponent({
   showCopyButton = false,
   isStreaming = false,
   sources,
+  onSaveToNotes,
+  onSaveConversationToNotes,
+  conversationMessages,
 }: ChatMessageProps) {
   const [displayContent, setDisplayContent] = useState(content);
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<"answer" | "citations" | null>(
     null
   );
+  const [saving, setSaving] = useState(false);
   const debounceTimerRef = useRef<number>();
   const copyResetTimerRef = useRef<number>();
   const copyStatusTimerRef = useRef<number>();
@@ -399,21 +419,103 @@ function ChatMessageComponent({
     }
   }, [content, handleCopyAnswer, sources]);
 
+  const handleSaveToNotes = useCallback(async () => {
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      // If we have conversation messages, save the entire conversation
+      if (
+        onSaveConversationToNotes &&
+        conversationMessages &&
+        conversationMessages.length > 0
+      ) {
+        onSaveConversationToNotes(conversationMessages);
+        setSaving(false);
+        return;
+      }
+
+      // Otherwise, save just this message
+      if (!content.trim()) {
+        setSaving(false);
+        return;
+      }
+
+      const cleanContent = stripCitations(content).trim();
+      const title = cleanContent.split("\n")[0].slice(0, 60) || "Chat Note";
+      const excerpt = cleanContent.slice(0, 150) || cleanContent;
+
+      const noteData = {
+        title: title.length < cleanContent.length ? `${title}...` : title,
+        excerpt,
+        content: {
+          type: "chat",
+          content: cleanContent,
+          sources: sources || [],
+          timestamp: Date.now(),
+        },
+        type: "chat",
+      };
+
+      const response = await fetch("/api/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(noteData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save");
+      }
+
+      const result = await response.json();
+
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        const notesKey = "ht.notes";
+        const existingNotes = localStorage.getItem(notesKey);
+        const notes = existingNotes ? JSON.parse(existingNotes) : [];
+        notes.unshift(result.note); // Add to beginning
+        localStorage.setItem(notesKey, JSON.stringify(notes));
+      }
+
+      // Call callback if provided
+      if (onSaveToNotes) {
+        onSaveToNotes(content, sources);
+      }
+
+      alert("Saved to Notes!");
+    } catch (err) {
+      console.error("Error saving to notes:", err);
+      alert("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [
+    content,
+    sources,
+    saving,
+    onSaveToNotes,
+    onSaveConversationToNotes,
+    conversationMessages,
+  ]);
+
   const markdownComponents = useMemo<Components>(() => {
-    const CodeBlock: CodeRenderer = ({
-      node,
-      inline,
-      className,
-      children,
-      ...rest
-    }) => {
+    const CodeBlock: CodeRenderer = (props) => {
+      const {
+        node,
+        inline: isInline,
+        className,
+        children,
+        ...rest
+      } = props as any;
       const rawValue = String(children ?? "");
       const codeValue = rawValue.replace(/\n$/, "");
 
-      if (inline) {
+      if (isInline) {
         return (
           <code
-            {...rest}
             className={cn(className, "font-gill-sans-regular text-gray-800")}
           >
             {children}
@@ -445,7 +547,6 @@ function ChatMessageComponent({
             {isCopied ? "Copied" : "Copy"}
           </button>
           <pre
-            {...rest}
             className={cn(
               "not-prose overflow-x-auto rounded-md bg-gray-900 p-4 text-gray-100",
               className
@@ -478,11 +579,16 @@ function ChatMessageComponent({
 
           const handleCitationClick = () => {
             setSourcesExpanded(true);
-            if (typeof window === "undefined" || typeof document === "undefined") {
+            if (
+              typeof window === "undefined" ||
+              typeof document === "undefined"
+            ) {
               return;
             }
             window.requestAnimationFrame(() => {
-              const target = document.getElementById(`source-${citationNumber}`);
+              const target = document.getElementById(
+                `source-${citationNumber}`
+              );
               if (target) {
                 target.scrollIntoView({ behavior: "smooth", block: "center" });
               }
@@ -502,7 +608,6 @@ function ChatMessageComponent({
                 className="rounded px-1 text-[0.65rem] font-semibold leading-none text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
                 title={title}
                 aria-label={ariaLabel}
-                {...rest}
                 data-citation-index={citationNumber}
               >
                 {citationNumber}
@@ -528,6 +633,79 @@ function ChatMessageComponent({
           <table {...rest}>{children}</table>
         </div>
       ),
+      ul: ({ children, ...rest }) => (
+        <ul
+          className="list-disc space-y-1.5 my-2 ml-6 marker:text-gray-700"
+          {...rest}
+        >
+          {children}
+        </ul>
+      ),
+      ol: ({ children, ...rest }) => (
+        <ol
+          className="list-decimal space-y-1.5 my-2 ml-6 marker:font-gill-sans-regular marker:text-gray-700"
+          {...rest}
+        >
+          {children}
+        </ol>
+      ),
+      li: ({ children, ...rest }) => {
+        // Check if children contain nested lists
+        const childrenArray = Array.isArray(children) ? children : [children];
+        const hasNestedList = childrenArray.some(
+          (child: any) =>
+            typeof child === "object" &&
+            child !== null &&
+            (child.type === "ul" ||
+              child.type === "ol" ||
+              (child.props &&
+                (child.props.children?.type === "ul" ||
+                  child.props.children?.type === "ol")))
+        );
+
+        return (
+          <li
+            className={`my-1.5 pl-1 ${hasNestedList ? "space-y-1" : ""}`}
+            {...rest}
+          >
+            {children}
+          </li>
+        );
+      },
+      h1: ({ children, ...rest }) => (
+        <h1
+          className="text-2xl font-gill-sans-regular font-bold mt-4 mb-2"
+          {...rest}
+        >
+          {children}
+        </h1>
+      ),
+      h2: ({ children, ...rest }) => (
+        <h2
+          className="text-xl font-gill-sans-regular font-bold mt-3 mb-2"
+          {...rest}
+        >
+          {children}
+        </h2>
+      ),
+      h3: ({ children, ...rest }) => (
+        <h3
+          className="text-lg font-gill-sans-regular font-semibold mt-2 mb-1"
+          {...rest}
+        >
+          {children}
+        </h3>
+      ),
+      p: ({ children, ...rest }) => (
+        <p className="my-2 font-gill-sans-light" {...rest}>
+          {children}
+        </p>
+      ),
+      strong: ({ children, ...rest }) => (
+        <strong className="font-gill-sans-regular font-semibold" {...rest}>
+          {children}
+        </strong>
+      ),
       img: () => null,
     } as Components;
   }, [
@@ -543,12 +721,12 @@ function ChatMessageComponent({
       <div className="flex justify-end">
         <div className="max-w-md">
           <div className="rounded-lg bg-primary p-4 text-white">
-            <p className="text-sm font-gill-sans-regular whitespace-pre-wrap">
+            <p className="text-base font-gill-sans-regular whitespace-pre-wrap">
               {content}
             </p>
           </div>
           {timestamp && (
-            <p className="text-xs text-gray-500 mt-1 text-right">{timestamp}</p>
+            <p className="text-sm text-gray-500 mt-1 text-right">{timestamp}</p>
           )}
         </div>
       </div>
@@ -561,11 +739,11 @@ function ChatMessageComponent({
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="space-y-3 message-content">
             {shouldRenderPlainText ? (
-              <pre className="whitespace-pre-wrap break-words text-gray-800 font-gill-sans-regular">
+              <pre className="whitespace-pre-wrap break-words text-gray-800 font-gill-sans-regular text-base">
                 {effectiveContent}
               </pre>
             ) : (
-              <div className="prose prose-sm max-w-none text-gray-800">
+              <div className="prose prose-base max-w-none text-gray-800 prose-headings:font-gill-sans-regular prose-p:font-gill-sans-light prose-strong:font-gill-sans-regular prose-ul:font-gill-sans-light prose-ol:font-gill-sans-light prose-li:font-gill-sans-light prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-ul:prose-li:marker:text-gray-700 prose-ol:prose-li:marker:text-gray-700">
                 <MarkdownContent
                   content={effectiveContent}
                   components={markdownComponents}
@@ -585,10 +763,10 @@ function ChatMessageComponent({
                       className="inline-flex items-center space-x-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1"
                       title={source.title || "Source"}
                     >
-                      <span className="text-xs font-semibold text-primary">
+                      <span className="text-sm font-semibold text-primary">
                         [{label}]
                       </span>
-                      <span className="text-xs text-gray-600 truncate max-w-[160px]">
+                      <span className="text-sm text-gray-600 truncate max-w-[160px]">
                         {source.title || "Source"}
                       </span>
                     </div>
@@ -603,12 +781,11 @@ function ChatMessageComponent({
                   <button
                     type="button"
                     onClick={() => setSourcesExpanded((prev) => !prev)}
-                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-tight text-gray-500"
+                    className="flex items-center gap-1 text-sm font-semibold uppercase tracking-tight text-gray-500"
                     aria-expanded={sourcesExpanded}
                   >
-                    {sourcesExpanded ? "Hide sources" : "Show sources"} ({
-                      sourcesCount
-                    })
+                    {sourcesExpanded ? "Hide sources" : "Show sources"} (
+                    {sourcesCount})
                     <ChevronDown
                       className={cn(
                         "h-3 w-3 transition-transform",
@@ -625,11 +802,11 @@ function ChatMessageComponent({
                         <li
                           key={`source-detail-${source.id}-${label}`}
                           id={`source-${label}`}
-                          className="text-sm text-gray-700"
+                          className="text-base text-gray-700"
                           tabIndex={-1}
                         >
                           <div className="flex items-start gap-2">
-                            <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
                               {label}
                             </span>
                             <div className="space-y-1">
@@ -648,7 +825,7 @@ function ChatMessageComponent({
                                 )}
                               </div>
                               {source.snippet && (
-                                <p className="text-xs text-gray-600">
+                                <p className="text-sm text-gray-600">
                                   {source.snippet}
                                 </p>
                               )}
@@ -663,49 +840,82 @@ function ChatMessageComponent({
             )}
 
             {isStreaming && !effectiveContent && (
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 w-3/4 rounded bg-gray-200" />
-                <div className="h-4 w-1/2 rounded bg-gray-200" />
+              <div className="flex items-center gap-3 py-2">
+                <div className="flex-shrink-0">
+                  <Image
+                    src="/images/hometruth-icon.svg"
+                    alt="HomeTruth"
+                    width={20}
+                    height={20}
+                    className="animate-pulse"
+                  />
+                </div>
+                <div className="text-sm text-gray-500 font-gill-sans-light italic">
+                  Thinking...
+                </div>
               </div>
             )}
           </div>
-          {(timestamp || showCopyButton) && (
+          {(timestamp || showCopyButton || type === "ai") && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
               {timestamp && (
-                <p className="text-xs text-gray-500">{timestamp}</p>
+                <p className="text-sm text-gray-500">{timestamp}</p>
               )}
-              {showCopyButton && (
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {type === "ai" && !isStreaming && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-1"
-                    onClick={handleCopyAnswer}
+                    className="flex items-center gap-1 text-primary hover:text-primary hover:bg-primary/5 font-gill-sans-light"
+                    onClick={handleSaveToNotes}
+                    disabled={saving}
                   >
-                    {copyStatus === "answer" ? (
-                      <Check className="h-4 w-4 text-primary" />
+                    {saving ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        <span className="text-sm">Saving...</span>
+                      </>
                     ) : (
-                      <Copy className="h-4 w-4 text-gray-500" />
+                      <>
+                        <BookmarkPlus className="h-4 w-4" />
+                        <span className="text-sm">Save to Notes</span>
+                      </>
                     )}
-                    <span className="text-xs">Copy answer</span>
                   </Button>
-                  {sourcesCount > 0 && (
+                )}
+                {showCopyButton && (
+                  <>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="flex items-center gap-1"
-                      onClick={handleCopyWithCitations}
+                      onClick={handleCopyAnswer}
                     >
-                      {copyStatus === "citations" ? (
+                      {copyStatus === "answer" ? (
                         <Check className="h-4 w-4 text-primary" />
                       ) : (
                         <Copy className="h-4 w-4 text-gray-500" />
                       )}
-                      <span className="text-xs">Copy with sources</span>
+                      <span className="text-sm">Copy answer</span>
                     </Button>
-                  )}
-                </div>
-              )}
+                    {sourcesCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1"
+                        onClick={handleCopyWithCitations}
+                      >
+                        {copyStatus === "citations" ? (
+                          <Check className="h-4 w-4 text-primary" />
+                        ) : (
+                          <Copy className="h-4 w-4 text-gray-500" />
+                        )}
+                        <span className="text-sm">Copy with sources</span>
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

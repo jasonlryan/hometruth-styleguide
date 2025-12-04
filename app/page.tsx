@@ -152,13 +152,15 @@ export default function HomeTruthLanding() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
-              >
-                Start Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link href="/chat">
+                <Button
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
+                >
+                  Start Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Link href="/pro">
                 <Button
                   size="lg"
@@ -309,13 +311,15 @@ export default function HomeTruthLanding() {
               property decisions
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-lg font-gill-sans-light"
-              >
-                Start Free Today
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link href="/chat">
+                <Button
+                  size="lg"
+                  className="bg-white text-primary hover:bg-gray-100 px-8 py-3 text-lg font-gill-sans-light"
+                >
+                  Start Free Today
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Link href="/pro">
                 <Button
                   size="lg"

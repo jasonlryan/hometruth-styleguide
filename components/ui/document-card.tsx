@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, MoreVertical } from "lucide-react";
+import { getDocumentTypeIcon } from "@/lib/document-types";
 
 export type DocumentStatus = "Processing" | "Urgent" | "Expiring" | "Ready" | "Error";
 
@@ -16,6 +17,7 @@ export interface DocumentCardProps {
   thumbnailUrl?: string;
   updatedAt?: string;
   variant?: "grid" | "list";
+  documentType?: string; // Added for icon mapping
   onOpen?: (id: string) => void;
   onPreview?: (id: string) => void;
   onEdit?: (id: string) => void;
@@ -48,21 +50,24 @@ export default function DocumentCard({
   thumbnailUrl,
   updatedAt,
   variant = "grid",
+  documentType,
   onOpen,
   onPreview,
   onEdit,
   onDelete,
 }: DocumentCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const typeConfig = getDocumentTypeIcon(category, documentType);
+  const IconComponent = typeConfig.icon;
 
   const thumb = (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gray-100">
+    <div className={`relative w-full overflow-hidden rounded-lg ${typeConfig.bgColor} flex items-center justify-center py-4`}>
       {thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={thumbnailUrl} alt="Document thumbnail" className="h-full w-full object-cover" />
+        <img src={thumbnailUrl} alt="Document thumbnail" className="h-16 w-16 object-cover rounded" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center">
-          <FileText className="h-8 w-8 text-gray-400" />
+        <div className="flex items-center justify-center">
+          <IconComponent className={`h-10 w-10 ${typeConfig.color} stroke-2`} />
         </div>
       )}
     </div>
@@ -157,23 +162,23 @@ export default function DocumentCard({
       role="button"
       tabIndex={0}
       onClick={() => onOpen?.(id)}
-      className="group rounded-lg border bg-white p-3 transition-shadow hover:shadow"
+      className="group rounded-lg border bg-white p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02] flex flex-col min-h-[180px]"
     >
-      {thumb}
-      <div className="mt-3 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="truncate text-sm text-gray-900">{title}</div>
-          <div className="text-xs text-gray-500">{category}</div>
+      <div className="flex-shrink-0 mb-3">{thumb}</div>
+      <div className="flex items-start justify-between gap-2 flex-shrink-0 mb-2">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-gill-sans-regular text-gray-900 font-medium">{title}</div>
+          <div className="text-xs text-gray-500 font-gill-sans-light truncate mt-0.5">{category}</div>
         </div>
         {contextMenu}
       </div>
-      <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between flex-shrink-0 mb-2">
+        <div className="flex items-center gap-1">
           {statusBadge}
         </div>
-        {updatedAt && <div className="text-xs text-gray-500">{updatedAt}</div>}
+        {updatedAt && <div className="text-xs text-gray-500 font-gill-sans-light">{updatedAt}</div>}
       </div>
-      {tags.length > 0 && tagList}
+      {tags.length > 0 && <div className="mt-auto flex-shrink-0">{tagList}</div>}
     </div>
   );
 }

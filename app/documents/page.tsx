@@ -14,7 +14,10 @@ import { useDebounce } from "@/lib/use-debounce";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DocumentUploader } from "@/components/document-uploader";
 import { DocumentSearch } from "@/components/document-search";
-import { KnowledgeManager } from "@/components/knowledge-manager";
+import DocumentPreview from "@/components/document-preview";
+import DocumentPdfViewer from "@/components/document-pdf-viewer";
+import DocumentModal from "@/components/document-modal";
+import { MessageCircle } from "lucide-react";
 
 interface Document {
   id: string;
@@ -59,13 +62,13 @@ const documents: Document[] = [
     status: "Expiring",
   },
   {
-    id: "4",
-    name: "Survey_Report.pdf",
+    id: "survey-report-2022",
+    name: "Brighton_Survey_Report.pdf",
     type: "Property Survey Report",
     dateAdded: "Sep 18th 2024",
     addedAt: 1726617600000,
     category: "Surveys & Reports",
-    tags: ["Survey"],
+    tags: ["Survey", "Brighton", "Victorian"],
     status: "Ready",
   },
   {
@@ -135,9 +138,11 @@ export default function DocumentsPage() {
     "Newest" | "Name" | "Category" | "AI relevance"
   >("Newest");
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
+  const [pdfViewerDocId, setPdfViewerDocId] = useState<string | null>(null);
+  const [pdfViewerDocName, setPdfViewerDocName] = useState<string>("");
   const [showUploader, setShowUploader] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [showKnowledge, setShowKnowledge] = useState(false);
 
   const debouncedTerm = useDebounce(searchTerm, 250);
 
@@ -192,29 +197,20 @@ export default function DocumentsPage() {
             Documents
           </h1>
           <div className="flex gap-2">
+            <Button asChild variant="outline" className="font-gill-sans-light">
+              <Link href="/documents/database">Data Room (demo)</Link>
+            </Button>
             <Button
-              variant="outline"
               onClick={() => setShowUploader(!showUploader)}
-              className="font-gill-sans-light"
+              className="bg-primary hover:bg-primary/90 text-white font-gill-sans-light transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
             >
               Upload Document
             </Button>
             <Button
-              variant="outline"
               onClick={() => setShowSearch(!showSearch)}
-              className="font-gill-sans-light"
+              className="bg-secondary hover:bg-secondary/90 text-white font-gill-sans-light transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
             >
               Search My Docs
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowKnowledge(!showKnowledge)}
-              className="font-gill-sans-light"
-            >
-              Knowledge Base
-            </Button>
-            <Button className="bg-ht-secondary hover:bg-[#9C84CF] text-white font-gill-sans-light">
-              Ask HomeTruth
             </Button>
           </div>
         </div>
@@ -436,7 +432,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* Uploader and Search Components */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-6">
           {showUploader && (
             <div className="mb-6">
               <DocumentUploader
@@ -456,12 +452,6 @@ export default function DocumentsPage() {
             </div>
           )}
 
-          {showKnowledge && (
-            <div className="mb-6">
-              <KnowledgeManager />
-            </div>
-          )}
-
           <Dropzone
             className="mb-6"
             plan={plan}
@@ -471,7 +461,7 @@ export default function DocumentsPage() {
                 props: { count: files.length },
               });
               // Mock insert new docs to top of list
-              const newDocs = files.map((f, idx) => ({
+              const newDocs: Document[] = files.map((f, idx) => ({
                 id: `${Date.now()}-${idx}`,
                 name: f.name,
                 type: f.type || "Document",
@@ -479,17 +469,13 @@ export default function DocumentsPage() {
                 addedAt: Date.now(),
                 category: undefined,
                 tags: [],
-                status: "Processing",
+                status: "Processing" as Document["status"],
               }));
               setDocumentsState((prev) => [...newDocs, ...prev]);
             }}
           />
 
-          <div
-            className={`grid gap-6 ${
-              previewId ? "lg:grid-cols-[1fr_360px]" : "lg:grid-cols-1"
-            }`}
-          >
+          <div className="relative">
             <div>
               {view === "list" ? (
                 <div className="space-y-2">
@@ -533,13 +519,14 @@ export default function DocumentsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                   {filteredDocuments.map((doc) => (
                     <DocumentCard
                       key={doc.id}
                       id={doc.id}
                       title={doc.name}
-                      category={doc.type}
+                      category={doc.category}
+                      documentType={doc.type}
                       tags={doc.tags}
                       status={doc.status as any}
                       updatedAt={doc.dateAdded}
@@ -575,116 +562,6 @@ export default function DocumentsPage() {
                 </div>
               )}
             </div>
-
-            {previewId && (
-              <aside className="hidden lg:block">
-                <div className="sticky top-6 rounded-lg border bg-white p-4">
-                  {(() => {
-                    const doc = documentsState.find((d) => d.id === previewId);
-                    if (!doc) return null;
-                    return (
-                      <div>
-                        <div className="mb-3 flex items-start justify-between">
-                          <div>
-                            <div className="truncate text-sm text-gray-900">
-                              {doc.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {doc.type}
-                            </div>
-                          </div>
-                          <button
-                            className="text-gray-400 hover:text-gray-600"
-                            aria-label="Close preview"
-                            onClick={() => setPreviewId(null)}
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <div className="mb-3 aspect-[3/4] w-full overflow-hidden rounded-md bg-gray-50">
-                          <div className="flex h-full items-center justify-center text-gray-400">
-                            First page preview
-                          </div>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Category</span>
-                            <span className="text-gray-800">
-                              {doc.category || "—"}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Status</span>
-                            <span className="text-gray-800">
-                              {doc.status || "—"}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Added</span>
-                            <span className="text-gray-800">
-                              {doc.dateAdded}
-                            </span>
-                          </div>
-                          {!!doc.tags?.length && (
-                            <div>
-                              <div className="text-gray-500">Tags</div>
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {doc.tags!.map((t) => (
-                                  <span
-                                    key={t}
-                                    className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
-                                  >
-                                    {t}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="mt-4 grid grid-cols-3 gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-ht-primary text-white"
-                            onClick={() =>
-                              track({
-                                name: "ai_explain",
-                                props: { id: doc.id },
-                              })
-                            }
-                          >
-                            Explain
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() =>
-                              track({
-                                name: "ai_summarize",
-                                props: { id: doc.id },
-                              })
-                            }
-                          >
-                            Summarize
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              track({
-                                name: "ai_extract",
-                                props: { id: doc.id },
-                              })
-                            }
-                          >
-                            Extract
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </aside>
-            )}
           </div>
 
           {/* Upgrade CTA */}
@@ -702,6 +579,27 @@ export default function DocumentsPage() {
           </div>
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {showPdfViewer && pdfViewerDocId && (
+        <DocumentPdfViewer
+          documentId={pdfViewerDocId}
+          documentName={pdfViewerDocName}
+          onClose={() => {
+            setShowPdfViewer(false);
+            setPdfViewerDocId(null);
+            setPdfViewerDocName("");
+          }}
+        />
+      )}
+
+      {/* Document Preview Modal */}
+      {previewId &&
+        (() => {
+          const doc = documentsState.find((d) => d.id === previewId);
+          if (!doc) return null;
+          return <DocumentModal doc={doc} onClose={() => setPreviewId(null)} />;
+        })()}
     </AppLayout>
   );
 }

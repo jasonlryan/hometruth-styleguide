@@ -1,13 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import OnboardingLayout from "@/components/layouts/onboarding-layout";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
+import { useRouter } from "next/navigation";
 
 export default function WelcomePage() {
+  const { user } = useUser();
+  const router = useRouter();
+
+  // Redirect to signin if no user data
+  useEffect(() => {
+    if (!user) {
+      router.push("/signin");
+    }
+  }, [user, router]);
+
+  if (!user) return null;
   return (
     <OnboardingLayout showProgress={false}>
       <div className="max-w-lg mx-auto text-center">
@@ -19,7 +32,7 @@ export default function WelcomePage() {
             </div>
 
             {/* Welcome Message */}
-            <h1 className="type-h2 text-gray-900 mb-4">Welcome, rayan!</h1>
+            <h1 className="type-h2 text-gray-900 mb-4">Welcome, {user.name}!</h1>
             <p className="font-gill-sans-light text-gray-600 mb-8 text-lg leading-relaxed">
               What&apos;s your vibe? A few fun questions and we&apos;ll craft your unique match.
             </p>

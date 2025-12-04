@@ -1008,17 +1008,17 @@ export default function KnowledgeAdminPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Database className="h-8 w-8 text-blue-600" />
+            <h1 className="type-h2 text-gray-900 font-gill-sans-regular flex items-center gap-3">
+              <Database className="h-8 w-8 text-primary" />
               Knowledge Base Admin
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 mt-2 font-gill-sans-light">
               Manage the RAG knowledge base for HomeTruth AI assistant
             </p>
           </div>
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-primary/90 text-white font-gill-sans-light transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Knowledge
@@ -1044,27 +1044,27 @@ export default function KnowledgeAdminPage() {
 
         {/* Add Knowledge Form */}
         {showAddForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="bg-white border-b border-gray-200">
+              <CardTitle className="flex items-center gap-2 font-gill-sans-regular text-gray-900">
+                <Upload className="h-5 w-5 text-primary" />
                 Add New Knowledge
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-gray-50 p-6">
               {/* URL Input */}
               <div>
-                <Label htmlFor="url">Or Enter URL to Scrape</Label>
+                <Label htmlFor="url" className="font-gill-sans-light text-gray-700">Or Enter URL to Scrape</Label>
                 <Input
                   id="url"
                   type="url"
                   value={urlToScrape}
                   onChange={(e) => setUrlToScrape(e.target.value)}
                   placeholder="https://example.com/article"
-                  className="mb-2"
+                  className="mb-2 font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                 />
                 {urlToScrape && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 font-gill-sans-light">
                     Will scrape content from: {urlToScrape}
                   </div>
                 )}
@@ -1072,18 +1072,18 @@ export default function KnowledgeAdminPage() {
 
               {/* Document Upload */}
               <div>
-                <Label htmlFor="file">Or Upload Document</Label>
+                <Label htmlFor="file" className="font-gill-sans-light text-gray-700">Or Upload Document</Label>
                 <Input
                   id="file"
                   type="file"
                   onChange={handleFileUpload}
                   accept=".pdf,.txt,.doc,.docx,.json,.csv"
-                  className="cursor-pointer"
+                  className="cursor-pointer font-gill-sans-light border-gray-200"
                 />
                 {uploadedFile && (
                   <div className="mt-2 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-gray-600">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-sm text-gray-600 font-gill-sans-light">
                       {uploadedFile.name} (
                       {(uploadedFile.size / 1024).toFixed(1)} KB)
                     </span>
@@ -1092,7 +1092,7 @@ export default function KnowledgeAdminPage() {
               </div>
 
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title" className="font-gill-sans-light text-gray-700">Title</Label>
                 <Input
                   id="title"
                   value={newKnowledge.title}
@@ -1103,12 +1103,13 @@ export default function KnowledgeAdminPage() {
                     }))
                   }
                   placeholder="e.g., First-time Buyer Checklist"
+                  className="font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="content">Content</Label>
+                  <Label htmlFor="content" className="font-gill-sans-light text-gray-700">Content</Label>
                   <Button
                     size="sm"
                     variant="outline"
@@ -1117,6 +1118,7 @@ export default function KnowledgeAdminPage() {
                       suggestingMetadata ||
                       (!uploadedFile && !newKnowledge.content && !urlToScrape)
                     }
+                    className="font-gill-sans-light border-gray-200 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                   >
                     {suggestingMetadata ? (
                       <>
@@ -1139,14 +1141,15 @@ export default function KnowledgeAdminPage() {
                   }
                   placeholder="Enter the knowledge content here..."
                   rows={8}
+                  className="font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                 />
               </div>
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category" className="font-gill-sans-light text-gray-700">Category</Label>
                   {aiSuggestionsApplied && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs font-gill-sans-light bg-primary/10 text-primary">
                       AI Suggested
                     </Badge>
                   )}
@@ -1162,12 +1165,13 @@ export default function KnowledgeAdminPage() {
                     setAiSuggestionsApplied(false); // Clear AI indicator when manually edited
                   }}
                   placeholder="e.g., Buying Process, Legal, Financial, Property Types"
+                  className="font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="documentId">Document ID</Label>
+                  <Label htmlFor="documentId" className="font-gill-sans-light text-gray-700">Document ID</Label>
                   <Input
                     id="documentId"
                     value={newKnowledge.documentId}
@@ -1178,10 +1182,11 @@ export default function KnowledgeAdminPage() {
                       }))
                     }
                     placeholder="e.g., lease_agreement_001"
+                    className="font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority" className="font-gill-sans-light text-gray-700">Priority</Label>
                   <select
                     id="priority"
                     value={newKnowledge.priority}
@@ -1191,7 +1196,7 @@ export default function KnowledgeAdminPage() {
                         priority: e.target.value,
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md font-gill-sans-light focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                   >
                     <option value="low">Low</option>
                     <option value="normal">Normal</option>
@@ -1202,7 +1207,7 @@ export default function KnowledgeAdminPage() {
               </div>
 
               <div>
-                <Label htmlFor="source">Source</Label>
+                <Label htmlFor="source" className="font-gill-sans-light text-gray-700">Source</Label>
                 <Input
                   id="source"
                   value={newKnowledge.source}
@@ -1213,17 +1218,18 @@ export default function KnowledgeAdminPage() {
                     }))
                   }
                   placeholder="e.g., Government Website, Legal Firm, Internal"
+                  className="font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                 />
               </div>
 
               <div>
-                <Label>Tags</Label>
+                <Label className="font-gill-sans-light text-gray-700">Tags</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {newKnowledge.tags.map((tag) => (
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="cursor-pointer hover:bg-red-100 transition-colors"
+                      className="cursor-pointer hover:bg-red-100 transition-colors font-gill-sans-light"
                     >
                       <span className="mr-1">{tag}</span>
                       <span
@@ -1241,7 +1247,7 @@ export default function KnowledgeAdminPage() {
 
                 {/* Suggested tags for manual selection */}
                 <div className="mb-2">
-                  <Label className="text-sm text-gray-600">
+                  <Label className="text-sm text-gray-600 font-gill-sans-light">
                     Suggested tags (click to add):
                   </Label>
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -1259,7 +1265,7 @@ export default function KnowledgeAdminPage() {
                       <Badge
                         key={suggestedTag}
                         variant="outline"
-                        className="cursor-pointer hover:bg-blue-100 transition-colors"
+                        className="cursor-pointer hover:bg-primary/10 hover:border-primary/20 transition-colors font-gill-sans-light"
                         onClick={() => addTag(suggestedTag)}
                       >
                         + {suggestedTag}
@@ -1280,7 +1286,7 @@ export default function KnowledgeAdminPage() {
                         }
                       }
                     }}
-                    className="flex-1"
+                    className="flex-1 font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
                   />
                   <Button
                     type="button"
@@ -1291,6 +1297,7 @@ export default function KnowledgeAdminPage() {
                       }
                     }}
                     disabled={!tagInput.trim()}
+                    className="font-gill-sans-light border-gray-200 hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                   >
                     Add
                   </Button>
@@ -1309,12 +1316,16 @@ export default function KnowledgeAdminPage() {
                       }))
                     }
                   />
-                  <Label>Auto-update when URL content changes</Label>
+                  <Label className="font-gill-sans-light text-gray-700">Auto-update when URL content changes</Label>
                 </div>
               )}
 
               <div className="flex gap-2">
-                <Button onClick={handleAddKnowledge} disabled={adding}>
+                <Button 
+                  onClick={handleAddKnowledge} 
+                  disabled={adding}
+                  className="bg-primary hover:bg-primary/90 text-white font-gill-sans-light transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
+                >
                   {adding ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1324,7 +1335,11 @@ export default function KnowledgeAdminPage() {
                     "Add to Knowledge Base"
                   )}
                 </Button>
-                <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAddForm(false)}
+                  className="font-gill-sans-light border-gray-200 hover:border-gray-300"
+                >
                   Cancel
                 </Button>
               </div>
@@ -1333,15 +1348,15 @@ export default function KnowledgeAdminPage() {
         )}
 
         {/* Search Knowledge Base */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="bg-white border-b border-gray-200">
+            <CardTitle className="flex items-center gap-2 font-gill-sans-regular text-gray-900">
+              <Search className="h-5 w-5 text-primary" />
               Search Knowledge Base
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-3 text-sm text-muted-foreground">
+          <CardContent className="bg-gray-50 p-6">
+            <div className="flex items-center justify-between mb-3 text-sm text-gray-600 font-gill-sans-light">
               <div>
                 KB records: {totalRecords != null ? totalRecords : "—"}
               </div>
@@ -1363,11 +1378,12 @@ export default function KnowledgeAdminPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Search homebuying knowledge..."
-                className="flex-1"
+                className="flex-1 font-gill-sans-light border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white"
               />
               <Button
                 onClick={handleSearch}
                 disabled={searching || !searchQuery.trim()}
+                className="bg-primary hover:bg-primary/90 text-white font-gill-sans-light"
               >
                 {searching ? "Searching..." : "Search"}
               </Button>

@@ -13,6 +13,8 @@ import ChatHistory, {
   type ChatHistorySession,
 } from "@/components/chat-history";
 import ChatMessage, { type ChatSource } from "@/components/chat-message";
+import VoiceInputButton from "@/components/voice-input-button";
+import HomeTruthLogoAnimation from "@/components/hometruth-logo-animation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -172,12 +174,14 @@ interface ChatContainerProps {
   className?: string;
   showHistory?: boolean;
   title?: string;
+  documentId?: string;
 }
 
 export default function ChatContainer({
   className = "",
   showHistory = true,
   title = "Ask HomeTruth",
+  documentId,
 }: ChatContainerProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -486,7 +490,11 @@ export default function ChatContainer({
     activeControllerRef.current = controller;
 
     try {
-      const response = await fetch("/api/chat", {
+      const apiEndpoint = documentId
+        ? `/api/documents/${documentId}/chat`
+        : "/api/chat";
+
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -494,7 +502,8 @@ export default function ChatContainer({
         body: JSON.stringify({
           message: trimmed,
           sessionId,
-          mode: "knowledge",
+          mode: documentId ? "document" : "knowledge",
+          documentId: documentId || undefined,
         }),
         signal: controller.signal,
       });
@@ -556,6 +565,80 @@ export default function ChatContainer({
     }
   };
 
+  const handleSaveConversationToNotes = async (
+    allMessages: Array<{ role: string; content: string; timestamp?: string }>
+  ) => {
+    if (!allMessages || allMessages.length === 0) return;
+
+    try {
+      // Create conversation text
+      const conversationText = allMessages
+        .map((msg) => {
+          const roleLabel = msg.role === "user" ? "You" : "HomeTruth";
+          const timestamp = msg.timestamp ? ` [${msg.timestamp}]` : "";
+          return `${roleLabel}${timestamp}: ${msg.content}`;
+        })
+        .join("\n\n");
+
+      // Get first user message for title
+      const firstUserMessage = allMessages.find((msg) => msg.role === "user");
+      const title = firstUserMessage
+        ? firstUserMessage.content.slice(0, 60) +
+          (firstUserMessage.content.length > 60 ? "..." : "")
+        : "Chat Conversation";
+
+      // Get last assistant message for excerpt
+      const lastAssistantMessage = [...allMessages]
+        .reverse()
+        .find((msg) => msg.role === "assistant");
+      const excerpt = lastAssistantMessage
+        ? lastAssistantMessage.content.slice(0, 150) +
+          (lastAssistantMessage.content.length > 150 ? "..." : "")
+        : conversationText.slice(0, 150);
+
+      const noteData = {
+        title,
+        excerpt,
+        content: {
+          type: documentId ? "document-chat" : "chat",
+          conversation: allMessages,
+          conversationText,
+          documentId: documentId || undefined,
+          timestamp: Date.now(),
+        },
+        type: documentId ? "document-chat" : "chat",
+      };
+
+      const response = await fetch("/api/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(noteData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save");
+      }
+
+      const result = await response.json();
+
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        const notesKey = "ht.notes";
+        const existingNotes = localStorage.getItem(notesKey);
+        const notes = existingNotes ? JSON.parse(existingNotes) : [];
+        notes.unshift(result.note); // Add to beginning
+        localStorage.setItem(notesKey, JSON.stringify(notes));
+      }
+
+      alert("Conversation saved to Notes!");
+    } catch (err) {
+      console.error("Error saving conversation to notes:", err);
+      alert("Failed to save. Please try again.");
+    }
+  };
+
   const toggleHistory = () => {
     setIsHistoryOpen((prev) => !prev);
   };
@@ -567,7 +650,7 @@ export default function ChatContainer({
   ];
 
   return (
-    <div className={`flex h-full ${className}`}>
+    <div className={`flex flex-col ${className}`}>
       {showHistory && isHistoryOpen && (
         <ChatHistory
           sessions={sessionSummaries}
@@ -612,16 +695,24 @@ export default function ChatContainer({
             </div>
             <div className="flex items-center space-x-3">
               {title && (
-                <h1 className="type-h2 text-gray-900 hidden md:block">{title}</h1>
+                <h1 className="type-h2 text-gray-900 hidden md:block">
+                  {title}
+                </h1>
               )}
               <div className="flex items-center space-x-2">
+                {isLoading ? (
+                  <HomeTruthLogoAnimation size={20} className="flex-shrink-0" />
+                ) : (
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                )}
                 <div
-                  className={`w-3 h-3 rounded-full ${
-                    isLoading ? "bg-yellow-400 animate-pulse" : "bg-green-500"
+                  className={`px-2 py-1 text-xs rounded-full font-gill-sans-light ${
+                    isLoading
+                      ? "bg-primary/10 text-primary"
+                      : "bg-green-100 text-green-700"
                   }`}
-                />
-                <div className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-gill-sans-light">
-                  {isLoading ? "Responding" : "Online"}
+                >
+                  {isLoading ? "Thinking..." : "Online"}
                 </div>
               </div>
             </div>
@@ -630,7 +721,7 @@ export default function ChatContainer({
 
         <div
           ref={messagesViewportRef}
-          className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 relative"
+          className="flex-1 p-3 sm:p-6 pb-32 space-y-4 sm:space-y-6 bg-gray-50 relative"
         >
           <div aria-live="polite" role="status" className="sr-only">
             {isLoading ? "HomeTruth is responding" : ""}
@@ -651,6 +742,16 @@ export default function ChatContainer({
                 }
                 isStreaming={message.isStreaming}
                 sources={message.sources}
+                conversationMessages={messages.map((msg) => ({
+                  role: msg.role,
+                  content: msg.content,
+                  timestamp: formatTimestamp(msg.createdAt),
+                }))}
+                onSaveConversationToNotes={handleSaveConversationToNotes}
+                onSaveToNotes={(content, sources) => {
+                  // Note saved, could show notification or refresh notes list
+                  console.log("Note saved:", { content, sources });
+                }}
               />
             ))
           )}
@@ -669,8 +770,8 @@ export default function ChatContainer({
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="bg-white border-t border-gray-200 p-3 sm:p-4 pb-[env(safe-area-inset-bottom)]">
-          <div className="space-y-3">
+        <div className="sticky bottom-0 z-10 bg-gray-50 p-3 sm:p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 shadow-lg space-y-3">
             <div className="flex space-x-2">
               <Input
                 placeholder="Ask HomeTruth anything about property..."
@@ -678,6 +779,21 @@ export default function ChatContainer({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
+                disabled={isLoading}
+              />
+              <VoiceInputButton
+                onTranscribe={(text) => {
+                  setInputValue(text);
+                  // Auto-send after transcription
+                  setTimeout(() => {
+                    const trimmed = text.trim();
+                    if (trimmed) {
+                      setInputValue(trimmed);
+                      // Trigger send by simulating Enter key or calling handleSendMessage directly
+                      handleSendMessage();
+                    }
+                  }, 100);
+                }}
                 disabled={isLoading}
               />
               <Button

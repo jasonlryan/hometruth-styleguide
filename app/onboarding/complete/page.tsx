@@ -1,13 +1,33 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import OnboardingLayout from "@/components/layouts/onboarding-layout";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
+import { useRouter } from "next/navigation";
 
 export default function CompletePage() {
+  const { user, setUser } = useUser();
+  const router = useRouter();
+
+  // Redirect to signin if no user data
+  useEffect(() => {
+    if (!user) {
+      router.push("/signin");
+    } else if (!user.hasCompletedOnboarding) {
+      // Mark onboarding as complete
+      setUser({
+        ...user,
+        hasCompletedOnboarding: true,
+      });
+    }
+  }, [user, router, setUser]);
+
+  if (!user) return null;
+
   return (
     <OnboardingLayout showProgress={false}>
       <div className="max-w-lg mx-auto text-center">
