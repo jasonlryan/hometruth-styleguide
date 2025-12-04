@@ -273,7 +273,8 @@ export default function KnowledgeAdminPage() {
       ([name, stats]) => ({
         name,
         count:
-          normalizeCount(stats?.vectorCount) ?? normalizeCount(stats?.recordCount),
+          normalizeCount(stats?.vectorCount) ??
+          normalizeCount(stats?.recordCount),
       })
     );
 
@@ -281,20 +282,19 @@ export default function KnowledgeAdminPage() {
   }, [kbStats]);
 
   const loadDocuments = useCallback(
-    async (
-      {
-        cursor,
-        append,
-        namespace,
-        fetchAll,
-      }: {
-        cursor?: string | null;
-        append?: boolean;
-        namespace?: string;
-        fetchAll?: boolean;
-      } = {}
-    ) => {
-      const effectiveCursor = cursor ?? (append ? docsCursor ?? undefined : undefined);
+    async ({
+      cursor,
+      append,
+      namespace,
+      fetchAll,
+    }: {
+      cursor?: string | null;
+      append?: boolean;
+      namespace?: string;
+      fetchAll?: boolean;
+    } = {}) => {
+      const effectiveCursor =
+        cursor ?? (append ? docsCursor ?? undefined : undefined);
 
       if (append && !effectiveCursor && !fetchAll) {
         return;
@@ -650,7 +650,11 @@ export default function KnowledgeAdminPage() {
       (async () => {
         await loadDocuments({ namespace: "urls", fetchAll: true });
         // then append general so both appear
-        await loadDocuments({ namespace: "general", append: true, fetchAll: true });
+        await loadDocuments({
+          namespace: "general",
+          append: true,
+          fetchAll: true,
+        });
       })();
     }
   }, [activeView, docsInitialized, docsLoading, loadDocuments]);
@@ -849,11 +853,12 @@ export default function KnowledgeAdminPage() {
         setLastUpload({
           documentId: uploadedDocId,
           chunks: data.chunksUploaded,
-          totalRecords: (typeof statsFromResponse?.totalRecordCount === 'number'
-            ? statsFromResponse?.totalRecordCount
-            : typeof statsFromResponse?.totalVectorCount === 'number'
+          totalRecords:
+            typeof statsFromResponse?.totalRecordCount === "number"
+              ? statsFromResponse?.totalRecordCount
+              : typeof statsFromResponse?.totalVectorCount === "number"
               ? (statsFromResponse as any).totalVectorCount
-              : undefined),
+              : undefined,
           timestamp: new Date().toISOString(),
         });
         setDocsInitialized(false);
@@ -1034,8 +1039,8 @@ export default function KnowledgeAdminPage() {
               <p className="font-medium">{uploadFeedback.message}</p>
               {lastUpload && uploadFeedback.type === "success" && (
                 <p className="mt-1 text-xs opacity-80">
-                  {new Date(lastUpload.timestamp).toLocaleTimeString()} • KB total:{" "}
-                  {lastUpload.totalRecords ?? totalRecords ?? "—"}
+                  {new Date(lastUpload.timestamp).toLocaleTimeString()} • KB
+                  total: {lastUpload.totalRecords ?? totalRecords ?? "—"}
                 </p>
               )}
             </div>
@@ -1054,7 +1059,12 @@ export default function KnowledgeAdminPage() {
             <CardContent className="space-y-4 bg-gray-50 p-6">
               {/* URL Input */}
               <div>
-                <Label htmlFor="url" className="font-gill-sans-light text-gray-700">Or Enter URL to Scrape</Label>
+                <Label
+                  htmlFor="url"
+                  className="font-gill-sans-light text-gray-700"
+                >
+                  Or Enter URL to Scrape
+                </Label>
                 <Input
                   id="url"
                   type="url"
@@ -1072,7 +1082,12 @@ export default function KnowledgeAdminPage() {
 
               {/* Document Upload */}
               <div>
-                <Label htmlFor="file" className="font-gill-sans-light text-gray-700">Or Upload Document</Label>
+                <Label
+                  htmlFor="file"
+                  className="font-gill-sans-light text-gray-700"
+                >
+                  Or Upload Document
+                </Label>
                 <Input
                   id="file"
                   type="file"
@@ -1092,7 +1107,12 @@ export default function KnowledgeAdminPage() {
               </div>
 
               <div>
-                <Label htmlFor="title" className="font-gill-sans-light text-gray-700">Title</Label>
+                <Label
+                  htmlFor="title"
+                  className="font-gill-sans-light text-gray-700"
+                >
+                  Title
+                </Label>
                 <Input
                   id="title"
                   value={newKnowledge.title}
@@ -1109,7 +1129,12 @@ export default function KnowledgeAdminPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="content" className="font-gill-sans-light text-gray-700">Content</Label>
+                  <Label
+                    htmlFor="content"
+                    className="font-gill-sans-light text-gray-700"
+                  >
+                    Content
+                  </Label>
                   <Button
                     size="sm"
                     variant="outline"
@@ -1147,9 +1172,17 @@ export default function KnowledgeAdminPage() {
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Label htmlFor="category" className="font-gill-sans-light text-gray-700">Category</Label>
+                  <Label
+                    htmlFor="category"
+                    className="font-gill-sans-light text-gray-700"
+                  >
+                    Category
+                  </Label>
                   {aiSuggestionsApplied && (
-                    <Badge variant="secondary" className="text-xs font-gill-sans-light bg-primary/10 text-primary">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-gill-sans-light bg-primary/10 text-primary"
+                    >
                       AI Suggested
                     </Badge>
                   )}
@@ -1171,7 +1204,12 @@ export default function KnowledgeAdminPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="documentId" className="font-gill-sans-light text-gray-700">Document ID</Label>
+                  <Label
+                    htmlFor="documentId"
+                    className="font-gill-sans-light text-gray-700"
+                  >
+                    Document ID
+                  </Label>
                   <Input
                     id="documentId"
                     value={newKnowledge.documentId}
@@ -1186,7 +1224,12 @@ export default function KnowledgeAdminPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="priority" className="font-gill-sans-light text-gray-700">Priority</Label>
+                  <Label
+                    htmlFor="priority"
+                    className="font-gill-sans-light text-gray-700"
+                  >
+                    Priority
+                  </Label>
                   <select
                     id="priority"
                     value={newKnowledge.priority}
@@ -1207,7 +1250,12 @@ export default function KnowledgeAdminPage() {
               </div>
 
               <div>
-                <Label htmlFor="source" className="font-gill-sans-light text-gray-700">Source</Label>
+                <Label
+                  htmlFor="source"
+                  className="font-gill-sans-light text-gray-700"
+                >
+                  Source
+                </Label>
                 <Input
                   id="source"
                   value={newKnowledge.source}
@@ -1223,7 +1271,9 @@ export default function KnowledgeAdminPage() {
               </div>
 
               <div>
-                <Label className="font-gill-sans-light text-gray-700">Tags</Label>
+                <Label className="font-gill-sans-light text-gray-700">
+                  Tags
+                </Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {newKnowledge.tags.map((tag) => (
                     <Badge
@@ -1316,13 +1366,15 @@ export default function KnowledgeAdminPage() {
                       }))
                     }
                   />
-                  <Label className="font-gill-sans-light text-gray-700">Auto-update when URL content changes</Label>
+                  <Label className="font-gill-sans-light text-gray-700">
+                    Auto-update when URL content changes
+                  </Label>
                 </div>
               )}
 
               <div className="flex gap-2">
-                <Button 
-                  onClick={handleAddKnowledge} 
+                <Button
+                  onClick={handleAddKnowledge}
                   disabled={adding}
                   className="bg-primary hover:bg-primary/90 text-white font-gill-sans-light transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
                 >
@@ -1335,14 +1387,144 @@ export default function KnowledgeAdminPage() {
                     "Add to Knowledge Base"
                   )}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowAddForm(false)}
                   className="font-gill-sans-light border-gray-200 hover:border-gray-300"
                 >
                   Cancel
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Stats Section - Moved above Search */}
+        {activeView === "stats" && (
+          <Card
+            id="panel-stats"
+            role="tabpanel"
+            aria-labelledby="tab-stats"
+            className="border-blue-100 bg-white shadow-sm"
+          >
+            <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  Knowledge Base Stats
+                </CardTitle>
+                <CardDescription>
+                  Snapshot of your Pinecone index health and recent uploads.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                {statsFetchedAt && (
+                  <span className="text-sm text-muted-foreground">
+                    Updated {new Date(statsFetchedAt).toLocaleTimeString()}
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={refreshStats}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-blue-900">
+                  <p className="text-sm font-medium">Total Records</p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {totalRecords != null ? totalRecords.toLocaleString() : "—"}
+                  </p>
+                  <p className="mt-1 text-xs text-blue-700">
+                    Combined across all namespaces
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-white p-4 shadow-sm">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    General Namespace
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {generalNamespace?.count != null
+                      ? generalNamespace.count.toLocaleString()
+                      : "—"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Vectors stored for application defaults
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-white p-4 shadow-sm">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Embedding Dimension
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold">
+                    {dimensionValue ?? "—"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Model vector size for this index
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border bg-white">
+                <div className="border-b px-4 py-3">
+                  <h4 className="font-semibold">Namespace breakdown</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Track how content is distributed across namespaces.
+                  </p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 text-left text-xs uppercase text-muted-foreground">
+                      <tr>
+                        <th className="px-4 py-3">Namespace</th>
+                        <th className="px-4 py-3">Vector Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {namespaceStats.length > 0 ? (
+                        namespaceStats.map(({ name, count }) => (
+                          <tr key={name} className="border-t">
+                            <td className="px-4 py-3 font-medium">{name}</td>
+                            <td className="px-4 py-3">
+                              {count != null ? count.toLocaleString() : "—"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            className="px-4 py-4 text-muted-foreground"
+                            colSpan={2}
+                          >
+                            No namespace metrics available yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {lastUpload && (
+                <div className="rounded-lg border border-green-100 bg-green-50 p-4 text-green-900">
+                  <p className="text-sm font-medium">Most recent upload</p>
+                  <p className="mt-1 text-lg font-semibold">
+                    {lastUpload.documentId} · {lastUpload.chunks} chunks
+                  </p>
+                  <p className="mt-1 text-xs text-green-800">
+                    {new Date(lastUpload.timestamp).toLocaleString()} • Index
+                    total after upload:{" "}
+                    {lastUpload.totalRecords ?? totalRecords ?? "—"}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -1356,22 +1538,15 @@ export default function KnowledgeAdminPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="bg-gray-50 p-6">
-            <div className="flex items-center justify-between mb-3 text-sm text-gray-600 font-gill-sans-light">
-              <div>
-                KB records: {totalRecords != null ? totalRecords : "—"}
+            {lastUpload && (
+              <div className="mb-3 text-sm text-gray-600 font-gill-sans-light">
+                Last upload: {lastUpload.chunks} chunks • doc{" "}
+                {lastUpload.documentId}
+                {typeof lastUpload.totalRecords === "number" && (
+                  <> • total {lastUpload.totalRecords}</>
+                )}
               </div>
-              {lastUpload && (
-                <div>
-                  Last upload: {lastUpload.chunks} chunks • doc {" "}
-                  {lastUpload.documentId}
-                  {typeof lastUpload.totalRecords === "number" && (
-                    <>
-                      {" "}• total {lastUpload.totalRecords}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
             <div className="flex gap-2">
               <Input
                 value={searchQuery}
@@ -1611,8 +1786,12 @@ export default function KnowledgeAdminPage() {
                   className="gap-2"
                   onClick={async () => {
                     setDocsInitialized(false);
-                    await loadDocuments({ namespace: 'urls', fetchAll: true });
-                    await loadDocuments({ namespace: 'general', append: true, fetchAll: true });
+                    await loadDocuments({ namespace: "urls", fetchAll: true });
+                    await loadDocuments({
+                      namespace: "general",
+                      append: true,
+                      fetchAll: true,
+                    });
                   }}
                   disabled={docsLoading}
                 >
@@ -1718,23 +1897,27 @@ export default function KnowledgeAdminPage() {
                           )}
                         </div>
 
-                <div className="mt-4 flex flex-col items-end gap-2 md:mt-0 md:min-w-[220px]">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    disabled={
-                      previewLoading && previewDoc?.documentId === doc.documentId
-                    }
-                    onClick={() => {
-                      void handlePreview(doc);
-                    }}
-                  >
-                    <FileText className="h-3 w-3" /> Preview
-                  </Button>
+                        <div className="mt-4 flex flex-col items-end gap-2 md:mt-0 md:min-w-[220px]">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            disabled={
+                              previewLoading &&
+                              previewDoc?.documentId === doc.documentId
+                            }
+                            onClick={() => {
+                              void handlePreview(doc);
+                            }}
+                          >
+                            <FileText className="h-3 w-3" /> Preview
+                          </Button>
                           {doc.priority && (
-                            <Badge variant={priorityVariant} className="uppercase">
+                            <Badge
+                              variant={priorityVariant}
+                              className="uppercase"
+                            >
                               {doc.priority}
                             </Badge>
                           )}
@@ -1813,7 +1996,8 @@ export default function KnowledgeAdminPage() {
                 </span>
               </DialogTitle>
               <DialogDescription>
-                Preview combined document chunks fetched from the knowledge base.
+                Preview combined document chunks fetched from the knowledge
+                base.
               </DialogDescription>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 {preview?.documentId && (
@@ -1914,153 +2098,20 @@ export default function KnowledgeAdminPage() {
           </DialogFooter>
         </Dialog>
 
-        {activeView === "stats" && (
-          <Card
-            id="panel-stats"
-            role="tabpanel"
-            aria-labelledby="tab-stats"
-            className="border-blue-100 bg-white shadow-sm"
-          >
-            <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
-                  Knowledge Base Stats
-                </CardTitle>
-                <CardDescription>
-                  Snapshot of your Pinecone index health and recent uploads.
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {statsFetchedAt && (
-                  <span className="text-sm text-muted-foreground">
-                    Updated {new Date(statsFetchedAt).toLocaleTimeString()}
-                  </span>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={refreshStats}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Refresh
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-blue-900">
-                  <p className="text-sm font-medium">Total Records</p>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {totalRecords != null ? totalRecords.toLocaleString() : "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-blue-700">
-                    Combined across all namespaces
-                  </p>
-                </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    General Namespace
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {generalNamespace?.count != null
-                      ? generalNamespace.count.toLocaleString()
-                      : "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Vectors stored for application defaults
-                  </p>
-                </div>
-                <div className="rounded-lg border bg-white p-4 shadow-sm">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Embedding Dimension
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {dimensionValue ?? "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Model vector size for this index
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-lg border bg-white">
-                <div className="border-b px-4 py-3">
-                  <h4 className="font-semibold">Namespace breakdown</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Track how content is distributed across namespaces.
-                  </p>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-left text-xs uppercase text-muted-foreground">
-                      <tr>
-                        <th className="px-4 py-3">Namespace</th>
-                        <th className="px-4 py-3">Vector Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {namespaceStats.length > 0 ? (
-                        namespaceStats.map(({ name, count }) => (
-                          <tr key={name} className="border-t">
-                            <td className="px-4 py-3 font-medium">{name}</td>
-                            <td className="px-4 py-3">
-                              {count != null ? count.toLocaleString() : "—"}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td className="px-4 py-4 text-muted-foreground" colSpan={2}>
-                            No namespace metrics available yet.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {lastUpload && (
-                <div className="rounded-lg border border-green-100 bg-green-50 p-4 text-green-900">
-                  <p className="text-sm font-medium">Most recent upload</p>
-                  <p className="mt-1 text-lg font-semibold">
-                    {lastUpload.documentId} · {lastUpload.chunks} chunks
-                  </p>
-                  <p className="mt-1 text-xs text-green-800">
-                    {new Date(lastUpload.timestamp).toLocaleString()} • Index total after upload: {" "}
-                    {lastUpload.totalRecords ?? totalRecords ?? "—"}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
         {activeView === "bulk" && (
-          <Card
-            id="panel-bulk"
-            role="tabpanel"
-            aria-labelledby="tab-bulk"
-          >
+          <Card id="panel-bulk" role="tabpanel" aria-labelledby="tab-bulk">
             <CardHeader>
               <CardTitle>Bulk Upload (coming soon)</CardTitle>
               <CardDescription>
-                We&apos;re preparing a guided workflow for batching documents. In
-                the meantime, use Add Knowledge to ingest files individually.
+                We&apos;re preparing a guided workflow for batching documents.
+                In the meantime, use Add Knowledge to ingest files individually.
               </CardDescription>
             </CardHeader>
           </Card>
         )}
 
         {activeView === "export" && (
-          <Card
-            id="panel-export"
-            role="tabpanel"
-            aria-labelledby="tab-export"
-          >
+          <Card id="panel-export" role="tabpanel" aria-labelledby="tab-export">
             <CardHeader>
               <CardTitle>Export Data (coming soon)</CardTitle>
               <CardDescription>

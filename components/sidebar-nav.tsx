@@ -17,6 +17,7 @@ import {
   Shield,
   ChevronDown,
   Table,
+  Database,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -76,6 +77,13 @@ const navItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
   {
+    href: "/admin/knowledge",
+    label: "Knowledge Base",
+    icon: Database,
+    color: "text-primary",
+    bgColor: "bg-blue-50",
+  },
+  {
     href: "/documents/database",
     label: "Data Room (demo)",
     icon: Table,
@@ -127,7 +135,10 @@ interface SidebarNavProps {
   onNavigate?: () => void;
 }
 
-export default function SidebarNav({ className = "", onNavigate }: SidebarNavProps) {
+export default function SidebarNav({
+  className = "",
+  onNavigate,
+}: SidebarNavProps) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [userToggled, setUserToggled] = useState(false);
@@ -161,6 +172,10 @@ export default function SidebarNav({ className = "", onNavigate }: SidebarNavPro
       isActive = isDataRoomRoute;
     }
 
+    if (item.href === "/admin/knowledge") {
+      isActive = pathname.startsWith("/admin/knowledge");
+    }
+
     const isSettingsParent = item.href === "/settings";
 
     return (
@@ -185,13 +200,17 @@ export default function SidebarNav({ className = "", onNavigate }: SidebarNavPro
             <Icon
               className={cn(
                 "h-5 w-5 transition-colors",
-                isActive ? item.color : "text-gray-400 group-hover:text-gray-600"
+                isActive
+                  ? item.color
+                  : "text-gray-400 group-hover:text-gray-600"
               )}
             />
             <span
               className={cn(
                 "font-gill-sans-regular transition-colors",
-                isActive ? item.color : "text-gray-700 group-hover:text-gray-900"
+                isActive
+                  ? item.color
+                  : "text-gray-700 group-hover:text-gray-900"
               )}
             >
               {item.label}
@@ -228,13 +247,17 @@ export default function SidebarNav({ className = "", onNavigate }: SidebarNavPro
                   <SubIcon
                     className={cn(
                       "h-5 w-5 transition-colors",
-                      subActive ? sub.color : "text-gray-400 group-hover:text-gray-600"
+                      subActive
+                        ? sub.color
+                        : "text-gray-400 group-hover:text-gray-600"
                     )}
                   />
                   <span
                     className={cn(
                       "font-gill-sans-regular transition-colors",
-                      subActive ? sub.color : "text-gray-700 group-hover:text-gray-900"
+                      subActive
+                        ? sub.color
+                        : "text-gray-700 group-hover:text-gray-900"
                     )}
                   >
                     {sub.label}
@@ -249,7 +272,12 @@ export default function SidebarNav({ className = "", onNavigate }: SidebarNavPro
   };
 
   return (
-    <aside className={cn("w-48 bg-white border-r border-gray-200 p-3 h-full overflow-y-auto", className)}>
+    <aside
+      className={cn(
+        "w-48 bg-white border-r border-gray-200 p-3 h-full overflow-y-auto",
+        className
+      )}
+    >
       <nav className="space-y-4">
         <div className="space-y-2">{navItems.map(renderNavItem)}</div>
 
