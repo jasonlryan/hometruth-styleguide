@@ -3,7 +3,17 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, FileDown, Wallet, Files, MapPin, ShieldCheck, Clock3, Link2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  FileDown,
+  Wallet,
+  Files,
+  MapPin,
+  ShieldCheck,
+  Clock3,
+  Link2,
+} from "lucide-react";
 
 import AppLayout from "@/components/layouts/app-layout";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +70,8 @@ const demoExplorerUrl = `https://amoy.polygonscan.com/tx/${configuredAmoyTxHash}
 const ledgerAnchor = {
   network: "Polygon Amoy (testnet)",
   batchId: "HT-Ledger-Batch-0184",
-  merkleRoot: "0x9e3b16c8e5e1c933f202bdb30ac7d5a0f75c8d0a6a4f3c7c8c1913cb64a9f021",
+  merkleRoot:
+    "0x9e3b16c8e5e1c933f202bdb30ac7d5a0f75c8d0a6a4f3c7c8c1913cb64a9f021",
   txHash: configuredAmoyTxHash ?? "",
   blockNumber: 5029185,
   anchoredAt: "",
@@ -103,13 +114,13 @@ export default function JohnDoePage() {
     const simulatedExplorerUrl = demoExplorerUrl;
     const anchorDate = new Date().toISOString();
 
-    const nextRows = ledgerRows.map((row) =>
+    const nextRows: LedgerRow[] = ledgerRows.map((row) =>
       row.proof.status === "anchored"
         ? row
         : {
             ...row,
             proof: {
-              status: "anchored",
+              status: "anchored" as const,
               txHash: simulatedTxHash,
               blockNumber: anchorInfo.blockNumber,
               anchorDate,
@@ -142,7 +153,9 @@ export default function JohnDoePage() {
                   Back to database
                 </Link>
                 <span>·</span>
-                <span className="uppercase tracking-wide">Featured profile</span>
+                <span className="uppercase tracking-wide">
+                  Featured profile
+                </span>
               </div>
               <h1 className="mt-1 text-2xl font-semibold text-gray-900 font-gill-sans-regular">
                 John Doe — Extended record
@@ -277,7 +290,7 @@ export default function JohnDoePage() {
                   </div>
                   <div className="mt-1 text-sm text-gray-700">
                     Batch {anchorInfo.batchId} · Merkle root{" "}
-                  {truncateHash(anchorInfo.merkleRoot, 10)} · anchored{" "}
+                    {truncateHash(anchorInfo.merkleRoot, 10)} · anchored{" "}
                     {formatDateTime(anchorInfo.anchoredAt)}.
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -306,7 +319,12 @@ export default function JohnDoePage() {
                       {anchorButtonLabel}
                     </a>
                   </Button>
-                  <Button asChild size="sm" variant="outline" className="justify-center">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="justify-center"
+                  >
                     <Link href="/resources/hometruth-blockchain-ledger-strategy.html">
                       How we store proofs
                       <Link2 className="ml-2 h-4 w-4" />
@@ -393,7 +411,8 @@ export default function JohnDoePage() {
                 <div className="flex items-center gap-2">
                   <Clock3 className="h-4 w-4 text-amber-600" />
                   <span>
-                    Next anchor window {formatDateTime(anchorInfo.nextAnchorWindow)}
+                    Next anchor window{" "}
+                    {formatDateTime(anchorInfo.nextAnchorWindow)}
                   </span>
                 </div>
                 <div className="text-xs text-gray-600">
@@ -453,7 +472,10 @@ export default function JohnDoePage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {ledgerRows.map((row) => (
-                    <tr key={`${row.date}-${row.vendor}`} className="bg-white hover:bg-gray-50">
+                    <tr
+                      key={`${row.date}-${row.vendor}`}
+                      className="bg-white hover:bg-gray-50"
+                    >
                       <td className="px-4 py-3 align-top text-gray-900">
                         {formatDate(row.date)}
                       </td>
