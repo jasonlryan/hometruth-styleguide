@@ -101,6 +101,30 @@ Do this only if you confirm the smaller spacing is desired across all Banner usa
 npm run dev
 ```
 
+## Copy/Paste For Developers
+
+**Problem:** `hometruth.io` homepage looks “zoomed in” (oversized typography + too much whitespace) compared to this styleguide codebase, even at 100% browser zoom.
+
+**Important:** this must be compared at the *same CSS viewport* (same `window.innerWidth` / `window.innerHeight`). Desktop-nav vs burger-menu means different breakpoints and different CSS rules.
+
+**Repro:**
+1. Open `hometruth.io` and the styleguide homepage in two tabs (same browser, 100% zoom).
+2. In each tab, open DevTools Console and run:
+```js
+window.innerWidth + "x" + window.innerHeight
+```
+3. Use that exact value as the viewport for measurement on both pages:
+```bash
+node scripts/measure-homepage-scale.js --url https://hometruth.io --viewport <WIDTHxHEIGHT>
+node scripts/measure-homepage-scale.js --url http://127.0.0.1:3010 --viewport <WIDTHxHEIGHT>
+```
+
+**Acceptance criteria:** at the measured viewport, reduce `hometruth.io` computed:
+- hero headline font-size / line-height
+- hero vertical padding (top + bottom)
+- “Ask HomeTruth” heading font-size
+to match (or be within an agreed tolerance of) this styleguide.
+
 2. Re-measure:
 ```bash
 # Option A: fixed presets (desktop/mobile/etc)
