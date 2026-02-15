@@ -81,14 +81,14 @@ export default function HomeTruthWaitlist() {
           <div className="max-w-3xl mx-auto space-y-4">
             <div className="text-center mb-4">
               <h2 className="text-3xl md:text-4xl font-gill-sans-light text-gray-900">
-                The <span className="text-primary">Home</span> <span className="text-purple-600">Truth</span> Platform
+                The <span className="text-primary">Home</span><span className="text-purple-600">Truth</span> Difference
               </h2>
             </div>
 
             <div className="prose prose-gray max-w-none space-y-3">
               <div className="space-y-3">
                 <p className="text-lg text-gray-700 leading-relaxed font-gill-sans-light">
-                  We are building The Truth Platform, your single source of property truth.
+                  We are building your single source of property truth.
                 </p>
                 <p className="text-lg text-gray-700 leading-relaxed font-gill-sans-light">
                   With complete clarity about your home – its history, its current state, its potential – you make better decisions.  You maximise value.  You stay ahead of problems.  You own your home with confidence.
@@ -113,10 +113,10 @@ export default function HomeTruthWaitlist() {
                   <div className="space-y-4">
                     <div className="text-5xl">✨</div>
                     <h3 className="text-2xl md:text-3xl font-semibold text-gray-900">
-                      Your Trusted Advisor
+                      Your Property Guide
                     </h3>
                     <p className="text-lg text-gray-700 font-gill-sans-light leading-relaxed">
-                      An AI-powered helper guiding you through every aspect of homeownership. You stay in control—always.
+                      Guiding you through every aspect of homeownership. You stay in control — always.
                     </p>
                     <div className="pt-4">
                       <div className="inline-block bg-blue-100 text-blue-900 px-4 py-2 rounded-full text-sm font-semibold">
@@ -277,7 +277,7 @@ export default function HomeTruthWaitlist() {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-gray-400 text-sm font-gill-sans-regular">
-              © 2025 HomeTruth. All rights reserved.
+              © 2026 HomeTruth. All rights reserved.
             </p>
           </div>
         </div>

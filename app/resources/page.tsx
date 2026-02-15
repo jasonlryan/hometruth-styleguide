@@ -43,7 +43,7 @@ async function getResourcePages(): Promise<ResourcePage[]> {
         file.replace(/-/g, " ").replace(/\.html$/, "").trim(),
       description:
         descriptionMatch?.[1]?.trim() ||
-        "HomeTruth resource explaining how we personalize the experience.",
+        "HomeTruth resource explaining how we personalise the experience.",
       slug: file,
       href: `/resources/${file}`,
       updatedAt: stats.mtime,
@@ -83,7 +83,7 @@ export default async function ResourcesPage() {
               <p className="type-body-lg text-gray-700 max-w-2xl">
                 A library of explainer pages we can share with users, partners,
                 or the team—covering onboarding flows, data inputs, and the
-                personalized outcomes they unlock.
+                personalised outcomes they unlock.
               </p>
               <div className="flex flex-wrap gap-3">
                 <span className="rounded-xl bg-blue-50 px-3 py-2 text-sm font-gill-sans-regular text-blue-900 ring-1 ring-blue-100">
@@ -105,7 +105,7 @@ export default async function ResourcesPage() {
                   </p>
                   <p className="text-sm font-gill-sans-light text-gray-600">
                     Why the 2–3 minute onboarding exists and how it powers the
-                    AI copilot.
+                    property assistant.
                   </p>
                 </div>
               </div>

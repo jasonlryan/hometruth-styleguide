@@ -22,13 +22,12 @@ export default function BudgetIntroScreen({
         {/* AI Introduction */}
         <div className="text-center space-y-4 mb-8">
           <p className="type-h3 text-gray-800 font-gill-sans-regular">
-            Hi, I&apos;m your AI Financial Advisor!
+            Hi, I&apos;m your mortgage calculator!
           </p>
           <p className="type-body-lg text-gray-600 font-gill-sans-light leading-relaxed">
-            Let&apos;s work together to estimate what kind of real estate best
-            fits your lifestyle and budget. I&apos;m here to help you understand
-            what&apos;s affordable and guide you toward smart, confident financial
-            decisions.
+            Let&apos;s work out what you can afford. I&apos;ll walk you through
+            a few questions about your income, savings, and situation, then
+            give you a clear picture of your budget.
           </p>
         </div>
 
@@ -36,8 +35,8 @@ export default function BudgetIntroScreen({
         <Card className="border border-gray-200 shadow-sm bg-gray-50/50">
           <CardContent className="p-6">
             <p className="text-gray-700 font-gill-sans-light text-center">
-              To help estimate your home affordability, please share a few details
-              like your location, income, credit score, down payment, and debts...
+              To estimate what you can afford, share a few details like your
+              location, income, credit score, deposit amount, and debts...
             </p>
           </CardContent>
         </Card>

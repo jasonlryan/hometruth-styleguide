@@ -91,7 +91,7 @@ export default function SignupPage() {
               </div>
               <h1 className="type-h2 text-gray-900 mb-2">Create your account</h1>
               <p className="font-gill-sans-light text-gray-600">
-                Join us to find your perfect home.
+                Get real answers about your property.
               </p>
             </div>
 

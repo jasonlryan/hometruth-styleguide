@@ -23,7 +23,7 @@ export default function DataPrivacySettingsPage() {
                   Data Privacy
                 </p>
                 <p className="font-gill-sans-light text-gray-600 text-sm">
-                  Manage how your data is stored, personalized, and used to power
+                  Manage how your data is stored, personalised, and used to power
                   your HomeTruth experience.
                 </p>
               </div>
@@ -32,16 +32,16 @@ export default function DataPrivacySettingsPage() {
             <Card className="border-0 shadow-md">
               <CardHeader className="border-b border-gray-100 pb-4">
                 <CardTitle className="text-lg text-gray-900">
-                  AI Personalization Preferences
+                  Personalisation Preferences
                 </CardTitle>
                 <p className="text-sm font-gill-sans-light text-gray-600">
-                  Control how behavior and quiz responses are used to tailor
+                  Control how behaviour and quiz responses are used to tailor
                   suggestions and tone.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Toggle
-                  label="Enable behavior-based personalization"
+                  label="Enable behaviour-based personalisation"
                   description="Use recent actions to refine recommendations."
                   defaultChecked
                 />
@@ -59,8 +59,8 @@ export default function DataPrivacySettingsPage() {
                   Consent &amp; Analytics
                 </CardTitle>
                 <p className="text-sm font-gill-sans-light text-gray-600">
-                  Manage your consent and how anonymous data helps improve the
-                  platform.
+                  Manage your consent and how anonymous data helps improve
+                  HomeTruth.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">

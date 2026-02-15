@@ -40,8 +40,8 @@ export default function HomeTruthLanding() {
 
       {/* Hero Section */}
       <Banner
-        title="Make smarter decisions with HomeTruth"
-        subtitle="Ask questions. Save answers. Upload documents."
+        title="Your Property Intelligence Platform"
+        subtitle="Get real answers for your property decisions — from someone who actually knows."
         gradient="blue-50-purple-50"
         textColor="text-white"
         showBackgroundImage
@@ -60,7 +60,7 @@ export default function HomeTruthLanding() {
                 Ask HomeTruth
               </h2>
               <p className="text-lg font-gill-sans-light text-gray-600">
-                Your AI copilot for buying, selling, and managing property.
+                Your property assistant for buying, owning, and managing your home.
               </p>
             </div>
 
@@ -74,7 +74,7 @@ export default function HomeTruthLanding() {
                     <div className="flex items-center space-x-2 mb-4">
                       <MessageCircle className="h-5 w-5 text-primary" />
                       <span className="font-gill-sans-light text-gray-800">
-                        HomeTruth AI Assistant
+                        HomeTruth Assistant
                       </span>
                       <Badge className="bg-green-100 text-green-800 text-xs">
                         Online
@@ -181,7 +181,7 @@ export default function HomeTruthLanding() {
           <div className="text-center mb-8">
             <h2 className="type-h2 text-black mb-4">How It Works</h2>
             <p className="type-body-lg text-gray-600 max-w-2xl mx-auto">
-              Four simple steps to transform your property journey
+              Four steps to real answers about your property
             </p>
           </div>
 
@@ -193,10 +193,9 @@ export default function HomeTruthLanding() {
                   <ChatIcon size={48} />
                 </div>
               </div>
-              <h3 className="type-h4 text-black mb-2">Ask Questions</h3>
+              <h3 className="type-h4 text-black mb-2">Add Your Property</h3>
               <p className="type-body text-gray-600">
-                Start by asking any property-related question to our AI
-                assistant
+                Start with your address. We&apos;ll pull in the basics.
               </p>
             </div>
 
@@ -207,9 +206,9 @@ export default function HomeTruthLanding() {
                   <ProfileIcon size={48} />
                 </div>
               </div>
-              <h3 className="type-h4 text-black mb-2">Personalize Profile</h3>
+              <h3 className="type-h4 text-black mb-2">Upload Your Records</h3>
               <p className="type-body text-gray-600">
-                Tell us about your preferences to get more tailored advice
+                Add documents, receipts, photos. Everything that matters about your property.
               </p>
             </div>
 
@@ -220,9 +219,9 @@ export default function HomeTruthLanding() {
                   <InsightsIcon size={48} />
                 </div>
               </div>
-              <h3 className="type-h4 text-black mb-2">Get Smart Insights</h3>
+              <h3 className="type-h4 text-black mb-2">Ask Questions</h3>
               <p className="type-body text-gray-600">
-                Receive personalized insights based on your specific situation
+                Get answers specific to your property — not generic advice.
               </p>
             </div>
 
@@ -233,10 +232,9 @@ export default function HomeTruthLanding() {
                   <SaveIcon size={48} />
                 </div>
               </div>
-              <h3 className="type-h4 text-black mb-2">Save What Matters</h3>
+              <h3 className="type-h4 text-black mb-2">Stay Proactive</h3>
               <p className="type-body text-gray-600">
-                Bookmark important information and create notes for future
-                reference
+                We&apos;ll tell you what&apos;s coming up, what to watch, what matters.
               </p>
             </div>
           </div>
@@ -249,7 +247,7 @@ export default function HomeTruthLanding() {
           <div className="text-center mb-6">
             <h2 className="type-h2 text-black mb-4">Trust & Security</h2>
             <p className="type-body-lg text-gray-600 max-w-2xl mx-auto">
-              Your data and privacy are our top priorities
+              Your information stays yours. Always.
             </p>
           </div>
 
@@ -260,10 +258,9 @@ export default function HomeTruthLanding() {
                 <div className="w-12 h-12 rounded-lg bg-primary mx-auto mb-4 flex items-center justify-center">
                   <Lock className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="type-h4 text-black mb-2">Encryption</h3>
+                <h3 className="type-h4 text-black mb-2">Complete Records</h3>
                 <p className="type-body text-gray-600">
-                  Your data is encrypted with industry-standard security
-                  protocols
+                  Your property history is permanent and tamper-proof.
                 </p>
               </CardContent>
             </Card>
@@ -274,10 +271,9 @@ export default function HomeTruthLanding() {
                 <div className="w-12 h-12 bg-[#FF6B35] rounded-lg mx-auto mb-4 flex items-center justify-center">
                   <Flag className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="type-h4 text-black mb-2">GDPR Compliance</h3>
+                <h3 className="type-h4 text-black mb-2">GDPR Compliant</h3>
                 <p className="type-body text-gray-600">
-                  We respect your privacy and comply with all data protection
-                  regulations
+                  Your privacy is built into how we work.
                 </p>
               </CardContent>
             </Card>
@@ -288,10 +284,9 @@ export default function HomeTruthLanding() {
                 <div className="w-12 h-12 bg-[#B19CD9] rounded-lg mx-auto mb-4 flex items-center justify-center">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="type-h4 text-black mb-2">Privacy</h3>
+                <h3 className="type-h4 text-black mb-2">Your Privacy</h3>
                 <p className="type-body text-gray-600">
-                  We prioritize your information safety and never share your
-                  data
+                  Your information stays yours, period.
                 </p>
               </CardContent>
             </Card>
@@ -304,11 +299,10 @@ export default function HomeTruthLanding() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="type-h2 text-white mb-6">
-              Ready to Transform Your Property Journey?
+              Start Making Better Property Decisions
             </h2>
             <p className="type-body-lg text-white/90 mb-8">
-              Join thousands of homeowners who trust HomeTruth for smarter
-              property decisions
+              Free to start. No credit card required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/chat">

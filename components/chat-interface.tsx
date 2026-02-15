@@ -94,7 +94,7 @@ export default function ChatInterface({
           <div className="flex items-center space-x-2 mb-4">
             <MessageCircle className="h-5 w-5 text-primary" />
             <span className="font-gill-sans-light text-gray-800">
-              HomeTruth AI Assistant
+              HomeTruth Assistant
             </span>
             <Badge className="bg-green-100 text-green-800 text-xs">
               Online

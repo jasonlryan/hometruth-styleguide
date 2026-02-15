@@ -22,7 +22,7 @@ export default function NotificationSettingsPage() {
                   Notifications
                 </p>
                 <p className="font-gill-sans-light text-gray-600 text-sm">
-                  Stay on top of property updates, AI follow-ups, and feature
+                  Stay on top of property updates, follow-ups, and feature
                   alerts.
                 </p>
               </div>
@@ -34,14 +34,14 @@ export default function NotificationSettingsPage() {
                   Checklist &amp; Task Updates
                 </CardTitle>
                 <p className="text-sm font-gill-sans-light text-gray-600">
-                  Stay on top of your property process with personalized
+                  Stay on top of your property process with personalised
                   checklists and reminders.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Toggle
                   label="Document analysis complete"
-                  description="Be notified when your property documents have been scanned by AI."
+                  description="Be notified when your property documents have been reviewed."
                   badge="PRO"
                   defaultChecked
                 />
@@ -51,7 +51,7 @@ export default function NotificationSettingsPage() {
             <Card className="border-0 shadow-md">
               <CardHeader className="border-b border-gray-100 pb-4">
                 <CardTitle className="text-lg text-gray-900">
-                  AI Chat Follow-ups
+                  Chat Follow-ups
                 </CardTitle>
                 <p className="text-sm font-gill-sans-light text-gray-600">
                   Let HomeTruth follow up with helpful tips or summaries after a
@@ -65,7 +65,7 @@ export default function NotificationSettingsPage() {
                   defaultChecked
                 />
                 <Toggle
-                  label="New AI insights available"
+                  label="New property guidance available"
                   description="Be alerted when new document-based insights are added to your dashboard."
                   badge="PRO"
                   defaultChecked
@@ -101,13 +101,13 @@ export default function NotificationSettingsPage() {
                   Product Tips &amp; Feature Updates
                 </CardTitle>
                 <p className="text-sm font-gill-sans-light text-gray-600">
-                  Stay informed on platform improvements and tips.
+                  Stay informed on product improvements and tips.
                 </p>
               </CardHeader>
               <CardContent>
                 <Toggle
                   label="Tips & product updates"
-                  description="Occasional guidance on how to use features and platform enhancements."
+                  description="Occasional guidance on how to use features and product updates."
                 />
               </CardContent>
             </Card>

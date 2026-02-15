@@ -135,7 +135,7 @@ export default function DocumentsPage() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<
-    "Newest" | "Name" | "Category" | "AI relevance"
+    "Newest" | "Name" | "Category" | "Most relevant"
   >("Newest");
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
@@ -178,7 +178,7 @@ export default function DocumentsPage() {
           return a.name.localeCompare(b.name);
         case "Category":
           return (a.category || "").localeCompare(b.category || "");
-        case "AI relevance":
+        case "Most relevant":
           return 0; // placeholder
         case "Newest":
         default:
@@ -389,7 +389,7 @@ export default function DocumentsPage() {
               </Button>
               {sortOpen && (
                 <div className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-md border bg-white shadow-md">
-                  {["Newest", "Name", "Category", "AI relevance"].map((opt) => (
+                  {["Newest", "Name", "Category", "Most relevant"].map((opt) => (
                     <button
                       key={opt}
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${

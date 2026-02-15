@@ -34,7 +34,7 @@ export default function WelcomePage() {
             {/* Welcome Message */}
             <h1 className="type-h2 text-gray-900 mb-4">Welcome, {user.name}!</h1>
             <p className="font-gill-sans-light text-gray-600 mb-8 text-lg leading-relaxed">
-              What&apos;s your vibe? A few fun questions and we&apos;ll craft your unique match.
+              A few quick questions so we can give you answers specific to your situation.
             </p>
 
             {/* Action Buttons */}
@@ -63,7 +63,7 @@ export default function WelcomePage() {
             {/* Additional Info */}
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm font-gill-sans-light text-gray-600">
-                This will only take 2-3 minutes and will help us provide with better recommendations.
+                This takes 2-3 minutes and helps us give you guidance specific to your property.
               </p>
             </div>
           </CardContent>

@@ -31,8 +31,8 @@ export default function PreferencesPage() {
                   Preferences
                 </p>
                 <p className="font-gill-sans-light text-gray-600 text-sm">
-                  Tune how HomeTruth responds, what it prioritizes, and how it
-                  personalizes checklists and insights.
+                  Tune how HomeTruth responds, what it prioritises, and how it
+                  personalises checklists and guidance.
                 </p>
               </div>
             </div>
@@ -89,10 +89,10 @@ export default function PreferencesPage() {
               <CardHeader className="border-b border-gray-100 pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  AI Behavior Settings
+                  Assistant Behaviour
                 </CardTitle>
                 <p className="font-gill-sans-light text-sm text-gray-600">
-                  Control how much the AI adapts to you.
+                  Control how much your assistant adapts to you.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -118,12 +118,12 @@ export default function PreferencesPage() {
                   Lifestyle Priorities
                 </CardTitle>
                 <p className="font-gill-sans-light text-sm text-gray-600">
-                  Tags are used for AI search and checklist personalization.
+                  Tags are used for search and checklist personalisation.
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="font-gill-sans-regular text-gray-900">
-                  What lifestyle factors should we prioritize?
+                  What lifestyle factors should we prioritise?
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Input
@@ -183,13 +183,13 @@ export default function PreferencesPage() {
               <CardHeader className="border-b border-gray-100 pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  Personalization Settings
+                  Personalisation Settings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Toggle
-                  label="Use my profile & behavior to personalize"
-                  description="Turning this off disables adaptive checklists and tone personalization."
+                  label="Use my profile & behaviour to personalise"
+                  description="Turning this off disables adaptive checklists and tone personalisation."
                   defaultChecked
                 />
               </CardContent>
