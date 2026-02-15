@@ -1,9 +1,25 @@
 import { Pinecone } from '@pinecone-database/pinecone';
 
-// Initialize Pinecone client
-const pc = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
+// Lazy init to avoid throwing during `next build` when env vars aren't present.
+let cachedClient: Pinecone | null | undefined;
+function getPineconeClient(): Pinecone | null {
+  if (cachedClient !== undefined) return cachedClient;
+  const apiKey = process.env.PINECONE_API_KEY;
+  if (!apiKey || apiKey.trim().length === 0) {
+    cachedClient = null;
+    return cachedClient;
+  }
+  cachedClient = new Pinecone({ apiKey });
+  return cachedClient;
+}
+
+function requirePineconeClient(): Pinecone {
+  const client = getPineconeClient();
+  if (!client) {
+    throw new Error('PINECONE_API_KEY is not configured.');
+  }
+  return client;
+}
 
 // Index names for different use cases
 const USER_DOCUMENTS_INDEX = 'hometruth-user-documents';
@@ -121,8 +137,13 @@ export interface RetrieveChatContextResult {
 }
 
 export class PineconeService {
-  private userDocumentsIndex = pc.index(USER_DOCUMENTS_INDEX);
-  private knowledgeBaseIndex = pc.index(KNOWLEDGE_BASE_INDEX);
+  private userDocumentsIndex() {
+    return requirePineconeClient().index(USER_DOCUMENTS_INDEX);
+  }
+
+  private knowledgeBaseIndex() {
+    return requirePineconeClient().index(KNOWLEDGE_BASE_INDEX);
+  }
 
   // User Documents Methods
   async upsertUserDocuments(documents: DocumentChunk[], userId: string) {
@@ -146,7 +167,7 @@ export class PineconeService {
         uploadDate: d.metadata.uploadDate,
       }));
 
-      const ns: any = this.userDocumentsIndex.namespace(userId) as any;
+      const ns: any = this.userDocumentsIndex().namespace(userId) as any;
       if (typeof ns.upsertRecords === 'function') {
         const result = await ns.upsertRecords(records);
         return result;
@@ -154,7 +175,7 @@ export class PineconeService {
 
       // Fallback: embed and upsert vectors
       const texts = documents.map((d) => d.chunk_text);
-      const embeds = await pc.inference.embed(
+      const embeds = await requirePineconeClient().inference.embed(
         'llama-text-embed-v2' as any,
         texts,
         { inputType: 'passage', truncate: 'END' } as any
@@ -180,7 +201,7 @@ export class PineconeService {
         },
       }));
 
-      const result = await this.userDocumentsIndex.namespace(userId).upsert(vectors as any);
+      const result = await this.userDocumentsIndex().namespace(userId).upsert(vectors as any);
       return result;
     } catch (error) {
       console.error('Error upserting user documents:', error);
@@ -190,7 +211,7 @@ export class PineconeService {
 
   async searchUserDocuments(query: string, userId: string, topK: number = 5, filter?: any) {
     try {
-      const ns: any = this.userDocumentsIndex.namespace(userId) as any;
+      const ns: any = this.userDocumentsIndex().namespace(userId) as any;
       if (typeof ns.searchRecords === 'function') {
         const result = await ns.searchRecords({
           query: { topK, inputs: { text: query } },
@@ -208,13 +229,13 @@ export class PineconeService {
       }
 
       // Fallback: embed query and use vector search
-      const embed = await pc.inference.embed(
+      const embed = await requirePineconeClient().inference.embed(
         'llama-text-embed-v2' as any,
         [query],
         { inputType: 'query', truncate: 'END' } as any
       );
       const vector = (embed as any).data[0].values;
-      const result = await this.userDocumentsIndex.namespace(userId).query({
+      const result = await this.userDocumentsIndex().namespace(userId).query({
         topK,
         vector,
         includeMetadata: true,
@@ -229,7 +250,7 @@ export class PineconeService {
 
   async deleteUserDocument(documentId: string, userId: string) {
     try {
-      const result = await this.userDocumentsIndex.namespace(userId).deleteOne(documentId);
+      const result = await this.userDocumentsIndex().namespace(userId).deleteOne(documentId);
       return result;
     } catch (error) {
       console.error('Error deleting user document:', error);
@@ -258,7 +279,7 @@ export class PineconeService {
         }));
 
       const uploadWithRetry = async (records: any[], attempt = 1): Promise<any> => {
-        const ns: any = this.knowledgeBaseIndex.namespace(targetNamespace) as any;
+        const ns: any = this.knowledgeBaseIndex().namespace(targetNamespace) as any;
         try {
           if (typeof ns.upsertRecords === 'function') {
             return await ns.upsertRecords(records);
@@ -266,7 +287,7 @@ export class PineconeService {
 
           // Fallback: embed and upsert vectors
           const texts = records.map((r) => r.chunk_text);
-          const embeds = await pc.inference.embed(
+          const embeds = await requirePineconeClient().inference.embed(
             'llama-text-embed-v2' as any,
             texts,
             { inputType: 'passage', truncate: 'END' } as any
@@ -276,7 +297,7 @@ export class PineconeService {
             values: (embeds as any).data[i].values,
             metadata: { ...r, chunk_text: r.chunk_text },
           }));
-          return await this.knowledgeBaseIndex.namespace(targetNamespace).upsert(vectors as any);
+          return await this.knowledgeBaseIndex().namespace(targetNamespace).upsert(vectors as any);
         } catch (err: any) {
           const message = String(err?.message || '');
           const status = (err as any)?.status;
@@ -321,7 +342,7 @@ export class PineconeService {
 
   async searchKnowledgeBase(query: string, topK: number = 5, filter?: any, namespace: string = DEFAULT_KNOWLEDGE_NAMESPACE) {
     try {
-      const ns: any = this.knowledgeBaseIndex.namespace(namespace) as any;
+      const ns: any = this.knowledgeBaseIndex().namespace(namespace) as any;
       if (typeof ns.searchRecords === 'function') {
         const result = await ns.searchRecords({
           query: { topK, inputs: { text: query } },
@@ -338,13 +359,13 @@ export class PineconeService {
         return { matches } as any;
       }
       // Fallback: embed query and use vector search
-      const embed = await pc.inference.embed(
+      const embed = await requirePineconeClient().inference.embed(
         'llama-text-embed-v2' as any,
         [query],
         { inputType: 'query', truncate: 'END' } as any
       );
       const vector = (embed as any).data[0].values;
-      const result = await this.knowledgeBaseIndex.namespace(namespace).query({
+      const result = await this.knowledgeBaseIndex().namespace(namespace).query({
         topK,
         vector,
         includeMetadata: true,
@@ -358,13 +379,13 @@ export class PineconeService {
   }
 
   namespace(namespace: string) {
-    return this.knowledgeBaseIndex.namespace(namespace);
+    return this.knowledgeBaseIndex().namespace(namespace);
   }
 
   async getKnowledgeDocumentChunks(documentId: string, namespace: string = DEFAULT_KNOWLEDGE_NAMESPACE, topK: number = 1000): Promise<KnowledgeDocumentChunk[]> {
     try {
       const targetNamespace = namespace || DEFAULT_KNOWLEDGE_NAMESPACE;
-      const ns: any = this.knowledgeBaseIndex.namespace(targetNamespace) as any;
+      const ns: any = this.knowledgeBaseIndex().namespace(targetNamespace) as any;
 
       const chunks: KnowledgeDocumentChunk[] = [];
       const seen = new Set<string>();
@@ -527,7 +548,7 @@ export class PineconeService {
       }
 
       // Final fallback: embed a lightweight query to satisfy classic vector search APIs
-      const embed = await pc.inference.embed(
+      const embed = await requirePineconeClient().inference.embed(
         'llama-text-embed-v2' as any,
         [documentId],
         { inputType: 'query', truncate: 'END' } as any
@@ -538,7 +559,7 @@ export class PineconeService {
         return chunks;
       }
 
-      const response = await this.knowledgeBaseIndex.namespace(targetNamespace).query({
+      const response = await this.knowledgeBaseIndex().namespace(targetNamespace).query({
         topK,
         vector,
         includeMetadata: true,
@@ -712,7 +733,7 @@ export class PineconeService {
 
   async getUserDocumentStats(userId: string) {
     try {
-      const stats = await this.userDocumentsIndex.describeIndexStats();
+      const stats = await this.userDocumentsIndex().describeIndexStats();
       return stats;
     } catch (error) {
       console.error('Error getting user document stats:', error);
@@ -722,7 +743,7 @@ export class PineconeService {
 
   async getKnowledgeBaseStats() {
     try {
-      const stats = await this.knowledgeBaseIndex.describeIndexStats();
+      const stats = await this.knowledgeBaseIndex().describeIndexStats();
       return stats;
     } catch (error) {
       console.error('Error getting knowledge base stats:', error);
@@ -734,7 +755,7 @@ export class PineconeService {
     const { limit = 20, paginationToken, namespace = 'general' } = options;
 
     try {
-      const ns: any = this.knowledgeBaseIndex.namespace(namespace) as any;
+      const ns: any = this.knowledgeBaseIndex().namespace(namespace) as any;
 
       if (typeof ns.listPaginated !== 'function' || typeof ns.fetch !== 'function') {
         console.warn('Knowledge namespace does not support listPaginated/fetch operations; returning empty document list.');
@@ -848,7 +869,7 @@ export class PineconeService {
   // Delete all chunks for a given documentId
   async deleteKnowledgeDocument(documentId: string) {
     try {
-      const ns: any = this.knowledgeBaseIndex.namespace('general') as any;
+      const ns: any = this.knowledgeBaseIndex().namespace('general') as any;
 
       // Prefer record deletion with filter (integrated inference)
       if (typeof ns.deleteRecords === 'function') {
@@ -873,7 +894,7 @@ export class PineconeService {
       // Last resort: find ids via search and delete by ids
       const searchAny: any = (typeof ns.searchRecords === 'function')
         ? await ns.searchRecords({ query: { topK: 1000, inputs: { text: documentId } }, filter: { document_id: { $eq: documentId } } })
-        : await this.knowledgeBaseIndex.namespace('general').query({
+        : await this.knowledgeBaseIndex().namespace('general').query({
             topK: 1000,
             vector: new Array(1024).fill(0), // dummy vector; filter will narrow
             includeMetadata: true,
@@ -882,7 +903,7 @@ export class PineconeService {
 
       const ids: string[] = (searchAny?.matches || []).map((m: any) => m.id).filter(Boolean);
       if (ids.length === 0) return { deletedCount: 0 } as any;
-      const delRes = await this.knowledgeBaseIndex.namespace('general').delete({ ids } as any);
+      const delRes = await this.knowledgeBaseIndex().namespace('general').delete({ ids } as any);
       return delRes;
     } catch (error) {
       console.error('Error deleting knowledge document:', error);
