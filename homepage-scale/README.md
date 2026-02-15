@@ -1,6 +1,6 @@
 # Homepage Scale Issue (Feels “Zoomed In”)
 
-This repo’s homepage currently renders with **larger type and much more vertical whitespace** than the live site (`hometruth.io`). The result is a “zoomed in” feeling and reduced information density.
+The homepage can feel “zoomed in” when typography and vertical spacing are too large for a given viewport. The only reliable way to discuss this with developers is to compare **computed CSS** at the **same effective viewport/breakpoint** (not just screenshots).
 
 This folder documents:
 - what’s happening (in developer terms),
@@ -16,7 +16,9 @@ The two screenshots are almost certainly taken at **different responsive breakpo
 
 That generally means the effective CSS viewport width differed (window size and/or browser zoom). In Tailwind, typography and spacing often jump at `lg` (default `1024px`).
 
-Even after controlling for viewport, the homepage in this repo still has **much larger vertical padding** and a larger desktop hero font than `hometruth.io`.
+Important: the “which one is bigger?” answer can **flip by breakpoint**:
+- At desktop widths (`lg+`), this repo ramps the hero to `lg:text-5xl` and forces very large `py`, so it can be larger than `hometruth.io`.
+- At burger-menu widths (around ~`875px` CSS width, typical of a ~`1750px` retina screenshot), `hometruth.io` can be larger than this repo.
 
 ## Measured Deltas (Computed CSS)
 
@@ -28,7 +30,17 @@ Outputs:
 
 ### Hero: “Make smarter decisions with HomeTruth”
 
-Viewport `1440x900`:
+Viewport `875x820` (useful proxy for “~1750px wide on retina” screenshots):
+- `hometruth.io`
+  - `h1` font-size: **36px**
+  - hero padding-top / padding-bottom: **48px / 48px**
+  - "Ask HomeTruth" heading: **48px**
+- this repo (local)
+  - `h1` font-size: **30px**
+  - hero padding-top / padding-bottom: **96px / 96px**
+  - "Ask HomeTruth" heading: **20px**
+
+Viewport `1440x900` (desktop):
 - `hometruth.io`
   - `h1` font-size: **36px**
   - `h1` line-height: **40px**
@@ -37,14 +49,6 @@ Viewport `1440x900`:
   - `h1` font-size: **48px**
   - `h1` line-height: **48px**
   - hero section padding-top / padding-bottom: **128px / 128px**
-
-Viewport `875x820` (useful proxy for “~1750px wide on retina” screenshots):
-- `hometruth.io`
-  - `h1` font-size: **36px**
-  - hero padding-top / padding-bottom: **48px / 48px**
-- this repo (local)
-  - `h1` font-size: **30px**
-  - hero padding-top / padding-bottom: **96px / 96px**
 
 ## Root Cause In This Codebase
 
@@ -64,8 +68,11 @@ Supporting detail:
 
 ## Suggested Fix (Designer-Friendly Targets)
 
-If the goal is to feel closer to `hometruth.io` (based on measured values above):
+Pick a target first:
+- If the goal is “make this repo feel closer to `hometruth.io` on desktop”, reduce the desktop hero ramp and vertical padding here.
+- If the goal is “make `hometruth.io` feel closer to this repo at burger-menu widths”, reduce typography/spacing in the `hometruth.io` codebase at that breakpoint.
 
+For this repo specifically (desktop `lg+`):
 - Desktop hero title size target: **~36px** (Tailwind `text-4xl`) instead of **48px** (`text-5xl`)
 - Hero vertical padding target: **~48px** top/bottom (Tailwind `py-12`) instead of **96–128px** (`py-24`/`py-32`)
 
@@ -103,6 +110,9 @@ node scripts/measure-homepage-scale.js --url https://hometruth.io --out .context
 3. Compare these key numbers at `desktop_1440`:
 - hero title font-size
 - hero padding-top/padding-bottom
+And compare at `mid_875` if you’re debugging a burger-menu screenshot:
+- hero title font-size
+- "Ask HomeTruth" heading font-size
 
 ## Related Files
 
@@ -110,4 +120,3 @@ node scripts/measure-homepage-scale.js --url https://hometruth.io --out .context
 - Homepage: `app/page.tsx`
 - Banner component: `components/banner.tsx`
 - Typography utilities: `app/globals.css`
-
