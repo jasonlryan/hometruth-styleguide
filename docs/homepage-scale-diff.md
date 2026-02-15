@@ -25,8 +25,14 @@ Important: if you compare two screenshots taken at different effective viewport 
 Run:
 
 ```bash
+# Preset viewports (desktop/mobile/etc)
 node scripts/measure-homepage-scale.js --url https://hometruth.io --out .context/hometruth-live-scale.json
 node scripts/measure-homepage-scale.js --url http://127.0.0.1:3010 --out .context/manama-local-scale.json
+
+# Exact viewport (recommended when comparing two tabs in the same browser window)
+# Use the console to get these: window.innerWidth + "x" + window.innerHeight
+node scripts/measure-homepage-scale.js --url https://hometruth.io --viewport 875x820
+node scripts/measure-homepage-scale.js --url http://127.0.0.1:3010 --viewport 875x820
 ```
 
 ### Hero: "Make smarter decisions with HomeTruth"

@@ -16,11 +16,16 @@ const path = require("path");
 const puppeteer = require("puppeteer");
 
 function parseArgs(argv) {
-  const args = { url: null, out: null };
+  const args = { url: null, out: null, viewports: null };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--url") args.url = argv[++i];
     else if (a === "--out") args.out = argv[++i];
+    else if (a === "--viewport") {
+      const raw = argv[++i];
+      args.viewports = args.viewports || [];
+      args.viewports.push(raw);
+    }
     else if (!a.startsWith("--") && !args.url) args.url = a;
   }
   if (!args.url) {
@@ -30,7 +35,20 @@ function parseArgs(argv) {
   return args;
 }
 
-const VIEWPORTS = [
+function parseViewportSpec(spec) {
+  // Formats:
+  // - "1440x900"
+  // - "desktop:1440x900"
+  const m = String(spec || "").trim().match(/^(?:(.+?):)?(\d+)x(\d+)$/i);
+  if (!m) return null;
+  const name = (m[1] || `custom_${m[2]}x${m[3]}`).trim();
+  const width = Number(m[2]);
+  const height = Number(m[3]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+  return { name, width, height, deviceScaleFactor: 1 };
+}
+
+const DEFAULT_VIEWPORTS = [
   { name: "desktop_1440", width: 1440, height: 900, deviceScaleFactor: 1 },
   // ~875 CSS px is a common "retina screenshot ~1750px wide" breakpoint band.
   { name: "mid_875", width: 875, height: 820, deviceScaleFactor: 1 },
@@ -45,7 +63,17 @@ function toPxNumber(px) {
 }
 
 async function main() {
-  const { url, out } = parseArgs(process.argv);
+  const { url, out, viewports } = parseArgs(process.argv);
+  const VIEWPORTS =
+    Array.isArray(viewports) && viewports.length > 0
+      ? viewports
+          .map(parseViewportSpec)
+          .filter(Boolean)
+      : DEFAULT_VIEWPORTS;
+  if (!VIEWPORTS || VIEWPORTS.length === 0) {
+    console.error("No valid --viewport provided. Expected e.g. --viewport 1440x900");
+    process.exit(2);
+  }
 
   const browser = await puppeteer.launch({
     headless: "new",

@@ -103,8 +103,14 @@ npm run dev
 
 2. Re-measure:
 ```bash
+# Option A: fixed presets (desktop/mobile/etc)
 node scripts/measure-homepage-scale.js --url http://127.0.0.1:3010 --out .context/manama-local-scale.json
 node scripts/measure-homepage-scale.js --url https://hometruth.io --out .context/hometruth-live-scale.json
+
+# Option B: measure at *your exact viewport* (recommended for side-by-side tab comparisons)
+# Get these numbers from the browser console: window.innerWidth / window.innerHeight
+node scripts/measure-homepage-scale.js --url http://127.0.0.1:3010 --viewport 875x820
+node scripts/measure-homepage-scale.js --url https://hometruth.io --viewport 875x820
 ```
 
 3. Compare these key numbers at `desktop_1440`:
