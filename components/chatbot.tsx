@@ -87,7 +87,7 @@ export function Chatbot() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-5 w-5" />
-          HomeTruth AI Assistant
+          HomeTruth Assistant
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

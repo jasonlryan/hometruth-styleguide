@@ -4,7 +4,7 @@ import { UserProvider } from '@/contexts/user-context'
 
 export const metadata: Metadata = {
   title: 'HomeTruth - Your Personal Property Assistant',
-  description: 'AI-powered property guidance for buying, selling, and managing property with confidence',
+  description: 'Real answers for your property decisions. Property intelligence for buying, owning, and managing your home.',
 }
 
 export default function RootLayout({

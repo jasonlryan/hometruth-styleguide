@@ -18,7 +18,7 @@ export default function DashboardPage() {
         <div className="text-center py-8">
           <h1 className="type-h1 text-gray-900 mb-4">Welcome to HomeTruth</h1>
           <p className="font-gill-sans-light text-gray-600 max-w-2xl mx-auto">
-            Your personalized property assistant. Ask questions, get insights, and make smarter decisions.
+            Your property assistant. Ask questions, get real answers, and stay on top of your property.
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function DashboardPage() {
                 </div>
                 <h3 className="type-h4 text-gray-900 mb-2">Saved Notes</h3>
                 <p className="type-body text-gray-600">
-                  Access your saved information
+                  Review your saved notes and property details
                 </p>
                 <Button variant="ghost" size="sm" className="mt-3 text-[#B19CD9]">
                   View Notes <ArrowRight className="ml-2 h-4 w-4" />

@@ -123,7 +123,7 @@ export function MotivationsStep({ data, onDataChange }: StepProps) {
     { id: "relocating", label: "Relocating" },
     { id: "tired-renting", label: "Tired of renting" },
     { id: "downsizing", label: "Downsizing" },
-    { id: "schoolcatchings", label: "Schoolcatchings" },
+    { id: "schoolcatchments", label: "School catchment areas" },
   ];
 
   const handleChange = (optionId: string, checked: boolean) => {
@@ -220,7 +220,7 @@ export function HousingFactorsStep({ data, onDataChange }: StepProps) {
   return (
     <div className="space-y-4">
       <p className="font-gill-sans-light text-gray-600 text-center mb-6">
-        What housing factors should we prioritize when recommending properties?
+        What housing factors should we prioritise when recommending properties?
       </p>
       
       <div className="grid grid-cols-2 gap-3">
@@ -250,7 +250,7 @@ export function BiggestFearStep({ data, onDataChange }: StepProps) {
   return (
     <div className="space-y-6">
       <p className="font-gill-sans-light text-gray-600 text-center mb-6">
-        When your biggest fear about homebuying, in your own words?
+        What&apos;s your biggest fear about buying a home?
       </p>
       
       <RadioGroup
@@ -268,7 +268,7 @@ export function SupportPreferencesStep({ data, onDataChange }: StepProps) {
   return (
     <div className="space-y-6">
       <p className="font-gill-sans-light text-gray-600 text-center mb-6">
-        What theories factors should we prioritize when recommending properties?
+        What factors should we prioritise when recommending properties?
       </p>
       
       <div>

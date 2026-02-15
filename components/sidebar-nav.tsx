@@ -40,7 +40,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/chat",
-    label: "Ask AI",
+    label: "Ask HomeTruth",
     icon: Search,
     color: "text-primary",
     bgColor: "bg-blue-50",

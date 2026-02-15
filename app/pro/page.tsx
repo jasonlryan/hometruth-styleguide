@@ -31,10 +31,10 @@ export default function ProFeatures() {
               Explore Pro Features
             </h1>
             <p className="type-body-lg text-white">
-              Your Home. Your Terms. Powered by AI.
+              Your Home. Your Terms. Your Advantage.
             </p>
             <p className="type-body max-w-2xl mx-auto text-white/90">
-              Upgrade to HomeTruth Pro to unlock document analysis, personalized alerts, and insights designed around your property journey.
+              Get answers that draw on your actual documents, alerts before things go wrong, and guidance specific to your property.
             </p>
           </div>
         </div>
@@ -50,8 +50,8 @@ export default function ProFeatures() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             <ProFeatureCard
               icon={Brain}
-              title="Document-Aware AI Chat"
-              description="Ask smarter questions and upload legal documents for context-aware responses."
+              title="Chat With Your Documents"
+              description="Upload legal documents and ask questions — get answers based on what's actually in them."
               iconBgColor="bg-primary"
               examples={[
                 "What's my earliest break clause?",
@@ -69,22 +69,22 @@ export default function ProFeatures() {
             
             <ProFeatureCard
               icon={BookOpen}
-              title="Smart Notes & Organization"
-              description="Unlimited note saving, organize AI chats by topic, timeline, or property."
+              title="Notes & Organisation"
+              description="Save unlimited notes and organise your conversations by topic, timeline, or property."
               iconBgColor="bg-[#B19CD9]"
             />
             
             <ProFeatureCard
               icon={Settings}
-              title="Profile-Driven AI"
-              description="AI assistant that adapts to your preferences, communication style, and needs."
+              title="Answers Shaped by You"
+              description="Your assistant adapts to your preferences, communication style, and needs."
               iconBgColor="bg-gradient-to-br from-[hsl(var(--primary))] to-[var(--ht-secondary)]"
             />
             
             <ProFeatureCard
               icon={Bookmark}
-              title="Listing Bookmarks via Extension"
-              description="Save homes with Chrome Extension and view them on your dashboard."
+              title="Save Listings as You Browse"
+              description="Bookmark homes from any property site and view them all on your dashboard."
               iconBgColor="bg-[#FF6B35]"
             />
             
@@ -103,11 +103,11 @@ export default function ProFeatures() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="type-h2 text-primary mb-3">
-              Upgrade for £50/month
+              Upgrade for £8/month per property
             </h2>
             <p className="text-base font-gill-sans-light text-gray-600 mb-6">
-              Everything you need to feel confident, organized, and informed
-              throughout your home journey.
+              Everything you need to feel confident, organised, and informed
+              about your property.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/chat">
@@ -144,7 +144,7 @@ export default function ProFeatures() {
               <div className="w-12 h-12 rounded-full bg-primary mx-auto mb-3 flex items-center justify-center">
                 <Lock className="h-6 w-6 text-white" />
               </div>
-              <p className="text-sm font-gill-sans-light text-gray-600">Your data is encrypted.</p>
+              <p className="text-sm font-gill-sans-light text-gray-600">Records that can&apos;t be changed or lost.</p>
             </div>
 
             {/* GDPR Compliance */}
@@ -153,7 +153,7 @@ export default function ProFeatures() {
                 <Flag className="h-6 w-6 text-white" />
               </div>
               <p className="text-sm font-gill-sans-light text-gray-600">
-                We respect your privacy.
+                GDPR compliant from the ground up.
               </p>
             </div>
 
@@ -163,7 +163,7 @@ export default function ProFeatures() {
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <p className="text-sm font-gill-sans-light text-gray-600">
-                We prioritize your information safety.
+                We never sell your data.
               </p>
             </div>
           </div>

@@ -41,7 +41,7 @@ export default function CompletePage() {
             {/* Thank You Message */}
             <h1 className="type-h2 text-gray-900 mb-4">Thanks for sharing!</h1>
             <p className="font-gill-sans-light text-gray-600 mb-8 text-lg leading-relaxed">
-              We&apos;ve used your answers to customize your dashboard, insights, and tone.
+              We&apos;ve used your answers to customise your dashboard, guidance, and tone.
               You can change your preferences anytime in Settings.
             </p>
 
@@ -65,7 +65,7 @@ export default function CompletePage() {
                 </span>
               </div>
               <p className="text-sm font-gill-sans-light text-green-600">
-                Your personalized HomeTruth experience is ready!
+                Your personalised HomeTruth experience is ready!
               </p>
             </div>
           </CardContent>
