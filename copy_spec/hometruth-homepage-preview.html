@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeTruth — Homepage Preview for Designer</title>
+    <style>
+        /* ============================================================
+           HomeTruth Homepage Preview
+           Brand Guide: BrandAd Style Guide (33-page PDF)
+           Copy Source: hometruth-homepage-copy-spec.html
+           Typography: Gill Sans (system stack fallback)
+           Palette: Orange #FF6B35 · Purple #B19CD9 · Blue #00BFFF
+                    Green #50C878 · Black #1A1A1A · Grey #6C757D
+           ============================================================ */
+
+        :root {
+            --ht-orange: #FF6B35;
+            --ht-purple: #B19CD9;
+            --ht-blue: #00BFFF;
+            --ht-green: #50C878;
+            --ht-black: #1A1A1A;
+            --ht-mid-grey: #6C757D;
+            --ht-light-grey: #F5F5F5;
+            --ht-white: #FFFFFF;
+            --font-brand: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            --gradient-brand: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-blue) 50%, var(--ht-purple) 100%);
+            --gradient-cta: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-purple) 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-brand);
+            color: var(--ht-black);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Utility ---- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* ---- Gradient accent bar (appears top of page) ---- */
+        .brand-accent-bar {
+            height: 4px;
+            background: var(--gradient-brand);
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        header {
+            background: var(--ht-black);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+        .logo-wrap svg {
+            height: 36px;
+            width: auto;
+        }
+        .logo-wordmark {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .logo-wordmark .home { color: var(--ht-white); }
+        .logo-wordmark .truth { color: var(--ht-blue); }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--ht-white); }
+
+        /* ---- Buttons ---- */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            font-family: var(--font-brand);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--ht-orange);
+            color: var(--ht-white);
+        }
+        .btn-primary:hover { background: #E55A2B; }
+        .btn-secondary {
+            background: transparent;
+            color: var(--ht-white);
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+        .btn-secondary:hover {
+            border-color: var(--ht-white);
+            background: rgba(255,255,255,0.08);
+        }
+        .btn-cta-white {
+            background: var(--ht-white);
+            color: var(--ht-black);
+        }
+        .btn-cta-white:hover { background: #f0f0f0; }
+
+        /* ============================================================
+           HERO
+           ============================================================ */
+        .hero {
+            background: var(--ht-black);
+            color: var(--ht-white);
+            padding: 100px 40px 110px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Subtle gradient glow behind hero */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, rgba(0,191,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-content {
+            max-width: 780px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero .tagline {
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--ht-blue);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 24px;
+        }
+        .hero .subtext {
+            font-size: 22px;
+            font-weight: 300;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 44px;
+            line-height: 1.5;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        /* Gradient line below hero */
+        .hero-gradient-line {
+            height: 3px;
+            background: var(--gradient-brand);
+        }
+
+        /* ============================================================
+           SECTIONS — shared
+           ============================================================ */
+        section {
+            padding: 90px 40px;
+        }
+        section .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        section h2 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            line-height: 1.2;
+        }
+        section > .section-inner > p,
+        section > .section-inner > .section-lead {
+            font-size: 18px;
+            line-height: 1.8;
+            color: var(--ht-mid-grey);
+            max-width: 700px;
+        }
+
+        /* ============================================================
+           PROBLEM SECTION
+           ============================================================ */
+        .problem {
+            background: var(--ht-light-grey);
+        }
+        .problem h2 {
+            max-width: 700px;
+        }
+        .problem p {
+            margin-top: 16px;
+        }
+
+        /* ============================================================
+           SOLUTION SECTION — 3 cards with corner brackets
+           ============================================================ */
+        .solution { background: var(--ht-white); }
+        .solution h2 { margin-bottom: 12px; }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+        @media (max-width: 860px) {
+            .solution-grid { grid-template-columns: 1fr; }
+        }
+
+        .solution-card {
+            background: var(--ht-light-grey);
+            padding: 36px 32px;
+            border-radius: 2px;
+            position: relative;
+        }
+        /* Corner-bracket framing (brand guide element) */
+        .solution-card::before,
+        .solution-card::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-color: var(--ht-blue);
+            border-style: solid;
+        }
+        .solution-card::before {
+            top: 12px; left: 12px;
+            border-width: 2px 0 0 2px;
+        }
+        .solution-card::after {
+            bottom: 12px; right: 12px;
+            border-width: 0 2px 2px 0;
+        }
+
+        .solution-card .card-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 20px;
+        }
+        .solution-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--ht-black);
+            margin-bottom: 12px;
+        }
+        .solution-card p {
+            font-size: 16px;
+            line-height: 1.65;
+            color: var(--ht-mid-grey);
+        }
+
+        /* ============================================================
+           WHO WE HELP — coloured left borders
+           ============================================================ */
+        .who-we-help { background: var(--ht-light-grey); }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+        @media (max-width: 860px) {
+            .help-grid { grid-template-columns: 1fr; }
+        }
+
+        .help-card {
+            padding: 32px;
+            background: var(--ht-white);
+            border-left: 4px solid var(--ht-orange);
+            border-radius: 2px;
+        }
+        .help-card.blue  { border-left-color: var(--ht-blue); }
+        .help-card.purple { border-left-color: var(--ht-purple); }
+
+        .help-card h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--ht-black);
+        }
+        .help-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .help-card li {
+            padding: 8px 0 8px 24px;
+            position: relative;
+            font-size: 16px;
+            color: var(--ht-mid-grey);
+            line-height: 1.5;
+        }
+        .help-card li::before {
+            content: '\2192';
+            position: absolute;
+            left: 0;
+            color: inherit;
+        }
+        .help-card:not(.blue):not(.purple) li::before { color: var(--ht-orange); }
+        .help-card.blue li::before { color: var(--ht-blue); }
+        .help-card.purple li::before { color: var(--ht-purple); }
+
+        /* ============================================================
+           HOW IT WORKS — 4 steps
+           ============================================================ */
+        .how-it-works { background: var(--ht-white); }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+        @media (max-width: 860px) {
+            .steps { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 500px) {
+            .steps { grid-template-columns: 1fr; }
+        }
+
+        .step { text-align: center; padding: 16px; }
+
+        .step-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            color: var(--ht-white);
+        }
+        .step:nth-child(1) .step-number { background: var(--ht-orange); }
+        .step:nth-child(2) .step-number { background: var(--ht-blue); }
+        .step:nth-child(3) .step-number { background: var(--ht-purple); }
+        .step:nth-child(4) .step-number { background: var(--ht-green); }
+
+        .step h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--ht-black);
+        }
+        .step p {
+            font-size: 15px;
+            color: var(--ht-mid-grey);
+            line-height: 1.6;
+        }
+
+        /* ============================================================
+           TRUST SECTION
+           ============================================================ */
+        .trust { background: var(--ht-light-grey); }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+        @media (max-width: 860px) {
+            .trust-grid { grid-template-columns: 1fr; }
+        }
+
+        .trust-item {
+            text-align: center;
+            padding: 32px 24px;
+        }
+        .trust-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .trust-item h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--ht-black);
+        }
+        .trust-item p {
+            font-size: 15px;
+            color: var(--ht-mid-grey);
+            line-height: 1.6;
+        }
+
+        /* ============================================================
+           FINAL CTA — brand gradient background
+           ============================================================ */
+        .final-cta {
+            background: var(--gradient-cta);
+            color: var(--ht-white);
+            text-align: center;
+            padding: 90px 40px;
+        }
+        .final-cta h2 {
+            color: var(--ht-white);
+            font-size: 40px;
+            margin-bottom: 18px;
+        }
+        .final-cta p {
+            font-size: 20px;
+            color: rgba(255,255,255,0.92);
+            margin-bottom: 36px;
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        footer {
+            background: var(--ht-black);
+            color: var(--ht-white);
+            padding: 64px 40px 32px;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 48px;
+        }
+        @media (max-width: 860px) {
+            .footer-content { grid-template-columns: 1fr 1fr; }
+        }
+
+        .footer-brand p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+        .footer-brand .logo-wrap { margin-bottom: 4px; }
+
+        .footer-section h4 {
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 10px; }
+        .footer-section a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .footer-section a:hover { color: var(--ht-white); }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* ============================================================
+           BUILDING-BLOCK SVG ICONS (derived from the TH logo shape)
+           ============================================================ */
+        .bb-icon {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Brand accent bar -->
+<div class="brand-accent-bar"></div>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header>
+    <nav>
+        <a class="logo-wrap" href="#">
+            <!-- Inline SVG icon from brand guide -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="36" aria-hidden="true">
+                <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+            </svg>
+            <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="#how-it-works">How It Works</a>
+            <a href="hometruth-pricing-preview.html">Pricing</a>
+            <a href="hometruth-about-preview.html">About</a>
+            <a href="#" class="btn btn-primary">Start Free</a>
+        </div>
+    </nav>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="tagline">Your Personal Property Assistant</div>
+        <h1>Your Property Intelligence Platform</h1>
+        <p class="subtext">Get real answers for your property decisions—from someone who actually knows.</p>
+        <div class="cta-buttons">
+            <a href="#" class="btn btn-primary">Start Free</a>
+            <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+        </div>
+    </div>
+</section>
+<div class="hero-gradient-line"></div>
+
+<!-- ============================================================
+     PROBLEM
+     ============================================================ -->
+<section class="problem">
+    <div class="section-inner">
+        <h2>Property Decisions Are Hard Because Reliable Information Is Scarce</h2>
+        <p>Should you buy this place? What maintenance actually matters? Are you compliant with new regulations? What's a fair price?</p>
+        <p style="margin-top: 16px;">These aren't easy questions. We built HomeTruth to answer them.</p>
+    </div>
+</section>
+
+<!-- ============================================================
+     SOLUTION — 3 cards with corner-bracket framing
+     ============================================================ -->
+<section class="solution">
+    <div class="section-inner">
+        <h2>Real Answers for Your Property</h2>
+        <p class="section-lead">Three things no one else gives you.</p>
+        <div class="solution-grid">
+            <div class="solution-card">
+                <!-- Building-block icon: grid/track shape -->
+                <svg class="card-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="4" width="16" height="16" rx="2" fill="#FF6B35"/>
+                    <rect x="28" y="4" width="16" height="16" rx="2" fill="#FF6B35" opacity="0.5"/>
+                    <rect x="4" y="28" width="16" height="16" rx="2" fill="#FF6B35" opacity="0.5"/>
+                    <rect x="28" y="28" width="16" height="16" rx="2" fill="#FF6B35"/>
+                </svg>
+                <h3>Track Everything in One Place</h3>
+                <p>Every receipt, every repair, every document—stored, searchable, and complete. No more lost records or forgotten maintenance.</p>
+            </div>
+            <div class="solution-card">
+                <!-- Building-block icon: predict/shield shape -->
+                <svg class="card-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="4" width="40" height="12" rx="2" fill="#00BFFF"/>
+                    <rect x="4" y="22" width="28" height="12" rx="2" fill="#00BFFF" opacity="0.6"/>
+                    <rect x="4" y="40" width="16" height="6" rx="2" fill="#00BFFF" opacity="0.35"/>
+                </svg>
+                <h3>Know What's About to Break Before It Breaks</h3>
+                <p>Proactive guidance on upcoming maintenance based on your property. Not generic advice—specific to what you own.</p>
+            </div>
+            <div class="solution-card">
+                <!-- Building-block icon: answer/chat shape -->
+                <svg class="card-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="4" width="40" height="28" rx="4" fill="#B19CD9"/>
+                    <rect x="12" y="12" width="20" height="3" rx="1.5" fill="white" opacity="0.7"/>
+                    <rect x="12" y="19" width="14" height="3" rx="1.5" fill="white" opacity="0.5"/>
+                    <polygon points="12,32 20,32 12,42" fill="#B19CD9"/>
+                </svg>
+                <h3>Answer Your Questions Accurately</h3>
+                <p>Ask anything about your property. Get answers grounded in your property's history, not someone else's opinion.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     WHO WE HELP
+     ============================================================ -->
+<section class="who-we-help">
+    <div class="section-inner">
+        <h2>Who We Help</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3>First-Time Buyers</h3>
+                <ul>
+                    <li>Know what questions to ask before you buy</li>
+                    <li>Understand what maintenance actually costs</li>
+                    <li>Get confidence in your biggest purchase</li>
+                </ul>
+            </div>
+            <div class="help-card blue">
+                <h3>Homeowners</h3>
+                <ul>
+                    <li>Track what you've done to maximise your property's value</li>
+                    <li>Stay on top of maintenance before small problems become expensive</li>
+                    <li>Know your property inside and out</li>
+                </ul>
+            </div>
+            <div class="help-card purple">
+                <h3>Landlords</h3>
+                <ul>
+                    <li>Stay compliant with changing regulations</li>
+                    <li>Document everything for protection</li>
+                    <li>Manage multiple properties without the chaos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section class="how-it-works" id="how-it-works">
+    <div class="section-inner">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Add Your Property</h3>
+                <p>Start with your address. We'll pull in the basics.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Upload Your Records</h3>
+                <p>Add documents, receipts, photos. Everything that matters about your property.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Ask Questions</h3>
+                <p>Get answers specific to your property—not generic advice.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Stay Proactive</h3>
+                <p>We'll tell you what's coming up, what to watch, what matters.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     TRUST
+     ============================================================ -->
+<section class="trust">
+    <div class="section-inner">
+        <h2>Your Data Stays Yours</h2>
+        <div class="trust-grid">
+            <div class="trust-item">
+                <div class="trust-icon">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="4" y="8" width="32" height="24" rx="3" stroke="#00BFFF" stroke-width="2.5" fill="none"/>
+                        <path d="M12 20h16M12 26h10" stroke="#00BFFF" stroke-width="2" stroke-linecap="round"/>
+                        <rect x="14" y="2" width="12" height="8" rx="2" fill="#00BFFF" opacity="0.3"/>
+                    </svg>
+                </div>
+                <h3>Records that can't be changed or lost</h3>
+                <p>Your property history is permanent and tamper-proof.</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <path d="M20 4L6 12v10c0 9.3 6 16 14 18 8-2 14-8.7 14-18V12L20 4z" stroke="#50C878" stroke-width="2.5" fill="none"/>
+                        <path d="M14 20l4 4 8-8" stroke="#50C878" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h3>GDPR compliant from the ground up</h3>
+                <p>Your privacy is built into how we work.</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="8" y="16" width="24" height="18" rx="3" stroke="#B19CD9" stroke-width="2.5" fill="none"/>
+                        <path d="M14 16V12a6 6 0 0 1 12 0v4" stroke="#B19CD9" stroke-width="2.5" stroke-linecap="round"/>
+                        <circle cx="20" cy="26" r="2.5" fill="#B19CD9"/>
+                    </svg>
+                </div>
+                <h3>We never sell your data</h3>
+                <p>Your information stays yours, period.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     FINAL CTA
+     ============================================================ -->
+<section class="final-cta">
+    <div class="section-inner" style="text-align:center;">
+        <h2>Start Making Better Property Decisions</h2>
+        <p>Free to start. No credit card required.</p>
+        <a href="#" class="btn btn-cta-white">Get Started</a>
+    </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <a class="logo-wrap" href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="30" aria-hidden="true">
+                    <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                    <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                    <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                    <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+                </svg>
+                <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+            </a>
+            <p>Real answers for your property decisions.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Product</h4>
+            <ul>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="hometruth-pricing-preview.html">Pricing</a></li>
+                <li><a href="hometruth-faq-preview.html">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="hometruth-about-preview.html">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Data Protection</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Email Us</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 HomeTruth. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeTruth — About</title>
+    <style>
+        :root {
+            --ht-orange: #FF6B35;
+            --ht-purple: #B19CD9;
+            --ht-blue: #00BFFF;
+            --ht-green: #50C878;
+            --ht-black: #1A1A1A;
+            --ht-mid-grey: #6C757D;
+            --ht-light-grey: #F5F5F5;
+            --ht-white: #FFFFFF;
+            --font-brand: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            --gradient-brand: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-blue) 50%, var(--ht-purple) 100%);
+            --gradient-cta: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-purple) 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-brand); color: var(--ht-black); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        .brand-accent-bar { height: 4px; background: var(--gradient-brand); }
+        header { background: var(--ht-black); padding: 20px 0; position: sticky; top: 0; z-index: 100; }
+        header nav { max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-wrap svg { height: 36px; width: auto; }
+        .logo-wordmark { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+        .logo-wordmark .home { color: var(--ht-white); }
+        .logo-wordmark .truth { color: var(--ht-blue); }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 15px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ht-white); }
+        .nav-links a.active { color: var(--ht-white); border-bottom: 2px solid var(--ht-orange); padding-bottom: 2px; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; font-family: var(--font-brand); border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--ht-orange); color: var(--ht-white); }
+        .btn-primary:hover { background: #E55A2B; }
+        .btn-cta-white { background: var(--ht-white); color: var(--ht-black); }
+        .btn-cta-white:hover { background: #f0f0f0; }
+
+        .page-hero { background: var(--ht-black); color: var(--ht-white); padding: 72px 40px 80px; text-align: center; }
+        .page-hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; }
+        .page-hero p { font-size: 20px; color: rgba(255,255,255,0.8); max-width: 640px; margin: 0 auto; font-weight: 300; line-height: 1.5; }
+        .hero-gradient-line { height: 3px; background: var(--gradient-brand); }
+
+        /* Vision / Mission */
+        .vision-section { padding: 80px 40px; background: var(--ht-white); }
+        .vision-section .inner { max-width: 800px; margin: 0 auto; }
+        .vision-section h2 { font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: var(--ht-blue); margin-bottom: 16px; font-weight: 600; }
+        .vision-section .big-quote { font-size: 36px; font-weight: 700; line-height: 1.3; margin-bottom: 24px; color: var(--ht-black); }
+        .vision-section p { font-size: 18px; color: var(--ht-mid-grey); line-height: 1.8; margin-bottom: 16px; }
+
+        /* Values */
+        .values-section { padding: 80px 40px; background: var(--ht-light-grey); }
+        .values-section .inner { max-width: 1100px; margin: 0 auto; }
+        .values-section h2 { font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+        .values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+        @media (max-width: 700px) { .values-grid { grid-template-columns: 1fr; } }
+        .value-card { background: var(--ht-white); padding: 32px; border-left: 4px solid var(--ht-blue); border-radius: 2px; }
+        .value-card:nth-child(2) { border-left-color: var(--ht-orange); }
+        .value-card:nth-child(3) { border-left-color: var(--ht-purple); }
+        .value-card:nth-child(4) { border-left-color: var(--ht-green); }
+        .value-card:nth-child(5) { border-left-color: var(--ht-blue); }
+        .value-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 10px; color: var(--ht-black); }
+        .value-card p { font-size: 16px; color: var(--ht-mid-grey); line-height: 1.6; }
+
+        /* How we're different */
+        .different-section { padding: 80px 40px; background: var(--ht-white); }
+        .different-section .inner { max-width: 900px; margin: 0 auto; }
+        .different-section h2 { font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+        .diff-item { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 28px 0; border-bottom: 1px solid #E5E5E5; }
+        @media (max-width: 600px) { .diff-item { grid-template-columns: 1fr; } }
+        .diff-item .label { font-size: 15px; color: var(--ht-mid-grey); font-weight: 500; }
+        .diff-item .label strong { display: block; font-size: 18px; color: var(--ht-black); font-weight: 600; }
+        .diff-item .detail { font-size: 16px; color: var(--ht-mid-grey); line-height: 1.7; }
+
+        /* Proof points */
+        .proof-section { padding: 80px 40px; background: var(--ht-light-grey); }
+        .proof-section .inner { max-width: 1100px; margin: 0 auto; }
+        .proof-section h2 { font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+        .proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+        @media (max-width: 860px) { .proof-grid { grid-template-columns: repeat(2, 1fr); } }
+        .proof-card { text-align: center; padding: 24px 16px; }
+        .proof-card .stat { font-size: 48px; font-weight: 700; margin-bottom: 8px; }
+        .proof-card:nth-child(1) .stat { color: var(--ht-orange); }
+        .proof-card:nth-child(2) .stat { color: var(--ht-blue); }
+        .proof-card:nth-child(3) .stat { color: var(--ht-purple); }
+        .proof-card:nth-child(4) .stat { color: var(--ht-green); }
+        .proof-card p { font-size: 15px; color: var(--ht-mid-grey); line-height: 1.5; }
+
+        /* Final CTA */
+        .final-cta { background: var(--gradient-cta); color: var(--ht-white); text-align: center; padding: 80px 40px; }
+        .final-cta h2 { color: var(--ht-white); font-size: 36px; margin-bottom: 16px; }
+        .final-cta p { font-size: 20px; color: rgba(255,255,255,0.92); margin-bottom: 32px; }
+
+        footer { background: var(--ht-black); color: var(--ht-white); padding: 64px 40px 32px; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+        @media (max-width: 860px) { .footer-content { grid-template-columns: 1fr 1fr; } }
+        .footer-brand p { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 16px; line-height: 1.6; }
+        .footer-brand .logo-wrap { margin-bottom: 4px; }
+        .footer-section h4 { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 18px; color: rgba(255,255,255,0.5); font-weight: 600; }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 10px; }
+        .footer-section a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-section a:hover { color: var(--ht-white); }
+        .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; color: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="brand-accent-bar"></div>
+
+<header>
+    <nav>
+        <a class="logo-wrap" href="hometruth-homepage-preview.html">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="36" aria-hidden="true">
+                <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+            </svg>
+            <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="hometruth-homepage-preview.html#how-it-works">How It Works</a>
+            <a href="hometruth-pricing-preview.html">Pricing</a>
+            <a href="hometruth-about-preview.html" class="active">About</a>
+            <a href="#" class="btn btn-primary">Start Free</a>
+        </div>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>Property Intelligence for Everyone</h1>
+    <p>Every property decision made with real intelligence, not guesswork.</p>
+</section>
+<div class="hero-gradient-line"></div>
+
+<section class="vision-section">
+    <div class="inner">
+        <h2>Our Mission</h2>
+        <div class="big-quote">We help people make better property decisions by giving them real answers.</div>
+        <p>Specific to their property. Specific to their situation. Specific to their goals.</p>
+        <p>Not generic advice. Not forum posts from 2019. Actual guidance you can act on&mdash;for buying, owning, or renting out property.</p>
+        <p>We're the assistant who actually knows your property and tells you what you need to know before you need to know it.</p>
+    </div>
+</section>
+
+<section class="values-section">
+    <div class="inner">
+        <h2>What We Believe</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <h3>Real Answers Over Easy Answers</h3>
+                <p>We don't tell you what you want to hear. We tell you what you need to know.</p>
+            </div>
+            <div class="value-card">
+                <h3>Clarity Over Complexity</h3>
+                <p>Property is complicated. Our answers aren't.</p>
+            </div>
+            <div class="value-card">
+                <h3>Proactive Over Reactive</h3>
+                <p>We tell you what's coming before it becomes a crisis.</p>
+            </div>
+            <div class="value-card">
+                <h3>Evidence Over Opinion</h3>
+                <p>Our guidance is based on your property's actual data, not guesses.</p>
+            </div>
+            <div class="value-card">
+                <h3>Accessible Over Exclusive</h3>
+                <p>Good property intelligence shouldn't be only for people who can afford advisors.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="different-section">
+    <div class="inner">
+        <h2>How We're Different</h2>
+        <div class="diff-item">
+            <div class="label"><strong>Specific, not generic</strong></div>
+            <div class="detail">Every answer is about your property, your situation, your data. Not someone else's experience on a forum.</div>
+        </div>
+        <div class="diff-item">
+            <div class="label"><strong>Proactive, not reactive</strong></div>
+            <div class="detail">We tell you what's coming up before you have to ask. The best guidance arrives before the problem does.</div>
+        </div>
+        <div class="diff-item">
+            <div class="label"><strong>Real answers, not opinions</strong></div>
+            <div class="detail">Our guidance is grounded in your property's actual history and data. Not what worked for someone else's house.</div>
+        </div>
+        <div class="diff-item">
+            <div class="label"><strong>Gets better over time</strong></div>
+            <div class="detail">The more you use HomeTruth, the more it understands your property. Your records grow, and so does the quality of your guidance.</div>
+        </div>
+    </div>
+</section>
+
+<section class="proof-section">
+    <div class="inner">
+        <h2>Why This Matters</h2>
+        <div class="proof-grid">
+            <div class="proof-card">
+                <div class="stat">63%</div>
+                <p>of first-time buyers regret their purchase</p>
+            </div>
+            <div class="proof-card">
+                <div class="stat">42%</div>
+                <p>say costs were higher than expected</p>
+            </div>
+            <div class="proof-card">
+                <div class="stat">&pound;40K</div>
+                <p>potential penalties landlords face for non-compliance</p>
+            </div>
+            <div class="proof-card">
+                <div class="stat">37%</div>
+                <p>rise in maintenance costs since 2020</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="final-cta">
+    <h2>Start Making Better Property Decisions</h2>
+    <p>Free to start. No credit card required.</p>
+    <a href="#" class="btn btn-cta-white">Get Started</a>
+</section>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <a class="logo-wrap" href="hometruth-homepage-preview.html">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="30" aria-hidden="true">
+                    <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                    <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                    <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                    <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+                </svg>
+                <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+            </a>
+            <p>Real answers for your property decisions.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Product</h4>
+            <ul>
+                <li><a href="hometruth-homepage-preview.html#how-it-works">How It Works</a></li>
+                <li><a href="hometruth-pricing-preview.html">Pricing</a></li>
+                <li><a href="hometruth-faq-preview.html">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="hometruth-about-preview.html">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Data Protection</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Email Us</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 HomeTruth. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

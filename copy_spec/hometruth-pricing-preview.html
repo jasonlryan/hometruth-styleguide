@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeTruth — Pricing</title>
+    <style>
+        :root {
+            --ht-orange: #FF6B35;
+            --ht-purple: #B19CD9;
+            --ht-blue: #00BFFF;
+            --ht-green: #50C878;
+            --ht-black: #1A1A1A;
+            --ht-mid-grey: #6C757D;
+            --ht-light-grey: #F5F5F5;
+            --ht-white: #FFFFFF;
+            --font-brand: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            --gradient-brand: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-blue) 50%, var(--ht-purple) 100%);
+            --gradient-cta: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-purple) 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-brand); color: var(--ht-black); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        .brand-accent-bar { height: 4px; background: var(--gradient-brand); }
+        header { background: var(--ht-black); padding: 20px 0; position: sticky; top: 0; z-index: 100; }
+        header nav { max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-wrap svg { height: 36px; width: auto; }
+        .logo-wordmark { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+        .logo-wordmark .home { color: var(--ht-white); }
+        .logo-wordmark .truth { color: var(--ht-blue); }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 15px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ht-white); }
+        .nav-links a.active { color: var(--ht-white); border-bottom: 2px solid var(--ht-orange); padding-bottom: 2px; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; font-family: var(--font-brand); border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--ht-orange); color: var(--ht-white); }
+        .btn-primary:hover { background: #E55A2B; }
+        .btn-outline { background: transparent; color: var(--ht-orange); border: 2px solid var(--ht-orange); }
+        .btn-outline:hover { background: var(--ht-orange); color: var(--ht-white); }
+        .btn-cta-white { background: var(--ht-white); color: var(--ht-black); }
+        .btn-cta-white:hover { background: #f0f0f0; }
+
+        /* Page hero (smaller than homepage) */
+        .page-hero { background: var(--ht-black); color: var(--ht-white); padding: 72px 40px 80px; text-align: center; }
+        .page-hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; }
+        .page-hero p { font-size: 20px; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto; font-weight: 300; }
+        .hero-gradient-line { height: 3px; background: var(--gradient-brand); }
+
+        /* Pricing grid */
+        .pricing-section { padding: 80px 40px; background: var(--ht-white); }
+        .pricing-section .inner { max-width: 1100px; margin: 0 auto; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 16px; }
+        @media (max-width: 860px) { .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin-left: auto; margin-right: auto; } }
+
+        .pricing-card { border: 1px solid #E5E5E5; border-radius: 4px; padding: 40px 32px; display: flex; flex-direction: column; position: relative; }
+        .pricing-card.featured { border: 2px solid var(--ht-orange); }
+        .pricing-card.featured::before { content: 'Most popular'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--ht-orange); color: white; font-size: 12px; font-weight: 600; padding: 4px 16px; border-radius: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .pricing-card h3 { font-size: 22px; font-weight: 600; margin-bottom: 8px; color: var(--ht-black); }
+        .pricing-card .price { font-size: 48px; font-weight: 700; margin-bottom: 4px; }
+        .pricing-card .price-sub { font-size: 14px; color: var(--ht-mid-grey); margin-bottom: 24px; }
+        .pricing-card .desc { font-size: 15px; color: var(--ht-mid-grey); margin-bottom: 28px; line-height: 1.5; }
+        .pricing-card ul { list-style: none; margin-bottom: 32px; flex-grow: 1; }
+        .pricing-card li { padding: 10px 0 10px 28px; position: relative; font-size: 15px; color: #444; border-bottom: 1px solid #f0f0f0; }
+        .pricing-card li::before { content: '\2713'; position: absolute; left: 0; color: var(--ht-green); font-weight: 700; }
+        .pricing-card .btn { text-align: center; width: 100%; display: block; }
+
+        /* Colour accents per tier */
+        .pricing-card:nth-child(1) .price { color: var(--ht-blue); }
+        .pricing-card:nth-child(2) .price { color: var(--ht-orange); }
+        .pricing-card:nth-child(3) .price { color: var(--ht-purple); }
+
+        /* Buyer report callout */
+        .report-callout { padding: 64px 40px; background: var(--ht-light-grey); }
+        .report-callout .inner { max-width: 800px; margin: 0 auto; text-align: center; }
+        .report-callout h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .report-callout p { font-size: 18px; color: var(--ht-mid-grey); margin-bottom: 28px; line-height: 1.7; }
+
+        /* FAQ mini section */
+        .pricing-faq { padding: 80px 40px; background: var(--ht-white); }
+        .pricing-faq .inner { max-width: 720px; margin: 0 auto; }
+        .pricing-faq h2 { font-size: 32px; font-weight: 700; margin-bottom: 40px; }
+        .faq-item { border-bottom: 1px solid #E5E5E5; padding: 24px 0; }
+        .faq-item h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: var(--ht-black); }
+        .faq-item p { font-size: 16px; color: var(--ht-mid-grey); line-height: 1.7; }
+
+        /* Final CTA */
+        .final-cta { background: var(--gradient-cta); color: var(--ht-white); text-align: center; padding: 80px 40px; }
+        .final-cta h2 { color: var(--ht-white); font-size: 36px; margin-bottom: 16px; }
+        .final-cta p { font-size: 20px; color: rgba(255,255,255,0.92); margin-bottom: 32px; }
+
+        /* Footer */
+        footer { background: var(--ht-black); color: var(--ht-white); padding: 64px 40px 32px; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+        @media (max-width: 860px) { .footer-content { grid-template-columns: 1fr 1fr; } }
+        .footer-brand p { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 16px; line-height: 1.6; }
+        .footer-brand .logo-wrap { margin-bottom: 4px; }
+        .footer-section h4 { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 18px; color: rgba(255,255,255,0.5); font-weight: 600; }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 10px; }
+        .footer-section a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-section a:hover { color: var(--ht-white); }
+        .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; color: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="brand-accent-bar"></div>
+
+<header>
+    <nav>
+        <a class="logo-wrap" href="hometruth-homepage-preview.html">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="36" aria-hidden="true">
+                <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+            </svg>
+            <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="hometruth-homepage-preview.html#how-it-works">How It Works</a>
+            <a href="hometruth-pricing-preview.html" class="active">Pricing</a>
+            <a href="hometruth-about-preview.html">About</a>
+            <a href="#" class="btn btn-primary">Start Free</a>
+        </div>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>Simple, Transparent Pricing</h1>
+    <p>Free to start. Upgrade when you need more.</p>
+</section>
+<div class="hero-gradient-line"></div>
+
+<section class="pricing-section">
+    <div class="inner">
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Free</h3>
+                <div class="price">&pound;0</div>
+                <div class="price-sub">Forever</div>
+                <p class="desc">Get started with your first property. See what real answers feel like.</p>
+                <ul>
+                    <li>One property</li>
+                    <li>Upload and store your documents</li>
+                    <li>Basic property questions answered</li>
+                    <li>Maintenance reminders</li>
+                    <li>Your data stays yours</li>
+                </ul>
+                <a href="#" class="btn btn-outline">Start Free</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <h3>Pro</h3>
+                <div class="price">&pound;8<span style="font-size:20px;font-weight:400;color:var(--ht-mid-grey)">/mo</span></div>
+                <div class="price-sub">Per property</div>
+                <p class="desc">Everything you need to stay on top of your property. The full picture, always up to date.</p>
+                <ul>
+                    <li>Unlimited questions about your property</li>
+                    <li>Proactive maintenance guidance</li>
+                    <li>Complete document storage</li>
+                    <li>Warranty and service tracking</li>
+                    <li>Cost tracking and history</li>
+                    <li>Property report when you sell</li>
+                </ul>
+                <a href="#" class="btn btn-primary">Start Free</a>
+            </div>
+
+            <div class="pricing-card">
+                <h3>For Landlords</h3>
+                <div class="price">&pound;6<span style="font-size:20px;font-weight:400;color:var(--ht-mid-grey)">/mo</span></div>
+                <div class="price-sub">Per property (5+ properties)</div>
+                <p class="desc">Manage your portfolio without the chaos. Stay compliant, stay informed.</p>
+                <ul>
+                    <li>Everything in Pro</li>
+                    <li>Portfolio dashboard</li>
+                    <li>Compliance tracking</li>
+                    <li>Multi-property reporting</li>
+                    <li>Tenant documentation</li>
+                    <li>Dedicated support</li>
+                </ul>
+                <a href="#" class="btn btn-outline">Get in Touch</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="report-callout">
+    <div class="inner">
+        <h2>Buying a Property?</h2>
+        <p>Request a HomeTruth Report on any property you're viewing. See the verified maintenance history, past issues, and what to watch out for. Make your offer with confidence.</p>
+        <a href="#" class="btn btn-primary">&pound;29 One-Time Report</a>
+    </div>
+</section>
+
+<section class="pricing-faq">
+    <div class="inner">
+        <h2>Common Questions</h2>
+        <div class="faq-item">
+            <h3>Can I really start for free?</h3>
+            <p>Yes. Add one property, upload your documents, ask questions. No credit card, no time limit. Upgrade when you want more.</p>
+        </div>
+        <div class="faq-item">
+            <h3>What happens to my data if I cancel?</h3>
+            <p>Your data stays yours. You can export everything at any time. If you cancel Pro, you keep read access to your records on the free plan.</p>
+        </div>
+        <div class="faq-item">
+            <h3>Do I need Pro for each property?</h3>
+            <p>The free plan covers one property. Pro is per property. Landlords with five or more properties get the volume rate automatically.</p>
+        </div>
+    </div>
+</section>
+
+<section class="final-cta">
+    <h2>Start Making Better Property Decisions</h2>
+    <p>Free to start. No credit card required.</p>
+    <a href="#" class="btn btn-cta-white">Get Started</a>
+</section>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <a class="logo-wrap" href="hometruth-homepage-preview.html">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="30" aria-hidden="true">
+                    <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                    <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                    <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                    <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+                </svg>
+                <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+            </a>
+            <p>Real answers for your property decisions.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Product</h4>
+            <ul>
+                <li><a href="hometruth-homepage-preview.html#how-it-works">How It Works</a></li>
+                <li><a href="hometruth-pricing-preview.html">Pricing</a></li>
+                <li><a href="hometruth-faq-preview.html">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="hometruth-about-preview.html">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Data Protection</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Email Us</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 HomeTruth. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

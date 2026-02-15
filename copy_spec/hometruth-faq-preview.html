@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeTruth — FAQ</title>
+    <style>
+        :root {
+            --ht-orange: #FF6B35;
+            --ht-purple: #B19CD9;
+            --ht-blue: #00BFFF;
+            --ht-green: #50C878;
+            --ht-black: #1A1A1A;
+            --ht-mid-grey: #6C757D;
+            --ht-light-grey: #F5F5F5;
+            --ht-white: #FFFFFF;
+            --font-brand: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            --gradient-brand: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-blue) 50%, var(--ht-purple) 100%);
+            --gradient-cta: linear-gradient(135deg, var(--ht-orange) 0%, var(--ht-purple) 100%);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-brand); color: var(--ht-black); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        .brand-accent-bar { height: 4px; background: var(--gradient-brand); }
+        header { background: var(--ht-black); padding: 20px 0; position: sticky; top: 0; z-index: 100; }
+        header nav { max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-wrap svg { height: 36px; width: auto; }
+        .logo-wordmark { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+        .logo-wordmark .home { color: var(--ht-white); }
+        .logo-wordmark .truth { color: var(--ht-blue); }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; font-size: 15px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--ht-white); }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; font-family: var(--font-brand); border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--ht-orange); color: var(--ht-white); }
+        .btn-primary:hover { background: #E55A2B; }
+        .btn-cta-white { background: var(--ht-white); color: var(--ht-black); }
+        .btn-cta-white:hover { background: #f0f0f0; }
+
+        .page-hero { background: var(--ht-black); color: var(--ht-white); padding: 72px 40px 80px; text-align: center; }
+        .page-hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 16px; }
+        .page-hero p { font-size: 20px; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto; font-weight: 300; }
+        .hero-gradient-line { height: 3px; background: var(--gradient-brand); }
+
+        /* FAQ layout */
+        .faq-section { padding: 80px 40px; background: var(--ht-white); }
+        .faq-section .inner { max-width: 760px; margin: 0 auto; }
+
+        .faq-category { margin-bottom: 56px; }
+        .faq-category h2 { font-size: 28px; font-weight: 700; margin-bottom: 32px; padding-bottom: 12px; border-bottom: 3px solid var(--ht-blue); display: inline-block; }
+        .faq-category:nth-child(2) h2 { border-bottom-color: var(--ht-orange); }
+        .faq-category:nth-child(3) h2 { border-bottom-color: var(--ht-purple); }
+
+        .faq-item { border-bottom: 1px solid #E5E5E5; padding: 24px 0; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-item h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--ht-black); cursor: pointer; }
+        .faq-item p { font-size: 16px; color: var(--ht-mid-grey); line-height: 1.75; }
+
+        /* Still have questions */
+        .still-questions { padding: 64px 40px; background: var(--ht-light-grey); text-align: center; }
+        .still-questions h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .still-questions p { font-size: 18px; color: var(--ht-mid-grey); margin-bottom: 28px; }
+        .still-questions a { color: var(--ht-orange); font-weight: 600; text-decoration: none; font-size: 18px; }
+        .still-questions a:hover { text-decoration: underline; }
+
+        /* Final CTA */
+        .final-cta { background: var(--gradient-cta); color: var(--ht-white); text-align: center; padding: 80px 40px; }
+        .final-cta h2 { color: var(--ht-white); font-size: 36px; margin-bottom: 16px; }
+        .final-cta p { font-size: 20px; color: rgba(255,255,255,0.92); margin-bottom: 32px; }
+
+        footer { background: var(--ht-black); color: var(--ht-white); padding: 64px 40px 32px; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+        @media (max-width: 860px) { .footer-content { grid-template-columns: 1fr 1fr; } }
+        .footer-brand p { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 16px; line-height: 1.6; }
+        .footer-brand .logo-wrap { margin-bottom: 4px; }
+        .footer-section h4 { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 18px; color: rgba(255,255,255,0.5); font-weight: 600; }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 10px; }
+        .footer-section a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-section a:hover { color: var(--ht-white); }
+        .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; color: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="brand-accent-bar"></div>
+
+<header>
+    <nav>
+        <a class="logo-wrap" href="hometruth-homepage-preview.html">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="36" aria-hidden="true">
+                <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+            </svg>
+            <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="hometruth-homepage-preview.html#how-it-works">How It Works</a>
+            <a href="hometruth-pricing-preview.html">Pricing</a>
+            <a href="hometruth-about-preview.html">About</a>
+            <a href="#" class="btn btn-primary">Start Free</a>
+        </div>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>Frequently Asked Questions</h1>
+    <p>Real questions, direct answers. No jargon.</p>
+</section>
+<div class="hero-gradient-line"></div>
+
+<section class="faq-section">
+    <div class="inner">
+
+        <div class="faq-category">
+            <h2>Getting Started</h2>
+
+            <div class="faq-item">
+                <h3>How is this different from just Googling my questions?</h3>
+                <p>Google gives you generic advice for generic properties. HomeTruth gives you answers specific to your property, based on your actual records, your maintenance history, and your situation. When you ask "should I worry about my boiler?", we know which boiler you have and when it was last serviced.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What do I need to get started?</h3>
+                <p>Just your address. We'll pull in the basics about your property to get you going. From there, you can upload documents, receipts, photos&mdash;anything that matters. The more you add, the better your answers get.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Is it really free to start?</h3>
+                <p>Yes. One property, no time limit, no credit card. You get document storage, basic questions answered, and maintenance reminders. Upgrade to Pro when you want unlimited questions and proactive guidance.</p>
+            </div>
+        </div>
+
+        <div class="faq-category">
+            <h2>Your Data</h2>
+
+            <div class="faq-item">
+                <h3>Where does my data go?</h3>
+                <p>Your data is stored securely and encrypted. We don't sell it, share it, or use it for anything except giving you better answers about your property. You can export or delete it at any time.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Can my records be changed or deleted by someone else?</h3>
+                <p>No. Once a record is created, it can't be altered or removed. This protects you&mdash;especially useful when selling, dealing with insurance, or resolving disputes. Your property history is permanent and tamper-proof.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>What happens to my data if I cancel?</h3>
+                <p>Your data stays yours. You can export everything at any time. If you cancel Pro, you keep read access to your records on the free plan. We never hold your data hostage.</p>
+            </div>
+        </div>
+
+        <div class="faq-category">
+            <h2>How It Works</h2>
+
+            <div class="faq-item">
+                <h3>What kind of questions can I ask?</h3>
+                <p>Anything about your property. "When was my roof last inspected?" "What maintenance should I prioritise this year?" "Am I compliant with current landlord regulations?" "What should I budget for next quarter?" The more records you've uploaded, the more specific and useful the answers.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Does it get smarter over time?</h3>
+                <p>Yes. The more you use HomeTruth, the more it understands your property. Upload a receipt today, and six months from now we'll remind you when the warranty is about to expire. Your records build a complete picture that improves every answer.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="still-questions">
+    <h2>Still Have Questions?</h2>
+    <p>We're here to help. Drop us a line and we'll get back to you.</p>
+    <a href="mailto:hello@hometruth.io">hello@hometruth.io</a>
+</section>
+
+<section class="final-cta">
+    <h2>Start Making Better Property Decisions</h2>
+    <p>Free to start. No credit card required.</p>
+    <a href="#" class="btn btn-cta-white">Get Started</a>
+</section>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">
+            <a class="logo-wrap" href="hometruth-homepage-preview.html">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 509.1 511" height="30" aria-hidden="true">
+                    <path fill="#7B4B9E" d="M97.9 218.9H15.9v277.9h188.7v-61.7H97.9z"/>
+                    <path fill="#FD6815" d="M412.2 148.9h81.9V17.8H15.9V149h82V79.3h106.7v132.6h101V79.4h106.8z"/>
+                    <path fill="#7B4B9E" d="M412.2 218.7l.2 216.6h-106.8l-.1 61.5h188.6V218.7z"/>
+                    <path fill="#19B0F0" d="M204.6 286.7v148.4h101V286.7z"/>
+                </svg>
+                <span class="logo-wordmark"><span class="home">Home</span><span class="truth">Truth</span></span>
+            </a>
+            <p>Real answers for your property decisions.</p>
+        </div>
+        <div class="footer-section">
+            <h4>Product</h4>
+            <ul>
+                <li><a href="hometruth-homepage-preview.html#how-it-works">How It Works</a></li>
+                <li><a href="hometruth-pricing-preview.html">Pricing</a></li>
+                <li><a href="hometruth-faq-preview.html">FAQ</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Company</h4>
+            <ul>
+                <li><a href="hometruth-about-preview.html">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Data Protection</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">LinkedIn</a></li>
+                <li><a href="#">Email Us</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 HomeTruth. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeTruth - Your Property Intelligence Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #2C2C2C;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 20px 0;
+            border-bottom: 1px solid #E5E5E5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FF6B35;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #2C2C2C;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #FF6B35;
+        }
+
+        .btn {
+            background: #FF6B35;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #E55A2B;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #FF6B35;
+            border: 2px solid #FF6B35;
+        }
+
+        .btn-secondary:hover {
+            background: #FFF5F2;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #6B5B95 0%, #4A90E2 100%);
+            color: white;
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 22px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .hero .tagline {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Content Sections */
+        section {
+            padding: 80px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        section h2 {
+            font-size: 42px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #2C2C2C;
+        }
+
+        section p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #4A4A4A;
+        }
+
+        /* Problem Section */
+        .problem {
+            background: #F9F9F9;
+        }
+
+        /* Solution Cards */
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .solution-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .solution-card h3 {
+            color: #FF6B35;
+            font-size: 20px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .solution-card p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Who We Help */
+        .who-we-help {
+            background: white;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 48px;
+        }
+
+        .help-card {
+            padding: 32px;
+            border-left: 4px solid #FF6B35;
+            background: #FAFAFA;
+        }
+
+        .help-card h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2C2C2C;
+        }
+
+        .help-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-card li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            font-size: 16px;
+            color: #4A4A4A;
+        }
+
+        .help-card li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #FF6B35;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            background: #F9F9F9;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: #FF6B35;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #2C2C2C;
+        }
+
+        .step p {
+            font-size: 15px;
+            color: #6C757D;
+        }
+
+        /* Trust Section */
+        .trust {
+            background: white;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .trust-item {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .trust-item h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #2C2C2C;
+        }
+
+        .trust-item p {
+            font-size: 15px;
+            color: #6C757D;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            background: linear-gradient(135deg, #FF6B35 0%, #6B5B95 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 40px;
+        }
+
+        .final-cta h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .final-cta p {
+            font-size: 20px;
+            margin-bottom: 32px;
+            color: rgba(255,255,255,0.95);
+        }
+
+        /* Footer */
+        footer {
+            background: #2C2C2C;
+            color: white;
+            padding: 60px 40px 30px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #FF6B35;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">HomeTruth</div>
+            <div class="nav-links">
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#about">About</a>
+                <a href="#" class="btn">Start Free</a>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="tagline">Your Personal Property Assistant</div>
+            <h1>Your Property Intelligence Platform</h1>
+            <p>Get real answers for your property decisions—from someone who actually knows.</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn">Start Free</a>
+                <a href="#" class="btn btn-secondary">See How It Works</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem">
+        <h2>Property Decisions Are Hard Because Reliable Information Is Scarce</h2>
+        <p>Should you buy this place? What maintenance actually matters? Are you compliant with new regulations? What's a fair price?</p>
+        <p style="margin-top: 20px;">These aren't easy questions. We built HomeTruth to answer them.</p>
+    </section>
+
+    <section class="solution">
+        <h2>Give You Real Answers for Your Property</h2>
+        <div class="solution-grid">
+            <div class="solution-card">
+                <h3>Track Everything in One Place</h3>
+                <p>Every receipt, every repair, every document—stored, searchable, and complete. No more lost records or forgotten maintenance.</p>
+            </div>
+            <div class="solution-card">
+                <h3>Know What's About to Break Before It Breaks</h3>
+                <p>Proactive guidance on upcoming maintenance based on your property. Not generic advice—specific to what you own.</p>
+            </div>
+            <div class="solution-card">
+                <h3>Answer Your Questions Accurately</h3>
+                <p>Ask anything about your property. Get answers grounded in your property's history, not someone else's opinion.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="who-we-help">
+        <h2>Who We Help</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3>First-Time Buyers</h3>
+                <ul>
+                    <li>Know what questions to ask before you buy</li>
+                    <li>Understand what maintenance actually costs</li>
+                    <li>Get confidence in your biggest purchase</li>
+                </ul>
+            </div>
+            <div class="help-card">
+                <h3>Homeowners</h3>
+                <ul>
+                    <li>Track what you've done to maximize your property's value</li>
+                    <li>Stay on top of maintenance before small problems become expensive</li>
+                    <li>Know your property inside and out</li>
+                </ul>
+            </div>
+            <div class="help-card">
+                <h3>Landlords</h3>
+                <ul>
+                    <li>Stay compliant with changing regulations</li>
+                    <li>Document everything for protection</li>
+                    <li>Manage multiple properties without the chaos</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Add Your Property</h3>
+                <p>Start with your address. We'll pull in the basics.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Upload Your Records</h3>
+                <p>Add documents, receipts, photos. Everything that matters about your property.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Ask Questions</h3>
+                <p>Get answers specific to your property—not generic advice.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Stay Proactive</h3>
+                <p>We'll tell you what's coming up, what to watch, what matters.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="trust">
+        <h2>Your Data Stays Yours</h2>
+        <div class="trust-grid">
+            <div class="trust-item">
+                <h3>Records that can't be changed or lost</h3>
+                <p>Your property history is permanent and tamper-proof</p>
+            </div>
+            <div class="trust-item">
+                <h3>GDPR compliant from the ground up</h3>
+                <p>Your privacy is built into how we work</p>
+            </div>
+            <div class="trust-item">
+                <h3>We never sell your data</h3>
+                <p>Your information stays yours, period</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <h2>Start Making Better Property Decisions</h2>
+        <p>Free to start. No credit card required.</p>
+        <a href="#" class="btn btn-secondary">Get Started</a>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Careers</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Data Protection</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">LinkedIn</a></li>
+                    <li><a href="#">Email Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 HomeTruth. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
