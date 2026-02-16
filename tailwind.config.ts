@@ -12,6 +12,19 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			chat: [
+  				"ui-sans-serif",
+  				"system-ui",
+  				"-apple-system",
+  				"BlinkMacSystemFont",
+  				'"Segoe UI"',
+  				"Roboto",
+  				'"Helvetica Neue"',
+  				"Arial",
+  				"sans-serif",
+  			],
+  		},
   		colors: {
   			ht: {
   				primary: 'var(--ht-primary)',

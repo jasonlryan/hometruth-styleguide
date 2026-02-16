@@ -13,7 +13,6 @@ import ChatHistory, {
   type ChatHistorySession,
 } from "@/components/chat-history";
 import ChatMessage, { type ChatSource } from "@/components/chat-message";
-import VoiceInputButton from "@/components/voice-input-button";
 import HomeTruthLogoAnimation from "@/components/hometruth-logo-animation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -650,7 +649,7 @@ export default function ChatContainer({
   ];
 
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div className={`flex flex-col font-chat ${className}`}>
       {showHistory && isHistoryOpen && (
         <ChatHistory
           sessions={sessionSummaries}
@@ -671,7 +670,7 @@ export default function ChatContainer({
               {showHistory && (
                 <Button
                   size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-gill-sans-light"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-chat"
                   onClick={toggleHistory}
                   title={
                     isHistoryOpen ? "Hide chat history" : "Show chat history"
@@ -706,7 +705,7 @@ export default function ChatContainer({
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 )}
                 <div
-                  className={`px-2 py-1 text-xs rounded-full font-gill-sans-light ${
+                  className={`px-2 py-1 text-xs rounded-full font-chat ${
                     isLoading
                       ? "bg-primary/10 text-primary"
                       : "bg-green-100 text-green-700"
@@ -727,7 +726,7 @@ export default function ChatContainer({
             {isLoading ? "HomeTruth is responding" : ""}
           </div>
           {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-500 font-gill-sans-light">
+            <div className="h-full flex items-center justify-center text-gray-500 font-chat">
               Start a conversation to see answers here.
             </div>
           ) : (
@@ -775,25 +774,10 @@ export default function ChatContainer({
             <div className="flex space-x-2">
               <Input
                 placeholder="Ask HomeTruth anything about property..."
-                className="flex-1 border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-gray-50/50 font-gill-sans-light"
+                className="flex-1 border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-gray-50/50 font-chat"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                disabled={isLoading}
-              />
-              <VoiceInputButton
-                onTranscribe={(text) => {
-                  setInputValue(text);
-                  // Auto-send after transcription
-                  setTimeout(() => {
-                    const trimmed = text.trim();
-                    if (trimmed) {
-                      setInputValue(trimmed);
-                      // Trigger send by simulating Enter key or calling handleSendMessage directly
-                      handleSendMessage();
-                    }
-                  }, 100);
-                }}
                 disabled={isLoading}
               />
               <Button
@@ -811,7 +795,7 @@ export default function ChatContainer({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-gray-200 text-gray-600 transition-colors font-gill-sans-light hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
+                  className="border-gray-200 text-gray-600 transition-colors font-chat hover:border-primary/20 hover:bg-primary/5 hover:text-primary"
                 >
                   <Globe className="h-4 w-4 mr-2" />
                   Search the web
@@ -820,14 +804,14 @@ export default function ChatContainer({
 
               {messages.length === 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm text-gray-500 font-gill-sans-light">
+                  <span className="text-sm text-gray-500 font-chat">
                     Try asking:
                   </span>
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion}
                       onClick={() => setInputValue(suggestion)}
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full transition-colors font-gill-sans-light hover:bg-primary/10 hover:text-primary"
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full transition-colors font-chat hover:bg-primary/10 hover:text-primary"
                     >
                       {suggestion}
                     </button>

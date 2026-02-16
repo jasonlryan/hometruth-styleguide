@@ -516,7 +516,7 @@ function ChatMessageComponent({
       if (isInline) {
         return (
           <code
-            className={cn(className, "font-gill-sans-regular text-gray-800")}
+            className={cn(className, "font-chat text-gray-800")}
           >
             {children}
           </code>
@@ -643,7 +643,7 @@ function ChatMessageComponent({
       ),
       ol: ({ children, ...rest }) => (
         <ol
-          className="list-decimal space-y-1.5 my-2 ml-6 marker:font-gill-sans-regular marker:text-gray-700"
+          className="list-decimal space-y-1.5 my-2 ml-6 marker:font-chat marker:font-normal marker:text-gray-700"
           {...rest}
         >
           {children}
@@ -674,7 +674,7 @@ function ChatMessageComponent({
       },
       h1: ({ children, ...rest }) => (
         <h1
-          className="text-2xl font-gill-sans-regular font-bold mt-4 mb-2"
+          className="text-2xl font-chat font-bold mt-4 mb-2"
           {...rest}
         >
           {children}
@@ -682,7 +682,7 @@ function ChatMessageComponent({
       ),
       h2: ({ children, ...rest }) => (
         <h2
-          className="text-xl font-gill-sans-regular font-bold mt-3 mb-2"
+          className="text-xl font-chat font-bold mt-3 mb-2"
           {...rest}
         >
           {children}
@@ -690,19 +690,19 @@ function ChatMessageComponent({
       ),
       h3: ({ children, ...rest }) => (
         <h3
-          className="text-lg font-gill-sans-regular font-semibold mt-2 mb-1"
+          className="text-lg font-chat font-semibold mt-2 mb-1"
           {...rest}
         >
           {children}
         </h3>
       ),
       p: ({ children, ...rest }) => (
-        <p className="my-2 font-gill-sans-light" {...rest}>
+        <p className="my-2 font-chat font-light" {...rest}>
           {children}
         </p>
       ),
       strong: ({ children, ...rest }) => (
-        <strong className="font-gill-sans-regular font-semibold" {...rest}>
+        <strong className="font-chat font-semibold" {...rest}>
           {children}
         </strong>
       ),
@@ -721,7 +721,7 @@ function ChatMessageComponent({
       <div className="flex justify-end">
         <div className="max-w-md">
           <div className="rounded-lg bg-primary p-4 text-white">
-            <p className="text-base font-gill-sans-regular whitespace-pre-wrap">
+            <p className="text-base font-chat whitespace-pre-wrap">
               {content}
             </p>
           </div>
@@ -739,11 +739,11 @@ function ChatMessageComponent({
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="space-y-3 message-content">
             {shouldRenderPlainText ? (
-              <pre className="whitespace-pre-wrap break-words text-gray-800 font-gill-sans-regular text-base">
+              <pre className="whitespace-pre-wrap break-words text-gray-800 font-chat text-base">
                 {effectiveContent}
               </pre>
             ) : (
-              <div className="prose prose-base max-w-none text-gray-800 prose-headings:font-gill-sans-regular prose-p:font-gill-sans-light prose-strong:font-gill-sans-regular prose-ul:font-gill-sans-light prose-ol:font-gill-sans-light prose-li:font-gill-sans-light prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-ul:prose-li:marker:text-gray-700 prose-ol:prose-li:marker:text-gray-700">
+              <div className="prose prose-base max-w-none text-gray-800 prose-headings:font-chat prose-p:font-chat prose-strong:font-chat prose-ul:font-chat prose-ol:font-chat prose-li:font-chat prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-ul:prose-li:marker:text-gray-700 prose-ol:prose-li:marker:text-gray-700">
                 <MarkdownContent
                   content={effectiveContent}
                   components={markdownComponents}
@@ -810,7 +810,7 @@ function ChatMessageComponent({
                               {label}
                             </span>
                             <div className="space-y-1">
-                              <div className="font-gill-sans-regular">
+                              <div className="font-chat">
                                 {source.url ? (
                                   <a
                                     href={source.url}
@@ -850,7 +850,7 @@ function ChatMessageComponent({
                     className="animate-pulse"
                   />
                 </div>
-                <div className="text-sm text-gray-500 font-gill-sans-light italic">
+                <div className="text-sm text-gray-500 font-chat font-light italic">
                   Thinking...
                 </div>
               </div>
@@ -866,7 +866,7 @@ function ChatMessageComponent({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-1 text-primary hover:text-primary hover:bg-primary/5 font-gill-sans-light"
+                    className="flex items-center gap-1 text-primary hover:text-primary hover:bg-primary/5 font-chat font-light"
                     onClick={handleSaveToNotes}
                     disabled={saving}
                   >

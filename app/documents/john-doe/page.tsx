@@ -86,7 +86,7 @@ const initialLedgerRows: LedgerRow[] = (ledgerEntries as LedgerEntry[]).map(
       status: "queued",
       anchorDate: ledgerAnchor.nextAnchorWindow,
     },
-  })
+  }),
 );
 
 const clearedSpend = ledgerEntries
@@ -103,7 +103,7 @@ export default function JohnDoePage() {
   const [anchorInfo, setAnchorInfo] = useState(ledgerAnchor);
   const [ledgerRows, setLedgerRows] = useState<LedgerRow[]>(initialLedgerRows);
   const anchoredCount = ledgerRows.filter(
-    (row) => row.proof.status === "anchored"
+    (row) => row.proof.status === "anchored",
   ).length;
   const queuedCount = ledgerRows.length - anchoredCount;
 
@@ -127,7 +127,7 @@ export default function JohnDoePage() {
               explorerUrl: simulatedExplorerUrl,
               merkleRoot: anchorInfo.merkleRoot,
             },
-          }
+          },
     );
     setAnchorInfo((prev) => ({
       ...prev,

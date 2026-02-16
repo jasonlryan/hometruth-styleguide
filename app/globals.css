@@ -129,6 +129,21 @@
     font-weight: 400;
   }
 
+  /* Chat UI: system font stack only (no Gill Sans). Override global Gill Sans on all descendants. */
+  .font-chat,
+  .font-chat p,
+  .font-chat span,
+  .font-chat div,
+  .font-chat a,
+  .font-chat button,
+  .font-chat input,
+  .font-chat textarea,
+  .font-chat label,
+  .font-chat li,
+  .font-chat h1, .font-chat h2, .font-chat h3, .font-chat h4, .font-chat h5, .font-chat h6 {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
   /* Heading styles */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;

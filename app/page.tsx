@@ -41,7 +41,7 @@ export default function HomeTruthLanding() {
       {/* Hero Section */}
       <Banner
         title="Your Property Intelligence Platform"
-        subtitle="Get real answers for your property decisions — from someone who actually knows."
+        subtitle="Real answers for your property decisions."
         gradient="blue-50-purple-50"
         textColor="text-white"
         showBackgroundImage
@@ -69,11 +69,11 @@ export default function HomeTruthLanding() {
               {/* Subtle background glow */}
               <div className="absolute inset-0 -z-10 transform scale-105 rounded-2xl bg-gradient-to-r from-[hsl(var(--primary))] to-[var(--ht-secondary)] opacity-10 blur-xl"></div>
               <Link href="/chat">
-                <Card className="shadow-xl hover:shadow-2xl border-0 bg-white cursor-pointer transition-all duration-300 ring-1 ring-gray-200 hover:ring-2 hover:ring-primary/20">
+                <Card className="shadow-xl hover:shadow-2xl border-0 bg-white cursor-pointer transition-all duration-300 ring-1 ring-gray-200 hover:ring-2 hover:ring-primary/20 font-chat">
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-2 mb-4">
                       <MessageCircle className="h-5 w-5 text-primary" />
-                      <span className="font-gill-sans-light text-gray-800">
+                      <span className="text-gray-800">
                         HomeTruth Assistant
                       </span>
                       <Badge className="bg-green-100 text-green-800 text-xs">
@@ -175,6 +175,80 @@ export default function HomeTruthLanding() {
         </div>
       </section>
 
+      {/* Who We Help */}
+      <section id="who-we-help" className="py-8 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="type-h2 text-black mb-4">Who We Help</h2>
+            <p className="type-body-lg text-gray-600 max-w-2xl mx-auto">
+              HomeTruth is for everyone making property decisions
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Card className="border-0 border-l-4 border-l-primary shadow-sm bg-white overflow-hidden">
+              <CardContent className="p-6 text-left">
+                <h3 className="type-h4 text-black mb-4">First-Time Buyers</h3>
+                <ul className="space-y-2 list-none pl-0">
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-primary shrink-0">→</span>
+                    Know what questions to ask before you buy
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-primary shrink-0">→</span>
+                    Understand what maintenance actually costs
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-primary shrink-0">→</span>
+                    Get confidence in your biggest purchase
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 border-l-4 border-l-[#00BFFF] shadow-sm bg-white overflow-hidden">
+              <CardContent className="p-6 text-left">
+                <h3 className="type-h4 text-black mb-4">Homeowners</h3>
+                <ul className="space-y-2 list-none pl-0">
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#00BFFF] shrink-0">→</span>
+                    Track what you&apos;ve done to maximise your property&apos;s value
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#00BFFF] shrink-0">→</span>
+                    Stay on top of maintenance before small problems become expensive
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#00BFFF] shrink-0">→</span>
+                    Know your property inside and out
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 border-l-4 border-l-[#B19CD9] shadow-sm bg-white overflow-hidden">
+              <CardContent className="p-6 text-left">
+                <h3 className="type-h4 text-black mb-4">Landlords</h3>
+                <ul className="space-y-2 list-none pl-0">
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#B19CD9] shrink-0">→</span>
+                    Stay compliant with changing regulations
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#B19CD9] shrink-0">→</span>
+                    Document everything for protection
+                  </li>
+                  <li className="flex items-start gap-2 type-body text-gray-600">
+                    <span className="text-[#B19CD9] shrink-0">→</span>
+                    Manage multiple properties without the chaos
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works Section */}
       <section id="how-it-works" className="py-8 bg-white">
         <div className="container mx-auto px-4">
@@ -186,7 +260,6 @@ export default function HomeTruthLanding() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Step 1 */}
             <div className="text-center group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border border-gray-100">
@@ -199,7 +272,6 @@ export default function HomeTruthLanding() {
               </p>
             </div>
 
-            {/* Step 2 */}
             <div className="text-center group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border border-gray-100">
@@ -212,7 +284,6 @@ export default function HomeTruthLanding() {
               </p>
             </div>
 
-            {/* Step 3 */}
             <div className="text-center group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border border-gray-100">
@@ -225,7 +296,6 @@ export default function HomeTruthLanding() {
               </p>
             </div>
 
-            {/* Step 4 */}
             <div className="text-center group">
               <div className="relative mb-6">
                 <div className="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border border-gray-100">

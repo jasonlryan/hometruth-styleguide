@@ -9,7 +9,6 @@ import BudgetProgressIndicator from "@/components/budget-progress-indicator";
 import BudgetResultsPanel from "@/components/budget-results-panel";
 import BudgetFormModal from "@/components/budget-form-modal";
 import BudgetFormArtifact from "@/components/budget-form-artifact";
-import VoiceInputButton from "@/components/voice-input-button";
 import ChatMessage from "@/components/chat-message";
 import type {
   BudgetCalculatorAnswers,
@@ -484,7 +483,7 @@ export default function BudgetCalculatorChat() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col font-chat">
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
@@ -506,7 +505,7 @@ export default function BudgetCalculatorChat() {
 
           {/* Chat Messages */}
           {chatHistory.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-500 font-gill-sans-light">
+            <div className="h-full flex items-center justify-center text-gray-500 font-chat">
               Start a conversation to see answers here.
             </div>
           ) : (
@@ -551,7 +550,7 @@ export default function BudgetCalculatorChat() {
           )}
 
           {error && (
-            <div className="text-red-500 text-sm font-gill-sans-light">
+            <div className="text-red-500 text-sm font-chat">
               {error}
             </div>
           )}
@@ -575,19 +574,10 @@ export default function BudgetCalculatorChat() {
               <div className="flex space-x-2">
                 <Input
                   placeholder="Type your message"
-                  className="flex-1 border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-gray-50/50 font-gill-sans-light"
+                  className="flex-1 border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/20 bg-gray-50/50 font-chat"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  disabled={isLoading}
-                />
-                <VoiceInputButton
-                  onTranscribe={(text) => {
-                    setInputValue(text);
-                    setTimeout(() => {
-                      handleSendMessage(text);
-                    }, 100);
-                  }}
                   disabled={isLoading}
                 />
                 <Button
